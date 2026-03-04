@@ -3,19 +3,19 @@ const links = {
     { label: 'FAQs', path: '#' },
     { label: 'Track Order', path: '#' },
     { label: 'Returns', path: '#' },
-    { label: 'Delivery', path: '#' },
-    { label: 'Payment', path: '#' },
+    { label: 'Shipping', path: '#' },
+    { label: 'Business Directory', path: '/directory' },
   ],
   about: [
     { label: 'About us', path: '#' },
-    { label: 'Blog', path: '#' },
+    { label: 'Our Mission', path: '#' },
     { label: 'Privacy Policy', path: '#' },
     { label: 'Terms & Conditions', path: '#' },
   ],
   connect: [
     { label: 'Facebook', path: 'https://facebook.com' },
     { label: 'Instagram', path: 'https://instagram.com' },
-    { label: 'LinekdIn', path: 'https://linkedin.com' },
+    { label: 'LinkedIn', path: 'https://linkedin.com' },
   ],
 };
 
