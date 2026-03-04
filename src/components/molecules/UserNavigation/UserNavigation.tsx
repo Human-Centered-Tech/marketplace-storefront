@@ -35,6 +35,14 @@ const navigationItems = [
     label: "Wishlist",
     href: "/user/wishlist",
   },
+  {
+    label: "My Directory",
+    href: "/user/directory",
+  },
+  {
+    label: "My Registries",
+    href: "/user/registry",
+  },
 ]
 
 export const UserNavigation = () => {

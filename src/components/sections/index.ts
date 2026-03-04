@@ -14,6 +14,11 @@ import { OrdersPagination } from "../organisms/OrdersPagination/OrdersPagination
 import { DirectorySearch } from "./DirectoryListing/DirectorySearch"
 import { DirectoryListingCard } from "./DirectoryListing/DirectoryListingCard"
 import { DirectoryDetail } from "./DirectoryDetail/DirectoryDetail"
+import { NetworkingEventCard } from "./Networking/NetworkingEventCard"
+import { NetworkingEventDetail } from "./Networking/NetworkingEventDetail"
+import { BarterListingCard } from "./Barter/BarterListingCard"
+import { BarterSearch } from "./Barter/BarterSearch"
+import { BarterDetail } from "./Barter/BarterDetail"
 
 export {
   Hero,
@@ -32,4 +37,9 @@ export {
   DirectorySearch,
   DirectoryListingCard,
   DirectoryDetail,
+  NetworkingEventCard,
+  NetworkingEventDetail,
+  BarterListingCard,
+  BarterSearch,
+  BarterDetail,
 }

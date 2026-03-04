@@ -17,6 +17,24 @@ export const Navbar = ({
         >
           Directory
         </LocalizedClientLink>
+        <LocalizedClientLink
+          href="/networking"
+          className="label-md uppercase px-4 flex items-center"
+        >
+          Networking
+        </LocalizedClientLink>
+        <LocalizedClientLink
+          href="/barter"
+          className="label-md uppercase px-4 flex items-center"
+        >
+          Barter
+        </LocalizedClientLink>
+        <LocalizedClientLink
+          href="/user/registry"
+          className="label-md uppercase px-4 flex items-center"
+        >
+          Registry
+        </LocalizedClientLink>
       </div>
 
       <NavbarSearch />
