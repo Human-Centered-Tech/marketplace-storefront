@@ -1,83 +1,118 @@
 "use client"
 
-import { useState } from "react"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
+
+const damaskPattern = `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 5c-3.3 0-6 2.7-6 6 0 2.2 1.2 4.1 3 5.1V20h6v-3.9c1.8-1 3-2.9 3-5.1 0-3.3-2.7-6-6-6zm0 2c2.2 0 4 1.8 4 4s-1.8 4-4 4-4-1.8-4-4 1.8-4 4-4zm-15 13c-3.3 0-6 2.7-6 6 0 2.2 1.2 4.1 3 5.1V35h6v-3.9c1.8-1 3-2.9 3-5.1 0-3.3-2.7-6-6-6zm0 2c2.2 0 4 1.8 4 4s-1.8 4-4 4-4-1.8-4-4 1.8-4 4-4zm30 0c-3.3 0-6 2.7-6 6 0 2.2 1.2 4.1 3 5.1V35h6v-3.9c1.8-1 3-2.9 3-5.1 0-3.3-2.7-6-6-6zm0 2c2.2 0 4 1.8 4 4s-1.8 4-4 4-4-1.8-4-4 1.8-4 4-4zM30 35c-3.3 0-6 2.7-6 6 0 2.2 1.2 4.1 3 5.1V50h6v-3.9c1.8-1 3-2.9 3-5.1 0-3.3-2.7-6-6-6zm0 2c2.2 0 4 1.8 4 4s-1.8 4-4 4-4-1.8-4-4 1.8-4 4-4z' fill='%2317294A' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E")`
 
 const tiers = [
   {
     id: "verified",
     name: "Verified",
+    label: "Starter",
     price: "$50",
-    period: "/year",
-    parishes: "1 parish affiliation",
+    period: "/ yr",
     highlight: false,
     features: [
-      "Directory listing with verification badge",
-      "Sell products in the marketplace",
-      "Standard search placement",
-      "1 parish affiliation",
-      "Business profile page",
+      { text: "Parish affiliation badge", icon: "check_circle", bold: false },
+      { text: "Standard search visibility", icon: "check_circle", bold: false },
+      { text: "Up to 10 products listed", icon: "check_circle", bold: false },
     ],
+    btnClass: "bg-[#17294A] text-white hover:bg-[#17294A]/90",
   },
   {
     id: "featured",
     name: "Featured",
+    label: "Advanced",
     price: "$400",
-    period: "/year",
-    altPrice: "$50/month",
-    parishes: "3 parish affiliations",
+    period: "/ yr",
     highlight: true,
     features: [
-      "Everything in Verified, plus:",
-      "Featured placement in search results",
-      "3 parish affiliations",
-      "Priority search ranking",
-      "Analytics dashboard",
-      "Networking event access",
+      { text: "Featured vendor badge", icon: "stars", bold: true },
+      { text: "High search priority", icon: "check_circle", bold: false },
+      { text: "Up to 100 products listed", icon: "check_circle", bold: false },
+      { text: "Event promotion access", icon: "check_circle", bold: false },
     ],
+    btnClass:
+      "bg-[#F2CD69] text-[#17294A] hover:bg-[#DECF8F] shadow-lg shadow-[#F2CD69]/20",
   },
   {
     id: "enterprise",
     name: "Enterprise",
+    label: "Elite",
     price: "$2,000",
-    period: "/year",
-    parishes: "10 parish affiliations",
+    period: "/ yr",
     highlight: false,
+    enterprise: true,
     features: [
-      "Everything in Featured, plus:",
-      "Top search priority",
-      "10 parish affiliations",
-      "Full analytics suite",
-      "Dedicated support",
-      "Custom partnership badges",
+      { text: "Premium gold tier badge", icon: "shield_with_heart", bold: true },
+      { text: "Top-tier search placement", icon: "check_circle", bold: false },
+      { text: "Unlimited products", icon: "check_circle", bold: false },
+      { text: "Dedicated account manager", icon: "check_circle", bold: false },
+      { text: "Homepage placement rotation", icon: "check_circle", bold: false },
     ],
+    btnClass: "bg-[#17294A] text-white hover:bg-[#17294A]/90",
   },
+]
+
+const testimonials = [
+  {
+    quote:
+      "Catholic Owned has transformed how we connect with families seeking authentic, traditional liturgical art. It\u2019s more than a directory; it\u2019s a mission.",
+    name: "Maria De Rossi",
+    business: "De Rossi Liturgical Arts",
+  },
+  {
+    quote:
+      "The Featured plan paid for itself in the first month. The search visibility helped local parishioners find our family carpentry shop easily.",
+    name: "Joseph Miller",
+    business: "St. Joseph Custom Woodwork",
+  },
+  {
+    quote:
+      "Finding vendors who share our values was always a challenge. Catholic Owned has built a true ecosystem for the domestic church.",
+    name: "Therese Martin",
+    business: "Little Flower Apothecary",
+  },
+]
+
+const comparisonRows = [
+  { feature: "Search Visibility", verified: "Standard", featured: "High Priority", enterprise: "Top Placement" },
+  { feature: "Product Limit", verified: "10", featured: "100", enterprise: "Unlimited" },
+  { feature: "Trust Badge", verified: "Parish Badge", featured: "Featured Sigil", enterprise: "Gold Tier Seal" },
+  { feature: "Event Promotion", verified: "\u2014", featured: "Included", enterprise: "Priority Boost" },
+  { feature: "Account Support", verified: "Email", featured: "Priority Email", enterprise: "Dedicated Manager" },
 ]
 
 const faqs = [
   {
-    q: "Do I need a directory listing to sell in the marketplace?",
-    a: "Yes — all marketplace sellers require at minimum a Verified listing ($50/year). This ensures every seller in our marketplace is a verified Catholic-owned business.",
+    group: "Membership & Plans",
+    items: [
+      {
+        q: "What\u2019s included in the Verified tier?",
+        a: "The Verified tier includes a parish affiliation badge on your listing, standard search visibility in our directory, and the ability to list up to 10 products in the marketplace. It is the minimum requirement for all marketplace sellers.",
+      },
+      {
+        q: "Can I upgrade my plan later?",
+        a: "Yes, you can upgrade your plan at any time. The remaining balance of your current subscription will be prorated toward your new plan.",
+      },
+      {
+        q: "How do I cancel my subscription?",
+        a: "You can cancel your subscription from your vendor dashboard settings. Your listing will remain active until the end of your current billing cycle.",
+      },
+    ],
   },
   {
-    q: "Can I upgrade my plan later?",
-    a: "Absolutely. You can upgrade from Verified to Featured or Enterprise at any time. You'll be credited for the remaining time on your current plan.",
-  },
-  {
-    q: "What payment methods do you accept?",
-    a: "We accept all major credit cards, debit cards, and bank payments through our secure payment processor, Stripe.",
-  },
-  {
-    q: "What's the transaction fee on marketplace sales?",
-    a: "Catholic Owned charges an 8% commission on marketplace sales, plus standard payment processing fees (~3%), for a total of approximately 11%.",
-  },
-  {
-    q: "How do I cancel my subscription?",
-    a: "You can cancel anytime from your account settings. Your listing will remain active until the end of your current billing period.",
-  },
-  {
-    q: "I only want a directory listing, not a storefront. Which plan do I need?",
-    a: "Any plan works! The Verified tier is the most affordable option for a directory-only listing. You can always add a storefront later.",
+    group: "Marketplace & Payments",
+    items: [
+      {
+        q: "Do I need a directory listing to sell in the marketplace?",
+        a: "Yes, a minimum of a Verified listing ($50/year) is required to sell products within the Catholic Owned marketplace. This ensures all our sellers are vetted members of the community.",
+      },
+      {
+        q: "What payment methods do you accept?",
+        a: "We accept all major credit cards, Apple Pay, Google Pay, and bank transfers for Enterprise accounts. All payments are processed securely via Stripe.",
+      },
+    ],
   },
 ]
 
@@ -88,232 +123,416 @@ type BusinessPricingSectionProps = {
 export const BusinessPricingSection = ({
   isLoggedIn,
 }: BusinessPricingSectionProps) => {
-  const [openFaq, setOpenFaq] = useState<number | null>(null)
-
   const getStartedHref = isLoggedIn
     ? "/user/directory/create"
     : "/user/register"
 
   return (
     <div>
+      {/* Google Fonts for Cinzel + Material Symbols */}
+      <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=EB+Garamond:ital,wght@0,400;0,700;1,400&family=Poppins:wght@400;600;700&display=swap"
+        rel="stylesheet"
+      />
+      <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet"
+      />
+
       {/* Hero */}
-      <section className="bg-[#17294A] text-[#FAF9F5] py-16 px-4 lg:px-8">
-        <div className="container max-w-4xl mx-auto text-center">
-          <p className="text-xs uppercase tracking-[0.2em] text-[#F2CD69] mb-4 font-medium">
-            For Businesses
-          </p>
+      <header
+        className="relative pt-32 pb-20 px-8 overflow-hidden bg-[#FAF9F5]"
+        style={{ backgroundImage: damaskPattern }}
+      >
+        <div className="max-w-6xl mx-auto text-center relative z-10">
           <h1
-            className="text-4xl lg:text-5xl font-semibold mb-4"
-            style={{ fontFamily: "'EB Garamond', serif" }}
+            className="text-5xl md:text-7xl text-[#17294A] mb-6 tracking-tight leading-tight"
+            style={{ fontFamily: "Cinzel, serif", fontWeight: 700 }}
           >
-            Sell on Catholic Owned
-          </h1>
-          <p className="text-lg opacity-80 max-w-2xl mx-auto mb-2">
-            Join a trusted marketplace of verified Catholic-owned businesses.
-            Reach thousands of Catholic consumers looking to support businesses
-            that share their values.
-          </p>
-          <p className="text-sm opacity-60">
-            Building the New Catholic Economy®
-          </p>
-        </div>
-      </section>
-
-      {/* Marketplace requirement banner */}
-      <div className="bg-[#FFF8E1] border-b border-[#FFE082] py-3 px-4 text-center">
-        <p className="text-sm text-[#5D4037]">
-          <strong>All marketplace sellers</strong> require a Verified listing
-          ($50/year) to sell on Catholic Owned.
-        </p>
-      </div>
-
-      {/* Pricing cards */}
-      <section className="container max-w-5xl mx-auto py-16 px-4 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {tiers.map((tier) => (
-            <div
-              key={tier.id}
-              className={`rounded-xl border p-6 flex flex-col ${
-                tier.highlight
-                  ? "border-[#F2CD69] border-2 shadow-lg relative"
-                  : "border-gray-200"
-              }`}
+            Building the New <br />
+            <span
+              className="italic font-normal text-[#695e2a]"
+              style={{ fontFamily: "EB Garamond, serif" }}
             >
-              {tier.highlight && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#F2CD69] text-[#17294A] text-xs font-semibold px-4 py-1 rounded-full uppercase tracking-wide">
-                  Most Popular
-                </div>
-              )}
-              <h3
-                className="text-xl font-semibold text-[#17294A] mb-1"
-                style={{ fontFamily: "'EB Garamond', serif" }}
+              Catholic Economy&reg;
+            </span>
+          </h1>
+          <p
+            className="max-w-2xl mx-auto text-xl text-[#44474e] leading-relaxed"
+            style={{ fontFamily: "EB Garamond, serif" }}
+          >
+            Connect your business with a community committed to tradition,
+            excellence, and the common good. Choose the plan that fits your
+            mission.
+          </p>
+          <div className="mt-12 h-[1px] w-48 bg-[#F2CD69] mx-auto" />
+        </div>
+      </header>
+
+      {/* Pricing Section */}
+      <section className="py-20 px-8 bg-[#FAF9F5]">
+        <div className="max-w-7xl mx-auto">
+          {/* Marketplace banner */}
+          <div className="mb-12 flex justify-center">
+            <div className="bg-[#17294A]/5 border border-[#F2CD69]/30 px-8 py-3 rounded-full flex items-center gap-3">
+              <span
+                className="material-symbols-outlined text-[#F2CD69]"
+                style={{
+                  fontVariationSettings: "'FILL' 0, 'wght' 300",
+                }}
               >
-                {tier.name}
-              </h3>
-              <p className="text-sm text-[#616161] mb-4">{tier.parishes}</p>
-              <div className="mb-6">
-                <span
-                  className="text-3xl font-bold text-[#17294A]"
-                  style={{ fontFamily: "'EB Garamond', serif" }}
-                >
-                  {tier.price}
-                </span>
-                <span className="text-[#616161] text-sm">{tier.period}</span>
-                {tier.altPrice && (
-                  <p className="text-xs text-[#616161] mt-1">
-                    or {tier.altPrice}
-                  </p>
-                )}
-              </div>
-              <ul className="space-y-3 mb-8 flex-1">
-                {tier.features.map((feature) => (
-                  <li
-                    key={feature}
-                    className="flex items-start gap-2 text-sm text-[#14140F]"
-                  >
-                    <svg
-                      className="w-4 h-4 mt-0.5 flex-shrink-0 text-[#3D7A4A]"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={2}
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-              <LocalizedClientLink
-                href={getStartedHref}
-                className={`block text-center py-3 px-6 rounded-lg text-sm font-semibold uppercase tracking-wide transition-colors ${
+                info
+              </span>
+              <p
+                className="text-xs font-bold uppercase tracking-widest text-[#17294A]"
+                style={{ fontFamily: "Poppins, sans-serif" }}
+              >
+                All marketplace sellers require a Verified listing ($50/year) to
+                sell on Catholic Owned.
+              </p>
+            </div>
+          </div>
+
+          {/* Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+            {tiers.map((tier) => (
+              <div
+                key={tier.id}
+                className={`p-10 rounded-xl flex flex-col h-full transition-all ${
                   tier.highlight
-                    ? "bg-[#F2CD69] text-[#17294A] hover:bg-[#DECF8F]"
-                    : "bg-[#17294A] text-[#FAF9F5] hover:bg-[#1e3560]"
+                    ? "bg-white shadow-xl border-2 border-[#F2CD69] relative transform md:-translate-y-4"
+                    : tier.enterprise
+                    ? "bg-[#F2CD69] shadow-sm"
+                    : "bg-white shadow-sm border border-transparent hover:shadow-md"
                 }`}
               >
-                Get Started
-              </LocalizedClientLink>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* How it works */}
-      <section className="bg-[#FAF9F5] py-16 px-4 lg:px-8">
-        <div className="container max-w-4xl mx-auto">
-          <h2
-            className="text-2xl font-semibold text-[#17294A] text-center mb-12"
-            style={{ fontFamily: "'EB Garamond', serif" }}
-          >
-            How It Works
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                step: "1",
-                title: "Choose Your Plan",
-                desc: "Pick the tier that fits your business — Verified, Featured, or Enterprise.",
-              },
-              {
-                step: "2",
-                title: "Set Up Your Shop",
-                desc: "Add your products, customize your storefront, and create your directory listing.",
-              },
-              {
-                step: "3",
-                title: "Start Selling",
-                desc: "Reach Catholic consumers and grow your business within a trusted community.",
-              },
-            ].map((item) => (
-              <div key={item.step} className="text-center">
-                <div className="w-10 h-10 rounded-full bg-[#F2CD69] text-[#17294A] font-bold text-lg flex items-center justify-center mx-auto mb-4">
-                  {item.step}
+                {tier.highlight && (
+                  <div
+                    className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#F2CD69] text-[#17294A] px-6 py-1 rounded-full font-bold text-[10px] uppercase tracking-widest whitespace-nowrap"
+                    style={{ fontFamily: "Poppins, sans-serif" }}
+                  >
+                    Most Popular
+                  </div>
+                )}
+                <div className="mb-8">
+                  <span
+                    className={`text-xs font-bold uppercase tracking-widest ${
+                      tier.enterprise
+                        ? "text-[#17294A]/70"
+                        : tier.highlight
+                        ? "text-[#F2CD69]"
+                        : "text-[#44474e]"
+                    }`}
+                    style={{ fontFamily: "Poppins, sans-serif" }}
+                  >
+                    {tier.label}
+                  </span>
+                  <h3
+                    className={`text-3xl mt-2 ${
+                      tier.enterprise ? "text-[#17294A]" : "text-[#17294A]"
+                    }`}
+                    style={{ fontFamily: "Cinzel, serif", fontWeight: 700 }}
+                  >
+                    {tier.name}
+                  </h3>
                 </div>
-                <h3
-                  className="text-lg font-semibold text-[#17294A] mb-2"
-                  style={{ fontFamily: "'EB Garamond', serif" }}
+                <div className="mb-8">
+                  <span
+                    className={`text-5xl ${
+                      tier.enterprise ? "text-[#17294A]" : "text-[#17294A]"
+                    }`}
+                    style={{ fontFamily: "Cinzel, serif", fontWeight: 700 }}
+                  >
+                    {tier.price}
+                  </span>
+                  <span
+                    className={`${
+                      tier.enterprise
+                        ? "text-[#17294A]/70"
+                        : "text-[#44474e]"
+                    }`}
+                    style={{ fontFamily: "EB Garamond, serif" }}
+                  >
+                    {tier.period}
+                  </span>
+                </div>
+                <ul className="space-y-4 mb-12 flex-grow">
+                  {tier.features.map((f) => (
+                    <li
+                      key={f.text}
+                      className={`flex items-start gap-3 ${
+                        tier.enterprise
+                          ? f.bold
+                            ? "text-[#17294A]"
+                            : "text-[#17294A]/80"
+                          : f.bold
+                          ? "text-[#17294A]"
+                          : "text-[#44474e]"
+                      }`}
+                    >
+                      <span
+                        className={`material-symbols-outlined text-lg ${
+                          tier.enterprise
+                            ? "text-[#17294A]"
+                            : "text-[#F2CD69]"
+                        }`}
+                        style={{
+                          fontVariationSettings: f.bold
+                            ? "'FILL' 1, 'wght' 300"
+                            : "'FILL' 0, 'wght' 300",
+                        }}
+                      >
+                        {f.icon}
+                      </span>
+                      <span
+                        className={f.bold ? "font-bold" : ""}
+                        style={{ fontFamily: "EB Garamond, serif" }}
+                      >
+                        {f.text}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+                <LocalizedClientLink
+                  href={getStartedHref}
+                  className={`w-full py-4 rounded-lg font-bold uppercase tracking-widest text-sm text-center block transition-colors ${tier.btnClass}`}
+                  style={{ fontFamily: "Poppins, sans-serif" }}
                 >
-                  {item.title}
-                </h3>
-                <p className="text-sm text-[#616161]">{item.desc}</p>
+                  Get Started
+                </LocalizedClientLink>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* FAQs */}
-      <section className="container max-w-3xl mx-auto py-16 px-4 lg:px-8">
-        <h2
-          className="text-2xl font-semibold text-[#17294A] text-center mb-8"
-          style={{ fontFamily: "'EB Garamond', serif" }}
-        >
-          Frequently Asked Questions
-        </h2>
-        <div className="space-y-3">
-          {faqs.map((faq, i) => (
-            <div key={i} className="border border-gray-200 rounded-lg">
-              <button
-                onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                className="w-full flex justify-between items-center px-5 py-4 text-left"
+      {/* Testimonials */}
+      <section className="py-24 px-8 bg-[#f4f4f0]">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-12">
+            <span
+              className="text-xs font-bold uppercase tracking-widest text-[#F2CD69] block mb-2"
+              style={{ fontFamily: "Poppins, sans-serif" }}
+            >
+              Voices of Excellence
+            </span>
+            <h2
+              className="text-4xl text-[#17294A]"
+              style={{ fontFamily: "Cinzel, serif", fontWeight: 700 }}
+            >
+              Community Testimonials
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {testimonials.map((t) => (
+              <div
+                key={t.name}
+                className="bg-white p-8 rounded-xl shadow-sm border border-[#c5c6cf]/20 hover:shadow-md transition-shadow"
               >
-                <span className="text-sm font-medium text-[#17294A]">
-                  {faq.q}
-                </span>
-                <svg
-                  className={`w-4 h-4 text-[#616161] transition-transform flex-shrink-0 ml-4 ${
-                    openFaq === i ? "rotate-180" : ""
-                  }`}
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
-              </button>
-              {openFaq === i && (
-                <div className="px-5 pb-4">
-                  <p className="text-sm text-[#616161]">{faq.a}</p>
+                <div className="flex text-[#F2CD69] mb-6">
+                  {[...Array(5)].map((_, i) => (
+                    <span
+                      key={i}
+                      className="material-symbols-outlined"
+                      style={{
+                        fontVariationSettings: "'FILL' 1, 'wght' 300",
+                      }}
+                    >
+                      star
+                    </span>
+                  ))}
                 </div>
-              )}
-            </div>
-          ))}
+                <p
+                  className="italic text-xl text-[#17294A] mb-8 leading-relaxed"
+                  style={{ fontFamily: "EB Garamond, serif" }}
+                >
+                  &ldquo;{t.quote}&rdquo;
+                </p>
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-[#dbdad6] border border-[#F2CD69]/30 flex items-center justify-center">
+                    <span
+                      className="material-symbols-outlined text-[#17294A]/40"
+                      style={{
+                        fontVariationSettings: "'FILL' 1, 'wght' 300",
+                      }}
+                    >
+                      person
+                    </span>
+                  </div>
+                  <div>
+                    <p
+                      className="font-bold text-[#17294A] text-xs uppercase tracking-wider"
+                      style={{ fontFamily: "Poppins, sans-serif" }}
+                    >
+                      {t.name}
+                    </p>
+                    <p
+                      className="text-[#44474e] text-sm italic"
+                      style={{ fontFamily: "EB Garamond, serif" }}
+                    >
+                      {t.business}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Feature Comparison */}
+      <section className="py-20 px-8 bg-[#FAF9F5]">
+        <div className="max-w-6xl mx-auto">
+          <h2
+            className="text-4xl text-center text-[#17294A] mb-16"
+            style={{ fontFamily: "Cinzel, serif", fontWeight: 700 }}
+          >
+            Feature Comparison
+          </h2>
+          <div className="overflow-x-auto rounded-xl border border-[#c5c6cf]/30 bg-white">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-[#e9e8e4]">
+                  <th
+                    className="p-6 text-lg text-[#17294A] border-b border-[#c5c6cf]/30"
+                    style={{ fontFamily: "Cinzel, serif" }}
+                  >
+                    Feature
+                  </th>
+                  <th
+                    className="p-6 text-lg text-[#17294A] border-b border-[#c5c6cf]/30 text-center"
+                    style={{ fontFamily: "Cinzel, serif" }}
+                  >
+                    Verified
+                  </th>
+                  <th
+                    className="p-6 text-lg text-[#17294A] border-b border-[#c5c6cf]/30 text-center bg-[#e3e2df]/50"
+                    style={{ fontFamily: "Cinzel, serif" }}
+                  >
+                    Featured
+                  </th>
+                  <th
+                    className="p-6 text-lg text-[#17294A] border-b border-[#c5c6cf]/30 text-center"
+                    style={{ fontFamily: "Cinzel, serif" }}
+                  >
+                    Enterprise
+                  </th>
+                </tr>
+              </thead>
+              <tbody
+                style={{ fontFamily: "EB Garamond, serif" }}
+                className="text-[#44474e]"
+              >
+                {comparisonRows.map((row) => (
+                  <tr key={row.feature}>
+                    <td className="p-6 border-b border-[#c5c6cf]/20 font-bold text-[#17294A]">
+                      {row.feature}
+                    </td>
+                    <td className="p-6 border-b border-[#c5c6cf]/20 text-center">
+                      {row.verified}
+                    </td>
+                    <td className="p-6 border-b border-[#c5c6cf]/20 text-center bg-[#e3e2df]/50">
+                      {row.featured}
+                    </td>
+                    <td className="p-6 border-b border-[#c5c6cf]/20 text-center">
+                      {row.enterprise}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      {/* Gold divider */}
+      <div className="max-w-4xl mx-auto py-12 px-8">
+        <div className="h-[1px] bg-[#F2CD69] w-full opacity-50" />
+      </div>
+
+      {/* FAQs */}
+      <section className="py-24 px-8 bg-[#FAF9F5]">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-16">
+            <span
+              className="text-xs font-bold uppercase tracking-widest text-[#F2CD69] block mb-2"
+              style={{ fontFamily: "Poppins, sans-serif" }}
+            >
+              Clarity in Mission
+            </span>
+            <h2
+              className="text-4xl text-[#17294A]"
+              style={{ fontFamily: "Cinzel, serif", fontWeight: 700 }}
+            >
+              Frequently Asked Questions
+            </h2>
+          </div>
+          <div className="space-y-4">
+            {faqs.map((group) => (
+              <div key={group.group} className="mb-8">
+                <h3
+                  className="text-xs font-bold uppercase tracking-widest text-[#44474e] mb-6 pb-2 border-b border-[#c5c6cf]/30"
+                  style={{ fontFamily: "Poppins, sans-serif" }}
+                >
+                  {group.group}
+                </h3>
+                <div className="space-y-2">
+                  {group.items.map((faq) => (
+                    <details
+                      key={faq.q}
+                      className="group bg-white border border-[#c5c6cf]/20 rounded-xl overflow-hidden transition-all duration-300 open:shadow-md"
+                    >
+                      <summary className="flex items-center justify-between p-6 cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+                        <span
+                          className="text-lg text-[#17294A]"
+                          style={{ fontFamily: "Cinzel, serif" }}
+                        >
+                          {faq.q}
+                        </span>
+                        <span className="material-symbols-outlined text-[#F2CD69] transition-transform duration-300 group-open:rotate-180">
+                          expand_more
+                        </span>
+                      </summary>
+                      <div
+                        className="px-6 pb-6 text-[#44474e] leading-relaxed"
+                        style={{ fontFamily: "EB Garamond, serif" }}
+                      >
+                        {faq.a}
+                      </div>
+                    </details>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* Bottom CTA */}
-      <section className="bg-[#17294A] text-[#FAF9F5] py-16 px-4 lg:px-8">
-        <div className="container max-w-2xl mx-auto text-center">
+      <footer className="py-16 px-8 bg-[#17294A]">
+        <div className="max-w-2xl mx-auto text-center">
           <h2
-            className="text-2xl lg:text-3xl font-semibold mb-4"
-            style={{ fontFamily: "'EB Garamond', serif" }}
+            className="text-3xl lg:text-4xl text-[#FAF9F5] mb-4"
+            style={{ fontFamily: "Cinzel, serif", fontWeight: 700 }}
           >
             Ready to Join?
           </h2>
-          <p className="opacity-80 mb-6">
+          <p
+            className="text-[#FAF9F5]/80 mb-8 text-lg"
+            style={{ fontFamily: "EB Garamond, serif" }}
+          >
             Plans start at just $50/year. Join 550+ Catholic-owned businesses
             already on the platform.
           </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <LocalizedClientLink
-              href={getStartedHref}
-              className="inline-block bg-[#F2CD69] text-[#17294A] py-3 px-8 rounded-lg text-sm font-semibold uppercase tracking-wide hover:bg-[#DECF8F] transition-colors"
-            >
-              Get Started
-            </LocalizedClientLink>
-          </div>
+          <LocalizedClientLink
+            href={getStartedHref}
+            className="inline-block bg-[#F2CD69] text-[#17294A] py-4 px-10 rounded-lg font-bold text-sm uppercase tracking-widest hover:bg-[#DECF8F] transition-colors shadow-lg shadow-[#F2CD69]/20"
+            style={{ fontFamily: "Poppins, sans-serif" }}
+          >
+            Get Started
+          </LocalizedClientLink>
         </div>
-      </section>
+      </footer>
     </div>
   )
 }
