@@ -19,6 +19,9 @@ import { NetworkingEventDetail } from "./Networking/NetworkingEventDetail"
 import { BarterListingCard } from "./Barter/BarterListingCard"
 import { BarterSearch } from "./Barter/BarterSearch"
 import { BarterDetail } from "./Barter/BarterDetail"
+import { DirectoryPreview } from "./DirectoryPreview/DirectoryPreview"
+import { UpcomingEvents } from "./UpcomingEvents/UpcomingEvents"
+import { FoundersVision } from "./FoundersVision/FoundersVision"
 
 export {
   Hero,
@@ -42,4 +45,7 @@ export {
   BarterListingCard,
   BarterSearch,
   BarterDetail,
+  DirectoryPreview,
+  UpcomingEvents,
+  FoundersVision,
 }

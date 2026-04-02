@@ -107,7 +107,7 @@ async function AllCategories({
   }))
 
   return (
-    <main className="container">
+    <main>
       <Script
         id="ld-breadcrumbs-categories"
         type="application/ld+json"
@@ -119,7 +119,7 @@ async function AllCategories({
               {
                 "@type": "ListItem",
                 position: 1,
-                name: "All Products",
+                name: "The Marketplace",
                 item: `${baseUrl}/${locale}/categories`,
               },
             ],
@@ -137,22 +137,32 @@ async function AllCategories({
           }),
         }}
       />
-      <div className="hidden md:block mb-2">
-        <Breadcrumbs items={breadcrumbsItems} />
+      {/* Hero */}
+      <div className="bg-[rgba(var(--neutral-25))] py-10 lg:py-14 text-center border-b border-[rgba(var(--neutral-100))]">
+        <h1 className="font-serif text-4xl lg:text-5xl font-bold text-primary mb-3">
+          The Marketplace
+        </h1>
+        <p className="text-[15px] text-secondary max-w-md mx-auto">
+          Search for sacred artifacts, rosaries, or books.
+        </p>
       </div>
 
-      <h1 className="heading-xl uppercase">All Products</h1>
+      <div className="max-w-7xl mx-auto px-4 lg:px-8 py-8">
+        <div className="hidden md:block mb-2">
+          <Breadcrumbs items={breadcrumbsItems} />
+        </div>
 
-      <Suspense fallback={<ProductListingSkeleton />}>
-        {bot || !ALGOLIA_ID || !ALGOLIA_SEARCH_KEY ? (
-          <ProductListing showSidebar locale={locale} />
-        ) : (
-          <AlgoliaProductsListing
-            locale={locale}
-            currency_code={currency_code}
-          />
-        )}
-      </Suspense>
+        <Suspense fallback={<ProductListingSkeleton />}>
+          {bot || !ALGOLIA_ID || !ALGOLIA_SEARCH_KEY ? (
+            <ProductListing showSidebar locale={locale} />
+          ) : (
+            <AlgoliaProductsListing
+              locale={locale}
+              currency_code={currency_code}
+            />
+          )}
+        </Suspense>
+      </div>
     </main>
   )
 }

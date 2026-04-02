@@ -5,7 +5,15 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Typography */
+/* Base layer — subtle damask/cross pattern background */
+@layer base {
+  body {
+    background-color: #faf9f5;
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M29 3v10h2V3h-2zm0 44v10h2V47h-2zM3 29h10v2H3v-2zm44 0h10v2H47v-2z' fill='%23d6d0c4' fill-opacity='0.18' fill-rule='evenodd'/%3E%3Ccircle cx='30' cy='30' r='1.5' fill='%23d6d0c4' fill-opacity='0.1'/%3E%3C/svg%3E");
+  }
+}
+
+/* Typography — body text */
 .text-xl {
   @apply font-light tracking-normal;
 }
@@ -19,46 +27,50 @@
   @apply text-[12px] font-light tracking-normal;
 }
 
+/* Labels */
 .label-sm {
-  @apply text-[12px] leading-[20px] font-normal tracking-normal;
+  @apply text-[12px] leading-[20px] font-normal tracking-[0.04em] uppercase;
 }
 .label-md {
-  @apply text-[14px] leading-[22px] font-normal tracking-normal;
+  @apply text-[14px] leading-[22px] font-normal tracking-[0.02em];
 }
 .label-lg {
-  @apply text-[16px] leading-[24px] font-semibold tracking-normal;
+  @apply text-[16px] leading-[24px] font-semibold tracking-[0.01em];
 }
 .label-xl {
   @apply text-[20px] leading-[28px] font-semibold tracking-normal;
 }
 
+/* Headings — serif font for the Catholic Owned aesthetic */
 .heading-xs {
-  @apply text-[14px] leading-[22px] font-medium tracking-normal;
+  @apply font-serif text-[14px] leading-[22px] font-medium tracking-normal;
 }
 .heading-sm {
-  @apply text-[16px] leading-[24px] font-medium tracking-normal;
+  @apply font-serif text-[16px] leading-[24px] font-medium tracking-normal;
 }
 .heading-md {
-  @apply text-[24px] leading-[32px] font-medium tracking-normal max-md:text-[20px] max-md:leading-[28px];
+  @apply font-serif text-[24px] leading-[32px] font-semibold tracking-normal max-md:text-[20px] max-md:leading-[28px];
 }
 .heading-lg {
-  @apply text-[32px] leading-[40px] font-medium tracking-normal max-md:text-[24px] max-md:leading-[32px];
+  @apply font-serif text-[32px] leading-[40px] font-semibold tracking-normal max-md:text-[24px] max-md:leading-[32px];
 }
 .heading-xl {
-  @apply text-[40px] leading-[48px] font-medium tracking-normal max-md:text-[32px] max-md:leading-[40px];
+  @apply font-serif text-[40px] leading-[48px] font-semibold tracking-normal max-md:text-[32px] max-md:leading-[40px];
 }
 
+/* Display headings — large serif for hero sections */
 .display-sm {
-  @apply text-[56px] leading-[64px] font-medium tracking-normal max-md:text-[32px] max-md:leading-[40px];
+  @apply font-serif text-[56px] leading-[64px] font-bold tracking-[-0.01em] max-md:text-[32px] max-md:leading-[40px];
 }
 .display-md {
-  @apply text-[64px] leading-[72px] font-medium tracking-normal max-md:text-[40px] max-md:leading-[48px];
+  @apply font-serif text-[64px] leading-[72px] font-bold tracking-[-0.01em] max-md:text-[40px] max-md:leading-[48px];
 }
+
 .container {
   @apply px-4 md:px-5 max-w-full w-full lg:py-8 py-4 lg:px-8;
 }
 
-/* Atoms components */
+/* Button styles — navy primary with gold accents */
 
 .button-icon {
   @apply bg-primary hover:bg-action-secondary-hover active:bg-action-secondary-pressed disabled:bg-primary;
@@ -89,6 +101,17 @@ button:disabled svg path {
   @apply fill-tertiary;
 }
 
+/* Gold accent button */
+.button-gold {
+  background-color: #F2CD69;
+}
+.button-gold:hover {
+  background-color: #e6c05a;
+}
+.button-gold:active {
+  background-color: #d4af4c;
+}
+
 .checkbox-wrapper {
   @apply rounded-xs bg-component-secondary w-[20px] h-[20px] border border-secondary bg-component-secondary cursor-pointer;
 }
@@ -112,13 +135,11 @@ button:disabled svg path {
 .multi-gradient {
   background: conic-gradient(
     from 180deg at 50% 50%,
-    #00438f 0deg,
-    #4da0ff 50.4deg,
-    #17a34a 108deg,
-    #ffbf38 165.6deg,
-    #c56a09 217.8deg,
-    #d92d20 282.6deg,
-    #00438f 360deg
+    #001435 0deg,
+    rgba(var(--brand-600)) 90deg,
+    #F2CD69 180deg,
+    rgba(var(--brand-700)) 270deg,
+    #001435 360deg
   );
 }
 .no-scrollbar::-webkit-scrollbar {
@@ -150,4 +171,10 @@ button:disabled svg path {
 }
 .no-arrows-number-input {
   -moz-appearance: textfield;
+}
+
+/* Gold divider line */
+.gold-divider {
+  height: 2px;
+  background: linear-gradient(90deg, #F2CD69, transparent);
 }

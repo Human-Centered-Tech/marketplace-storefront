@@ -1,22 +1,23 @@
 const links = {
-  customerServices: [
-    { label: 'FAQs', path: '#' },
-    { label: 'Track Order', path: '#' },
-    { label: 'Returns', path: '#' },
-    { label: 'Shipping', path: '#' },
-    { label: 'Business Directory', path: '/directory' },
+  marketplace: [
+    { label: "Our Story", path: "#" },
+    { label: "Vendor Portal", path: "#" },
+    { label: "Marketplace", path: "/categories" },
   ],
-  about: [
-    { label: 'About us', path: '#' },
-    { label: 'Our Mission', path: '#' },
-    { label: 'Privacy Policy', path: '#' },
-    { label: 'Terms & Conditions', path: '#' },
+  discover: [
+    { label: "Shop", path: "/categories" },
+    { label: "Directory", path: "/directory" },
+    { label: "Events", path: "/networking" },
+    { label: "Barter", path: "/barter" },
+  ],
+  legal: [
+    { label: "Privacy Policy", path: "#" },
+    { label: "Terms of Service", path: "#" },
   ],
   connect: [
-    { label: 'Facebook', path: 'https://facebook.com' },
-    { label: 'Instagram', path: 'https://instagram.com' },
-    { label: 'LinkedIn', path: 'https://linkedin.com' },
+    { label: "Contact Us", path: "#" },
+    { label: "Events", path: "/networking" },
   ],
-};
+}
 
-export default links;
+export default links

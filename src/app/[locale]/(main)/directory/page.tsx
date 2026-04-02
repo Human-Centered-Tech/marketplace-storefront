@@ -6,9 +6,9 @@ import {
 import { DirectorySearch } from "@/components/sections/DirectoryListing/DirectorySearch"
 
 export const metadata: Metadata = {
-  title: "Business Directory",
+  title: "Trusted Partners - Business Directory",
   description:
-    "Browse Catholic-owned businesses in our directory. Find faithful entrepreneurs in your community.",
+    "Strengthen the domestic church through the New Catholic Economy. Browse Catholic-owned businesses in our directory.",
 }
 
 export default async function DirectoryPage() {
@@ -18,19 +18,26 @@ export default async function DirectoryPage() {
   ])
 
   return (
-    <main className="container px-4 lg:px-8 py-8">
-      <div className="mb-8">
-        <h1 className="heading-lg text-primary mb-2">Business Directory</h1>
-        <p className="text-secondary">
-          Discover and support Catholic-owned businesses in your community.
-        </p>
+    <main>
+      {/* Hero banner */}
+      <div className="bg-navy-dark py-12 lg:py-16 text-center">
+        <div className="max-w-3xl mx-auto px-4">
+          <h1 className="font-serif text-4xl lg:text-5xl font-bold text-white mb-4">
+            Trusted Partners
+          </h1>
+          <p className="text-[16px] text-white/70 italic">
+            Strengthen the domestic church through the new Catholic Economy®
+          </p>
+        </div>
       </div>
 
-      <DirectorySearch
-        initialListings={listingsResult.listings}
-        initialCount={listingsResult.count}
-        categories={categories}
-      />
+      <div className="max-w-7xl mx-auto px-4 lg:px-8 py-8 lg:py-12">
+        <DirectorySearch
+          initialListings={listingsResult.listings}
+          initialCount={listingsResult.count}
+          categories={categories}
+        />
+      </div>
     </main>
   )
 }
