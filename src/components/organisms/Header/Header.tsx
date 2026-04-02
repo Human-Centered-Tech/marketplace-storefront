@@ -1,8 +1,9 @@
 import Image from "next/image"
 import { HttpTypes } from "@medusajs/types"
 
-import { CartDropdown, MobileNavbar, Navbar } from "@/components/cells"
-import { HeartIcon, MessageIcon } from "@/icons"
+import { CartDropdown, MobileNavbar } from "@/components/cells"
+import { HeartIcon } from "@/icons"
+import { SearchBar } from "@/components/molecules/SearchBar/SearchBar"
 import { listCategories } from "@/lib/data/categories"
 import { PARENT_CATEGORIES } from "@/const"
 import { UserDropdown } from "@/components/cells/UserDropdown/UserDropdown"
@@ -14,17 +15,15 @@ import CountrySelector from "@/components/molecules/CountrySelector/CountrySelec
 import { listRegions } from "@/lib/data/regions"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 import { MessageButton } from "@/components/molecules/MessageButton/MessageButton"
-import { SellNowButton } from "@/components/cells/SellNowButton/SellNowButton"
 
 export const Header = async () => {
+  const regions = await listRegions()
   const user = await retrieveCustomer()
   let wishlist: Wishlist[] = []
   if (user) {
     const response = await getUserWishlists()
     wishlist = response.wishlists
   }
-
-  const regions = await listRegions()
 
   const wishlistCount = wishlist?.[0]?.products.length || 0
 
@@ -36,32 +35,58 @@ export const Header = async () => {
   }
 
   return (
-    <header>
-      <div className="flex py-2 lg:px-8 px-4">
-        <div className="flex items-center lg:w-1/3">
+    <header className="border-b border-[rgba(var(--neutral-100))] bg-[rgba(var(--neutral-0),0.95)] backdrop-blur-sm sticky top-0 z-50">
+      <div className="flex items-center py-3 lg:px-8 px-4">
+        {/* Left — Logo */}
+        <div className="flex items-center lg:w-1/4">
           <MobileNavbar
             parentCategories={parentCategories}
             childrenCategories={categories}
           />
-          <div className="hidden lg:block">
-            <SellNowButton />
-          </div>
-        </div>
-        <div className="flex lg:justify-center lg:w-1/3 items-center pl-4 lg:pl-0">
-          <LocalizedClientLink href="/" className="text-2xl font-bold">
+          <LocalizedClientLink href="/" className="flex items-center">
             <Image
               src="/Logo.png"
-              width={160}
-              height={90}
+              width={140}
+              height={70}
               alt="Catholic Owned"
               priority
             />
           </LocalizedClientLink>
         </div>
-        <div className="flex items-center justify-end gap-2 lg:gap-4 w-full lg:w-1/3 py-2">
+
+        {/* Center — Navigation */}
+        <nav className="hidden lg:flex items-center justify-center gap-8 flex-1">
+          <LocalizedClientLink
+            href="/categories"
+            className="text-[13px] font-medium uppercase tracking-[0.1em] text-primary hover:text-action transition-colors"
+          >
+            Shop
+          </LocalizedClientLink>
+          <LocalizedClientLink
+            href="/directory"
+            className="text-[13px] font-medium uppercase tracking-[0.1em] text-primary hover:text-action transition-colors"
+          >
+            Directory
+          </LocalizedClientLink>
+          <LocalizedClientLink
+            href="/networking"
+            className="text-[13px] font-medium uppercase tracking-[0.1em] text-primary hover:text-action transition-colors"
+          >
+            Events
+          </LocalizedClientLink>
+          <LocalizedClientLink
+            href="/barter"
+            className="text-[13px] font-medium uppercase tracking-[0.1em] text-primary hover:text-action transition-colors"
+          >
+            About
+          </LocalizedClientLink>
+        </nav>
+
+        {/* Right — Actions */}
+        <div className="flex items-center justify-end gap-3 lg:gap-4 lg:w-1/4">
+          <SearchBar variant="header" placeholder="Search curated goods..." />
           <CountrySelector regions={regions} />
-          {user && <MessageButton />}
-          <UserDropdown user={user} />
+          <CartDropdown />
           {user && (
             <LocalizedClientLink href="/user/wishlist" className="relative">
               <HeartIcon size={20} />
@@ -72,11 +97,18 @@ export const Header = async () => {
               )}
             </LocalizedClientLink>
           )}
-
-          <CartDropdown />
+          {user && <MessageButton />}
+          <UserDropdown user={user} />
+          {!user && (
+            <LocalizedClientLink
+              href="/user/register"
+              className="hidden lg:inline-flex items-center px-5 py-2.5 bg-navy text-white text-[12px] font-semibold uppercase tracking-[0.1em] rounded-xs hover:bg-navy-dark transition-colors"
+            >
+              Join the Economy
+            </LocalizedClientLink>
+          )}
         </div>
       </div>
-      <Navbar categories={categories} />
     </header>
   )
 }

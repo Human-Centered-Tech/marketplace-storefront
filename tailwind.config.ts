@@ -9,11 +9,20 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        serif: ["var(--font-serif)", "Georgia", "Cambria", "serif"],
+        sans: ["var(--font-sans)", "system-ui", "sans-serif"],
+      },
       backgroundColor: {
         primary: "rgba(var(--bg-primary))",
         secondary: "rgba(var(--bg-secondary))",
         tertiary: "rgba(var(--bg-tertiary))",
         disabled: "rgba(var(--bg-disabled))",
+        navy: "rgba(var(--brand-800))",
+        "navy-dark": "rgba(var(--brand-900))",
+        gold: "rgba(var(--gold-400))",
+        "gold-light": "rgba(var(--gold-50))",
+        cream: "rgba(var(--neutral-25))",
         component: {
           DEFAULT: "rgba(var(--bg-component-primary))",
           hover: "rgba(var(--bg-component-primary-hover))",
@@ -73,6 +82,17 @@ export default {
         secondary: "rgba(var(--content-secondary))",
         tertiary: "rgba(var(--content-tertiary))",
         disabled: "rgba(var(--content-disabled))",
+        navy: {
+          DEFAULT: "rgba(var(--brand-800))",
+          dark: "rgba(var(--brand-900))",
+          light: "rgba(var(--brand-600))",
+        },
+        gold: {
+          DEFAULT: "rgba(var(--gold-400))",
+          dark: "rgba(var(--gold-600))",
+          light: "rgba(var(--gold-200))",
+        },
+        cream: "rgba(var(--neutral-25))",
         action: {
           DEFAULT: "rgba(var(--content-action-primary))",
           hover: "rgba(var(--content-action-primary-hover))",
@@ -109,6 +129,7 @@ export default {
         DEFAULT: "rgba(var(--border-primary))",
         secondary: "rgba(var(--border-secondary))",
         action: "rgba(var(--border-action))",
+        gold: "rgba(var(--gold-400))",
         negative: {
           DEFAULT: "rgba(var(--border-negative-primary))",
           secondary: "rgba(var(--border-negative-secondary))",

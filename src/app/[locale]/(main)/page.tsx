@@ -1,10 +1,12 @@
 import {
   BannerSection,
-  BlogSection,
   Hero,
   HomeCategories,
   HomeProductSection,
   ShopByStyleSection,
+  DirectoryPreview,
+  UpcomingEvents,
+  FoundersVision,
 } from "@/components/sections"
 
 import type { Metadata } from "next"
@@ -123,7 +125,7 @@ export default async function Home({
     "Catholic Owned"
 
   return (
-    <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start text-primary">
+    <main className="flex flex-col items-center text-[#1b1c1a]">
       <link
         rel="preload"
         as="image"
@@ -160,24 +162,34 @@ export default async function Home({
         }}
       />
 
+      {/* 1. Hero Section */}
       <Hero
-        image="/images/hero/Image.jpg"
-        heading="Support Catholic-owned businesses"
-        paragraph="Shop the marketplace or discover faithful entrepreneurs in your community through our business directory."
+        image="/images/hero/cathedral.jpg"
+        heading="Building the New Catholic Economy"
+        paragraph="Discover and support faithful Catholic businesses. Shop artisan goods, browse the professional directory, or connect at networking events."
         buttons={[
-          { label: "Shop now", path: "/categories" },
-          { label: "Browse directory", path: "/directory" },
+          { label: "Shop Marketplace", path: "/categories" },
+          { label: "Join Directory", path: "/directory" },
         ]}
       />
-      <div className="px-4 lg:px-8 w-full">
-        <HomeProductSection heading="trending listings" locale={locale} home />
-      </div>
-      <div className="px-4 lg:px-8 w-full">
-        <HomeCategories heading="SHOP BY CATEGORY" />
-      </div>
+
+      {/* 3. Featured Products */}
+      <HomeProductSection heading="Featured Products" locale={locale} home />
+
+      {/* 4. From the Directory */}
+      <DirectoryPreview />
+
+      {/* 5. Upcoming Networking Events */}
+      <UpcomingEvents />
+
+      {/* 6. Community Trade & Barter */}
       <BannerSection />
+
+      {/* 7. How It Works */}
       <ShopByStyleSection />
-      <BlogSection />
+
+      {/* 8. Founders' Vision */}
+      <FoundersVision />
     </main>
   )
 }

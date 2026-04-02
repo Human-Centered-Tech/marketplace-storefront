@@ -3,6 +3,7 @@ import { Suspense } from "react"
 
 import { Breadcrumbs } from "@/components/atoms"
 import { AlgoliaProductsListing, ProductListing } from "@/components/sections"
+import { SearchBar } from "@/components/molecules/SearchBar/SearchBar"
 import { getRegion } from "@/lib/data/regions"
 import isBot from "@/lib/helpers/isBot"
 import { headers } from "next/headers"
@@ -70,10 +71,13 @@ const ALGOLIA_SEARCH_KEY = process.env.NEXT_PUBLIC_ALGOLIA_SEARCH_KEY
 
 async function AllCategories({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>
+  searchParams: Promise<{ q?: string }>
 }) {
   const { locale } = await params
+  const { q } = await searchParams
 
   const ua = (await headers()).get("user-agent") || ""
   const bot = isBot(ua)
@@ -107,7 +111,7 @@ async function AllCategories({
   }))
 
   return (
-    <main className="container">
+    <main>
       <Script
         id="ld-breadcrumbs-categories"
         type="application/ld+json"
@@ -119,7 +123,7 @@ async function AllCategories({
               {
                 "@type": "ListItem",
                 position: 1,
-                name: "All Products",
+                name: "The Marketplace",
                 item: `${baseUrl}/${locale}/categories`,
               },
             ],
@@ -137,22 +141,38 @@ async function AllCategories({
           }),
         }}
       />
-      <div className="hidden md:block mb-2">
-        <Breadcrumbs items={breadcrumbsItems} />
+      {/* Hero Search Section */}
+      <section
+        className="relative w-full py-14 lg:py-20 flex flex-col items-center justify-center border-b border-[#c5c6cf]/10"
+        style={{
+          backgroundColor: "#f4f4f0",
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0c1.3 5.4 4 10.3 8 14.3s8.9 6.7 14.3 8c-5.4 1.3-10.3 4-14.3 8s-6.7 8.9-8 14.3c-1.3-5.4-4-10.3-8-14.3s-8.9-6.7-14.3-8c5.4-1.3 10.3-4 14.3-8s6.7-8.9 8-14.3z' fill='%2317294a' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E")`,
+        }}
+      >
+        <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl tracking-[0.15em] uppercase text-[#001435] font-bold mb-6 text-center">
+          The Marketplace
+        </h1>
+        <SearchBar variant="hero" />
+      </section>
+
+      <div className="w-full" style={{ backgroundColor: "#faf9f5" }}>
+        <div className="max-w-screen-2xl mx-auto px-4 lg:px-8 py-12">
+          <div className="hidden md:block mb-2">
+            <Breadcrumbs items={breadcrumbsItems} />
+          </div>
+
+          <Suspense fallback={<ProductListingSkeleton />}>
+            {bot || !ALGOLIA_ID || !ALGOLIA_SEARCH_KEY ? (
+              <ProductListing showSidebar locale={locale} searchQuery={q} />
+            ) : (
+              <AlgoliaProductsListing
+                locale={locale}
+                currency_code={currency_code}
+              />
+            )}
+          </Suspense>
+        </div>
       </div>
-
-      <h1 className="heading-xl uppercase">All Products</h1>
-
-      <Suspense fallback={<ProductListingSkeleton />}>
-        {bot || !ALGOLIA_ID || !ALGOLIA_SEARCH_KEY ? (
-          <ProductListing showSidebar locale={locale} />
-        ) : (
-          <AlgoliaProductsListing
-            locale={locale}
-            currency_code={currency_code}
-          />
-        )}
-      </Suspense>
     </main>
   )
 }

@@ -13,13 +13,15 @@ export const ProductListing = async ({
   collection_id,
   seller_id,
   showSidebar = false,
-  locale = process.env.NEXT_PUBLIC_DEFAULT_REGION || "pl",
+  locale = process.env.NEXT_PUBLIC_DEFAULT_REGION || "us",
+  searchQuery,
 }: {
   category_id?: string
   collection_id?: string
   seller_id?: string
   showSidebar?: boolean
   locale?: string
+  searchQuery?: string
 }) => {
   const { response } = await listProductsWithSort({
     seller_id,
@@ -29,6 +31,7 @@ export const ProductListing = async ({
     sortBy: "created_at",
     queryParams: {
       limit: PRODUCT_LIMIT,
+      ...(searchQuery ? { q: searchQuery } : {}),
     },
   })
 
@@ -47,7 +50,7 @@ export const ProductListing = async ({
       <div className="grid grid-cols-1 md:grid-cols-4 mt-6 gap-4">
         {showSidebar && <ProductSidebar />}
         <section className={showSidebar ? "col-span-3" : "col-span-4"}>
-          <div className="flex flex-wrap gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             <ProductsList products={products} />
           </div>
           <ProductsPagination pages={pages} />

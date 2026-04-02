@@ -1,8 +1,6 @@
 import Image from "next/image"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 import { BlogPost } from "@/types/blog"
-import { ArrowRightIcon } from "@/icons"
-import tailwindConfig from "../../../../tailwind.config"
 import { cn } from "@/lib/utils"
 
 interface BlogCardProps {
@@ -15,31 +13,34 @@ export function BlogCard({ post, index }: BlogCardProps) {
     <LocalizedClientLink
       href={post.href}
       className={cn(
-        "group block border border-secondary p-1 rounded-sm relative",
+        "group block rounded-sm overflow-hidden bg-[rgba(var(--neutral-0))]",
         index > 0 && "hidden lg:block"
       )}
     >
-      <div className="relative overflow-hidden rounded-xs h-full">
+      <div className="relative overflow-hidden aspect-[4/3]">
         <Image
           loading="lazy"
           sizes="(min-width: 1024px) 33vw, 100vw"
           src={decodeURIComponent(post.image)}
           alt={post.title}
           width={467}
-          height={472}
-          className="object-cover max-h-[472px] h-full w-full"
+          height={350}
+          className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
         />
+        <span className="absolute top-3 left-3 bg-navy text-white text-[10px] font-semibold uppercase tracking-[0.12em] px-3 py-1 rounded-xs">
+          {post.category}
+        </span>
       </div>
-      <div className="p-4 bg-tertiary text-tertiary absolute bottom-0 left-1 lg:opacity-0 group-hover:opacity-100 transition-all duration-300 rounded-b-xs w-[calc(100%-8px)]">
-        <h3 className="heading-sm">{post.title}</h3>
-        <p className="text-md line-clamp-2">{post.excerpt}</p>
-        <div className="flex items-center gap-4 uppercase label-md mt-[26px]">
-          Read more{" "}
-          <ArrowRightIcon
-            size={20}
-            color={tailwindConfig.theme.extend.colors.tertiary}
-          />
-        </div>
+      <div className="p-5">
+        <h3 className="font-serif text-lg font-semibold text-primary mb-2 group-hover:text-action transition-colors">
+          {post.title}
+        </h3>
+        <p className="text-[13px] text-secondary leading-relaxed line-clamp-2 mb-3">
+          {post.excerpt}
+        </p>
+        <span className="text-[12px] font-semibold uppercase tracking-[0.1em] text-action">
+          Read More →
+        </span>
       </div>
     </LocalizedClientLink>
   )

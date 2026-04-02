@@ -55,37 +55,62 @@ const Form = () => {
   }
 
   return (
-    <main className="container">
-      <h1 className="heading-xl text-center uppercase my-6">
-        Log in to your account
-      </h1>
-      <form onSubmit={handleSubmit(submit)}>
-        <div className="w-96 max-w-full mx-auto space-y-4">
-          <LabeledInput
-            label="E-mail"
-            placeholder="Your e-mail address"
-            error={errors.email as FieldError}
-            {...register("email")}
-          />
-          <LabeledInput
-            label="Password"
-            placeholder="Your password"
-            type="password"
-            error={errors.password as FieldError}
-            {...register("password")}
-          />
-          {error && <p className="label-md text-negative">{error}</p>}
-          <Button className="w-full" disabled={isSubmitting}>
-            Log in
-          </Button>
-          <p className="text-center label-md">
-            Don&apos;t have an account yet?{" "}
-            <LocalizedClientLink href="/user/register" className="underline">
-              Sign up!
+    <main className="min-h-[70vh] flex items-center justify-center py-12 px-4">
+      <div className="w-full max-w-md">
+        <div className="bg-[rgba(var(--neutral-0))] rounded-sm border border-[rgba(var(--neutral-100))] p-8 lg:p-10 shadow-sm">
+          <div className="text-center mb-8">
+            <h1 className="font-serif text-3xl font-bold text-primary mb-2">
+              Welcome Back
+            </h1>
+            <p className="text-[14px] text-secondary italic">
+              Building the New Catholic Economy®
+            </p>
+          </div>
+          <form onSubmit={handleSubmit(submit)} className="space-y-5">
+            <LabeledInput
+              label="Email Address"
+              placeholder="your@example.com"
+              error={errors.email as FieldError}
+              {...register("email")}
+            />
+            <div>
+              <div className="flex justify-between items-center mb-1">
+                <label className="label-md font-medium text-primary">
+                  Password
+                </label>
+                <LocalizedClientLink
+                  href="/reset-password"
+                  className="text-[12px] text-action hover:underline"
+                >
+                  Forgot Password?
+                </LocalizedClientLink>
+              </div>
+              <LabeledInput
+                placeholder="••••••••"
+                type="password"
+                error={errors.password as FieldError}
+                {...register("password")}
+              />
+            </div>
+            {error && <p className="label-md text-negative">{error}</p>}
+            <Button
+              className="w-full bg-navy text-white hover:bg-navy-dark py-3 uppercase tracking-[0.1em] text-[13px] font-semibold"
+              disabled={isSubmitting}
+            >
+              Sign In to the Economy →
+            </Button>
+          </form>
+          <p className="text-center text-[14px] text-secondary mt-6">
+            Don&apos;t have an account?{" "}
+            <LocalizedClientLink
+              href="/user/register"
+              className="font-semibold text-primary hover:underline"
+            >
+              Sign Up
             </LocalizedClientLink>
           </p>
         </div>
-      </form>
+      </div>
     </main>
   )
 }

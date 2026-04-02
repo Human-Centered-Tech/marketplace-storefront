@@ -1,32 +1,45 @@
 :root {
-    /* Neutral colors are the foundation of the color system. Almost everything in UI design — text, fields, backgrounds, dividers — are usually gray. */
+    /* Neutral colors — warm cream/ivory tones matching the Catholic Owned aesthetic */
     --neutral-0: 255, 255, 255;
-    --neutral-25: 247, 247, 247;
-    --neutral-50: 238, 238, 238;
-    --neutral-100: 226, 226, 226;
-    --neutral-200: 198, 198, 198;
-    --neutral-300: 163, 163, 163;
-    --neutral-400: 115, 115, 115;
-    --neutral-500: 82, 82, 82;
-    --neutral-600: 64, 64, 64;
-    --neutral-700: 38, 38, 38;
-    --neutral-800: 27, 27, 27;
-    --neutral-900: 22, 22, 22;
-    --neutral-1000: 9, 9, 9;
+    --neutral-25: 250, 249, 245;   /* #faf9f5 — background/surface */
+    --neutral-50: 244, 244, 240;   /* #f4f4f0 — surface container low */
+    --neutral-100: 234, 229, 220;
+    --neutral-200: 214, 208, 196;
+    --neutral-300: 180, 173, 160;
+    --neutral-400: 140, 133, 120;
+    --neutral-500: 100, 93, 80;
+    --neutral-600: 75, 68, 55;
+    --neutral-700: 50, 44, 35;
+    --neutral-800: 27, 28, 26;     /* #1b1c1a — on-surface */
+    --neutral-900: 15, 12, 8;
+    --neutral-1000: 15, 12, 8;
 
-    /* Brand colors are used across all interactive elements such as buttons, links, inputs, etc. This color can define the overall feel and can elicit emotion. */
-    --brand-25: 247, 247, 247;
-    --brand-50: 238, 238, 238;
-    --brand-100: 226, 226, 226;
-    --brand-200: 198, 198, 198;
-    --brand-300: 163, 163, 163;
-    --brand-400: 115, 115, 115;
-    --brand-500: 82, 82, 82;
-    --brand-600: 64, 64, 64;
-    --brand-700: 27, 27, 27;
-    --brand-800: 22, 22, 22;
-    --brand-900: 9, 9, 9;
-    
+    /* Brand colors — deep navy blue, the primary brand color */
+    --brand-25: 240, 242, 248;
+    --brand-50: 225, 229, 240;
+    --brand-100: 195, 202, 224;
+    --brand-200: 150, 161, 198;
+    --brand-300: 105, 120, 170;
+    --brand-400: 70, 85, 140;
+    --brand-500: 45, 58, 110;
+    --brand-600: 32, 44, 92;
+    --brand-700: 23, 41, 74;       /* #17294a — primary container */
+    --brand-800: 0, 20, 53;        /* #001435 — primary navy */
+    --brand-900: 0, 20, 53;        /* #001435 — primary navy */
+
+    /* Gold accent — used for CTAs, highlights, and accent elements */
+    --gold-25: 255, 251, 240;
+    --gold-50: 255, 245, 220;
+    --gold-100: 255, 235, 185;
+    --gold-200: 245, 215, 140;
+    --gold-300: 242, 205, 105;     /* #F2CD69 — gold buttons/accents */
+    --gold-400: 242, 205, 105;     /* #F2CD69 — gold buttons/accents */
+    --gold-500: 190, 155, 50;
+    --gold-600: 117, 91, 0;        /* #755b00 — secondary gold */
+    --gold-700: 117, 91, 0;        /* #755b00 — secondary gold */
+    --gold-800: 95, 75, 15;
+    --gold-900: 80, 65, 12;
+
     /* Red colors are used across error states and in "destructive" actions. */
     --red-25: 254, 243, 242;
     --red-50: 254, 228, 226;
@@ -53,7 +66,7 @@
     --green-800: 20, 83, 45;
     --green-900: 5, 46, 22;
 
-    /* Yellow colors may indicate a problem or that an action is potentially destructive or "on-hold". */
+    /* Yellow/amber colors for warnings */
     --yellow-25: 255, 251, 237;
     --yellow-50: 255, 247, 212;
     --yellow-100: 255, 235, 168;
@@ -66,7 +79,7 @@
     --yellow-800: 126, 69, 16;
     --yellow-900: 68, 33, 6;
 
-    /* Blue colors are used to provide users with information about any actions or states of an application or system. */
+    /* Blue colors for informational states */
     --blue-25: 245, 250, 255;
     --blue-50: 235, 244, 255;
     --blue-100: 204, 228, 255;
@@ -78,12 +91,16 @@
     --blue-700: 12, 102, 204;
     --blue-800: 0, 67, 143;
     --blue-900: 0, 24, 51;
+
+    /* Outline color */
+    --outline: 117, 119, 127;      /* #75777f */
 }
 
 :root {
+    /* Background — cream/ivory base */
     --bg-primary: var(--neutral-0);
     --bg-secondary: var(--neutral-25);
-    --bg-tertiary: var(--neutral-1000);
+    --bg-tertiary: var(--brand-900);
 
     --bg-component-primary: var(--neutral-0);
     --bg-component-primary-hover: var(--neutral-25);
@@ -92,15 +109,16 @@
     --bg-component-secondary-hover: var(--neutral-50);
     --bg-component-secondary-pressed: var(--neutral-100);
 
-    --bg-action-primary: var(--brand-900);
-    --bg-action-primary-hover: var(--brand-800);
-    --bg-action-primary-pressed: var(--brand-700);
-    --bg-action-secondary: rgba(var(--neutral-1000), 0.05);
-    --bg-action-secondary-hover: rgba(var(--neutral-1000), 0.1);
-    --bg-action-secondary-pressed: rgba(var(--neutral-1000), 0.2);
-    --bg-action-tertiary: rgba(var(--neutral-1000), 0.05);
-    --bg-action-tertiary-hover: rgba(var(--neutral-1000), 0.1);
-    --bg-action-tertiary-pressed: rgba(var(--neutral-1000), 0.2);
+    /* Actions — navy primary, gold secondary */
+    --bg-action-primary: var(--brand-800);
+    --bg-action-primary-hover: var(--brand-700);
+    --bg-action-primary-pressed: var(--brand-600);
+    --bg-action-secondary: rgba(var(--brand-900), 0.08);
+    --bg-action-secondary-hover: rgba(var(--brand-900), 0.14);
+    --bg-action-secondary-pressed: rgba(var(--brand-900), 0.22);
+    --bg-action-tertiary: rgba(var(--gold-500), 0.12);
+    --bg-action-tertiary-hover: rgba(var(--gold-500), 0.2);
+    --bg-action-tertiary-pressed: rgba(var(--gold-500), 0.3);
 
     --bg-negative-primary: var(--red-600);
     --bg-negative-primary-hover: var(--red-700);
@@ -125,15 +143,16 @@
 
     --bg-disabled: var(--neutral-200);
 
-    --content-primary: var(--neutral-1000);
+    /* Content — dark navy text */
+    --content-primary: var(--brand-900);
     --content-secondary: var(--neutral-500);
     --content-tertiary: var(--neutral-0);
 
-    --content-action-primary: var(--brand-900);
-    --content-action-primary-hover: var(--brand-800);
-    --content-action-primary-pressed: var(--brand-700);
-    --content-action-on-primary: var(--brand-25);
-    --content-action-on-secondary: var(--neutral-1000);
+    --content-action-primary: var(--brand-800);
+    --content-action-primary-hover: var(--brand-700);
+    --content-action-primary-pressed: var(--brand-600);
+    --content-action-on-primary: var(--neutral-0);
+    --content-action-on-secondary: var(--brand-900);
     --content-action-on-tertiary: var(--neutral-0);
 
     --content-positive-primary: var(--green-800);
@@ -150,9 +169,10 @@
 
     --content-disabled: var(--neutral-400);
 
-    --border-primary: var(--neutral-50);
-    --border-secondary: var(--neutral-800);
-    --border-action: var(--brand-900);
+    /* Borders — subtle warm gray */
+    --border-primary: var(--neutral-100);
+    --border-secondary: var(--brand-800);
+    --border-action: var(--brand-800);
     --border-negative-primary: var(--red-700);
     --border-negative-secondary: var(--red-200);
     --border-positive-primary: var(--green-800);
