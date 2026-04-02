@@ -81,12 +81,22 @@ const Form = () => {
           </div>
 
           <form onSubmit={handleSubmit(submit)} className="space-y-4">
-            <LabeledInput
-              label="Full Name"
-              placeholder="John Doe"
-              error={errors.firstName as FieldError}
-              {...register("firstName")}
-            />
+            <div className="flex flex-col md:flex-row gap-4">
+              <LabeledInput
+                className="md:w-1/2"
+                label="First Name"
+                placeholder="John"
+                error={errors.firstName as FieldError}
+                {...register("firstName")}
+              />
+              <LabeledInput
+                className="md:w-1/2"
+                label="Last Name"
+                placeholder="Doe"
+                error={errors.lastName as FieldError}
+                {...register("lastName")}
+              />
+            </div>
             <LabeledInput
               label="Email Address"
               placeholder="john@example.com"
