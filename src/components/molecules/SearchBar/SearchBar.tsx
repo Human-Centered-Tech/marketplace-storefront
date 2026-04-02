@@ -32,7 +32,7 @@ export function SearchBar({
     return (
       <form onSubmit={handleSearch} className="relative hidden lg:block">
         <input
-          className="bg-[#f4f4f0] border-none rounded-full py-2 px-4 text-sm w-52 focus:ring-1 focus:ring-[#755b00] focus:w-64 transition-all placeholder:text-[#75777f]"
+          className="bg-[#f4f4f0] border-none rounded-full py-2 px-4 text-sm w-44 focus:ring-1 focus:ring-[#755b00] transition-all placeholder:text-[#75777f]"
           placeholder={placeholder}
           type="text"
           value={query}
