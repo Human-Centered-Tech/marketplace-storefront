@@ -1,10 +1,5 @@
 import {
-  ProductDetailsFooter,
   ProductDetailsHeader,
-  ProductDetailsSeller,
-  ProductDetailsShipping,
-  ProductPageDetails,
-  ProductAdditionalAttributes,
 } from "@/components/cells"
 
 import { retrieveCustomer } from "@/lib/data/customer"
@@ -33,22 +28,12 @@ export const ProductDetails = async ({
   }
 
   return (
-    <div>
+    <div className="space-y-6">
       <ProductDetailsHeader
         product={product}
         locale={locale}
         user={user}
         wishlist={wishlist}
-      />
-      <ProductPageDetails details={product?.description || ""} />
-      <ProductAdditionalAttributes
-        attributes={product?.attribute_values || []}
-      />
-      <ProductDetailsShipping />
-      <ProductDetailsSeller seller={product?.seller} />
-      <ProductDetailsFooter
-        tags={product?.tags || []}
-        posted={product?.created_at}
       />
     </div>
   )

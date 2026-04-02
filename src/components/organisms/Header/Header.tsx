@@ -3,6 +3,7 @@ import { HttpTypes } from "@medusajs/types"
 
 import { CartDropdown, MobileNavbar } from "@/components/cells"
 import { HeartIcon } from "@/icons"
+import { SearchBar } from "@/components/molecules/SearchBar/SearchBar"
 import { listCategories } from "@/lib/data/categories"
 import { PARENT_CATEGORIES } from "@/const"
 import { UserDropdown } from "@/components/cells/UserDropdown/UserDropdown"
@@ -83,6 +84,7 @@ export const Header = async () => {
 
         {/* Right — Actions */}
         <div className="flex items-center justify-end gap-3 lg:gap-4 lg:w-1/4">
+          <SearchBar variant="header" placeholder="Search curated goods..." />
           <CountrySelector regions={regions} />
           <CartDropdown />
           {user && (

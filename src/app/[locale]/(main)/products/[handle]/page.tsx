@@ -13,7 +13,7 @@ export async function generateMetadata({
   const prod = await listProducts({
     countryCode: locale,
     queryParams: { handle: [handle], limit: 1 },
-    forceCache: true,
+    forceCache: false,
   }).then(({ response }) => response.products[0])
 
   return generateProductMetadata(prod)
@@ -27,7 +27,7 @@ export default async function ProductPage({
   const { handle, locale } = await params
 
   return (
-    <main className="container">
+    <main className="max-w-7xl mx-auto px-4 lg:px-8 py-8">
       <ProductDetailsPage handle={handle} locale={locale} />
     </main>
   )

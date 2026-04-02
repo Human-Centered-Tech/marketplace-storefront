@@ -25,11 +25,11 @@ export const ProductCard = ({
   return (
     <div
       className={clsx(
-        "relative group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 w-full lg:w-[calc(25%-1rem)] min-w-[250px]"
+        "relative group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 w-full"
       )}
     >
       {/* Image */}
-      <div className="relative h-72 overflow-hidden">
+      <div className="relative aspect-square overflow-hidden">
         <LocalizedClientLink
           href={`/products/${product.handle}`}
           aria-label={`View ${productName}`}
