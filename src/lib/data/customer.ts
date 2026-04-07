@@ -9,9 +9,14 @@ import {
   getCacheOptions,
   getCacheTag,
   getCartId,
+  getVendorToken,
   removeAuthToken,
   removeCartId,
+  removeVendorFlag,
+  removeVendorToken,
   setAuthToken,
+  setVendorFlag,
+  setVendorToken,
 } from "./cookies"
 
 export const retrieveCustomer =
@@ -121,6 +126,27 @@ export async function login(formData: FormData) {
     return error.toString()
   }
 
+  // Attempt seller authentication with same credentials
+  try {
+    const sellerAuthRes = await fetch(
+      `${process.env.MEDUSA_BACKEND_URL}/auth/seller/emailpass`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      }
+    )
+    if (sellerAuthRes.ok) {
+      const { token: vendorToken } = await sellerAuthRes.json()
+      if (vendorToken) {
+        await setVendorToken(vendorToken)
+        await setVendorFlag(true)
+      }
+    }
+  } catch {
+    // User is not a vendor — silently ignore
+  }
+
   try {
     await transferCart()
   } catch (error: any) {
@@ -132,6 +158,8 @@ export async function signout() {
   await sdk.auth.logout()
 
   await removeAuthToken()
+  await removeVendorToken()
+  await removeVendorFlag()
 
   const customerCacheTag = await getCacheTag("customers")
   revalidateTag(customerCacheTag)
@@ -269,6 +297,26 @@ export const updateCustomerPassword = async (
     }
   )
     .then(async () => {
+      // Sync password to seller account if user is a vendor
+      const vendorToken = await getVendorToken()
+      if (vendorToken) {
+        try {
+          await fetch(
+            `${process.env.MEDUSA_BACKEND_URL}/auth/seller/emailpass/update`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${vendorToken}`,
+              },
+              body: JSON.stringify({ password }),
+            }
+          )
+        } catch {
+          // Non-critical: vendor password sync failed
+        }
+      }
+
       await removeAuthToken()
       const customerCacheTag = await getCacheTag("customers")
       revalidateTag(customerCacheTag)

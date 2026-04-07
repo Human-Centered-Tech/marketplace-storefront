@@ -13,10 +13,14 @@ import { HttpTypes } from "@medusajs/types"
 import { useUnreads } from "@talkjs/react"
 import { useState } from "react"
 
+const VENDOR_URL = process.env.NEXT_PUBLIC_VENDOR_URL || "/vendor"
+
 export const UserDropdown = ({
   user,
+  isVendor = false,
 }: {
   user: HttpTypes.StoreCustomer | null
+  isVendor?: boolean
 }) => {
   const [open, setOpen] = useState(false)
 
@@ -59,6 +63,16 @@ export const UserDropdown = ({
             <NavigationItem href="/user/wishlist">Wishlist</NavigationItem>
             <Divider />
             <NavigationItem href="/user/settings">Settings</NavigationItem>
+            {isVendor ? (
+              <NavigationItem href={VENDOR_URL}>
+                Vendor Dashboard
+              </NavigationItem>
+            ) : (
+              <NavigationItem href="/user/become-vendor">
+                Become a Vendor
+              </NavigationItem>
+            )}
+            <Divider />
             <LogoutButton />
           </div>
         ) : (

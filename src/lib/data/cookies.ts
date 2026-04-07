@@ -64,6 +64,45 @@ export const removeAuthToken = async () => {
   });
 };
 
+export const setVendorToken = async (token: string) => {
+  const cookies = await nextCookies();
+  cookies.set('_medusa_vendor_jwt', token, {
+    maxAge: 60 * 60 * 24 * 7,
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+  });
+};
+
+export const getVendorToken = async (): Promise<string | undefined> => {
+  const cookies = await nextCookies();
+  return cookies.get('_medusa_vendor_jwt')?.value;
+};
+
+export const removeVendorToken = async () => {
+  const cookies = await nextCookies();
+  cookies.set('_medusa_vendor_jwt', '', {
+    maxAge: -1,
+  });
+};
+
+export const setVendorFlag = async (isVendor: boolean) => {
+  const cookies = await nextCookies();
+  cookies.set('_is_vendor', isVendor ? 'true' : '', {
+    maxAge: isVendor ? 60 * 60 * 24 * 7 : -1,
+    httpOnly: false,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+  });
+};
+
+export const removeVendorFlag = async () => {
+  const cookies = await nextCookies();
+  cookies.set('_is_vendor', '', {
+    maxAge: -1,
+  });
+};
+
 export const getCartId = async () => {
   const cookies = await nextCookies();
   return cookies.get('_medusa_cart_id')?.value;

@@ -8,6 +8,17 @@ import {
 } from "@/components/atoms"
 import { useUnreads } from "@talkjs/react"
 import { usePathname } from "next/navigation"
+import { useEffect, useState } from "react"
+
+const VENDOR_URL = process.env.NEXT_PUBLIC_VENDOR_URL || "/vendor"
+
+function useIsVendor(): boolean {
+  const [isVendor, setIsVendor] = useState(false)
+  useEffect(() => {
+    setIsVendor(document.cookie.includes("_is_vendor=true"))
+  }, [])
+  return isVendor
+}
 
 const navigationItems = [
   {
@@ -48,6 +59,7 @@ const navigationItems = [
 export const UserNavigation = () => {
   const unreads = useUnreads()
   const path = usePathname()
+  const isVendor = useIsVendor()
 
   return (
     <Card className="h-min">
@@ -73,6 +85,18 @@ export const UserNavigation = () => {
       >
         Settings
       </NavigationItem>
+      {isVendor ? (
+        <NavigationItem href={VENDOR_URL}>
+          Vendor Dashboard
+        </NavigationItem>
+      ) : (
+        <NavigationItem
+          href="/user/become-vendor"
+          active={path === "/user/become-vendor"}
+        >
+          Become a Vendor
+        </NavigationItem>
+      )}
       <LogoutButton className="w-full text-left" />
     </Card>
   )
