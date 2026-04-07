@@ -64,9 +64,14 @@ export const UserDropdown = ({
             <Divider />
             <NavigationItem href="/user/settings">Settings</NavigationItem>
             {isVendor ? (
-              <NavigationItem href={VENDOR_URL}>
+              <a
+                href={VENDOR_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block px-4 py-2 text-sm text-primary hover:bg-[rgba(var(--neutral-50))] transition-colors"
+              >
                 Vendor Dashboard
-              </NavigationItem>
+              </a>
             ) : (
               <NavigationItem href="/user/become-vendor">
                 Become a Vendor
