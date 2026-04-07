@@ -64,7 +64,10 @@ export async function becomeVendor(formData: FormData) {
   }
 
   try {
-    // Step 1: Register seller auth identity
+    // Step 1: Get seller auth token. Try register first; if identity
+    // already exists (customer registered first), fall back to login.
+    let vendorToken: string
+
     const registerRes = await fetch(
       `${process.env.MEDUSA_BACKEND_URL}/auth/seller/emailpass/register`,
       {
@@ -74,12 +77,27 @@ export async function becomeVendor(formData: FormData) {
       }
     )
 
-    if (!registerRes.ok) {
-      const err = await registerRes.json()
-      return { success: false, error: err.message || "Registration failed" }
-    }
+    if (registerRes.ok) {
+      const data = await registerRes.json()
+      vendorToken = data.token
+    } else {
+      // Identity already exists — try login instead
+      const loginRes = await fetch(
+        `${process.env.MEDUSA_BACKEND_URL}/auth/seller/emailpass`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        }
+      )
 
-    const { token: vendorToken } = await registerRes.json()
+      if (!loginRes.ok) {
+        return { success: false, error: "Invalid password" }
+      }
+
+      const data = await loginRes.json()
+      vendorToken = data.token
+    }
 
     // Step 2: Create seller record
     const createRes = await fetch(

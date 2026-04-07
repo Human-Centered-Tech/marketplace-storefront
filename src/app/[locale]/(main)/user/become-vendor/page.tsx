@@ -1,7 +1,7 @@
 import { retrieveCustomer } from "@/lib/data/customer"
 import { LoginForm, UserNavigation } from "@/components/molecules"
 import { BecomeVendorForm } from "@/components/molecules/BecomeVendorForm/BecomeVendorForm"
-import { getVendorToken } from "@/lib/data/cookies"
+import { retrieveVendorStatus } from "@/lib/data/vendor"
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
@@ -13,8 +13,8 @@ export default async function BecomeVendorPage() {
 
   if (!user) return <LoginForm />
 
-  const vendorToken = await getVendorToken()
-  const isAlreadyVendor = !!vendorToken
+  const vendorStatus = await retrieveVendorStatus()
+  const isAlreadyVendor = vendorStatus.isVendor
 
   return (
     <main className="container">

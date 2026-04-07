@@ -9,7 +9,6 @@ import {
   getCacheOptions,
   getCacheTag,
   getCartId,
-  getVendorToken,
   removeAuthToken,
   removeCartId,
   removeVendorFlag,
@@ -297,26 +296,6 @@ export const updateCustomerPassword = async (
     }
   )
     .then(async () => {
-      // Sync password to seller account if user is a vendor
-      const vendorToken = await getVendorToken()
-      if (vendorToken) {
-        try {
-          await fetch(
-            `${process.env.MEDUSA_BACKEND_URL}/auth/seller/emailpass/update`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${vendorToken}`,
-              },
-              body: JSON.stringify({ password }),
-            }
-          )
-        } catch {
-          // Non-critical: vendor password sync failed
-        }
-      }
-
       await removeAuthToken()
       const customerCacheTag = await getCacheTag("customers")
       revalidateTag(customerCacheTag)
