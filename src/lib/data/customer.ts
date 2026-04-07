@@ -138,8 +138,14 @@ export async function login(formData: FormData) {
     if (sellerAuthRes.ok) {
       const { token: vendorToken } = await sellerAuthRes.json()
       if (vendorToken) {
-        await setVendorToken(vendorToken)
-        await setVendorFlag(true)
+        // Decode JWT payload to check if a seller record is actually linked
+        const payload = JSON.parse(
+          Buffer.from(vendorToken.split(".")[1], "base64").toString()
+        )
+        if (payload.actor_id) {
+          await setVendorToken(vendorToken)
+          await setVendorFlag(true)
+        }
       }
     }
   } catch {
