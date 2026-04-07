@@ -103,7 +103,7 @@ export const ProductCard = ({
                 </span>
               )}
             </div>
-            <span className="bg-[#F2CD69] hover:brightness-105 text-[#001435] px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-[0.15em] transition-all">
+            <span className="bg-[#BE9B32] hover:brightness-105 text-[#001435] px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-[0.15em] transition-all">
               Add to Cart
             </span>
           </div>

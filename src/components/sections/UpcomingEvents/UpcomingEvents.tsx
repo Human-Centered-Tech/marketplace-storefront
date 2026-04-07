@@ -57,7 +57,7 @@ function EventCard({
       <div
         className="w-32 flex flex-col items-center justify-center shrink-0"
         style={{
-          backgroundColor: color === "navy" ? "#001435" : "#F2CD69",
+          backgroundColor: color === "navy" ? "#001435" : "#BE9B32",
         }}
       >
         <span
@@ -93,7 +93,7 @@ function EventCard({
         </p>
         <LocalizedClientLink
           href={href}
-          className="inline-block font-sans text-[11px] font-bold text-[#001435] tracking-[0.15em] uppercase border-b border-[#F2CD69]/50 pb-1 hover:border-[#F2CD69] transition-all"
+          className="inline-block font-sans text-[11px] font-bold text-[#001435] tracking-[0.15em] uppercase border-b border-[#BE9B32]/50 pb-1 hover:border-[#BE9B32] transition-all"
         >
           {cta}
         </LocalizedClientLink>

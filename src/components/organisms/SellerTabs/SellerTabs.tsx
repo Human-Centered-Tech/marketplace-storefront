@@ -3,7 +3,6 @@ import { ProductListingSkeleton } from "../ProductListingSkeleton/ProductListing
 import { AlgoliaProductsListing, ProductListing } from "@/components/sections"
 import { TabsContent, TabsList } from "@/components/molecules"
 import { SellerReviewTab } from "@/components/cells"
-import { getRegion } from "@/lib/data/regions"
 
 const ALGOLIA_ID = process.env.NEXT_PUBLIC_ALGOLIA_ID
 const ALGOLIA_SEARCH_KEY = process.env.NEXT_PUBLIC_ALGOLIA_SEARCH_KEY
@@ -30,8 +29,12 @@ export const SellerTabs = ({
   ]
 
   return (
-    <div className="mt-8">
-      <TabsList list={tabsList} activeTab={tab} />
+    <div>
+      {/* Styled Tab Bar */}
+      <div className="bg-[#f4f4f0] p-4 rounded-xl mb-8">
+        <TabsList list={tabsList} activeTab={tab} />
+      </div>
+
       <TabsContent value="products" activeTab={tab}>
         <Suspense fallback={<ProductListingSkeleton />}>
           {!ALGOLIA_ID || !ALGOLIA_SEARCH_KEY ? (

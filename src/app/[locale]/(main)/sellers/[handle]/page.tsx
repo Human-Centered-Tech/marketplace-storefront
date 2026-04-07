@@ -25,15 +25,25 @@ export default async function SellerPage({
   }
 
   return (
-    <main className="container">
-      <SellerPageHeader header seller={seller} user={user} />
-      <SellerTabs
-        tab={tab}
-        seller_id={seller.id}
-        seller_handle={seller.handle}
-        locale={locale}
-        currency_code={currency_code}
-      />
+    <main className="flex flex-col items-center text-[#1b1c1a]">
+      <SellerPageHeader seller={seller} user={user} />
+
+      {/* Decorative Divider */}
+      <div className="w-full max-w-7xl mx-auto px-8 my-8">
+        <div className="flex items-center justify-center w-full">
+          <div className="h-[1px] flex-grow bg-gradient-to-r from-transparent via-[#755b00]/40 to-transparent" />
+        </div>
+      </div>
+
+      <div className="w-full max-w-7xl mx-auto px-8 pb-24">
+        <SellerTabs
+          tab={tab}
+          seller_id={seller.id}
+          seller_handle={seller.handle}
+          locale={locale}
+          currency_code={currency_code}
+        />
+      </div>
     </main>
   )
 }

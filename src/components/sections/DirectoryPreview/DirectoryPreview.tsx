@@ -59,8 +59,8 @@ function StarRating({ count }: { count?: number }) {
           width="16"
           height="16"
           viewBox="0 0 24 24"
-          fill={star <= rating ? "#F2CD69" : "none"}
-          stroke="#F2CD69"
+          fill={star <= rating ? "#BE9B32" : "none"}
+          stroke="#BE9B32"
           strokeWidth="1.5"
         >
           <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
@@ -105,7 +105,7 @@ function DirectoryCard({
           />
         ) : (
           <div className="w-full h-full bg-[#17294a] flex items-center justify-center">
-            <span className="text-[#F2CD69] font-serif text-3xl opacity-30">
+            <span className="text-[#BE9B32] font-serif text-3xl opacity-30">
               &#x2720;
             </span>
           </div>
@@ -114,7 +114,7 @@ function DirectoryCard({
           <div
             className={`absolute top-4 left-4 text-[10px] px-3 py-1 rounded-full tracking-[0.15em] uppercase font-bold ${
               badgeColor === "gold"
-                ? "bg-[#F2CD69] text-[#001435]"
+                ? "bg-[#BE9B32] text-[#001435]"
                 : "bg-[#001435] text-white"
             }`}
           >
@@ -170,7 +170,7 @@ export async function DirectoryPreview() {
           <h2 className="font-serif text-3xl md:text-4xl font-bold text-[#001435] italic whitespace-nowrap">
             From the Directory
           </h2>
-          <div className="h-[1px] flex-grow mx-8 bg-[#F2CD69]/30 hidden sm:block" />
+          <div className="h-[1px] flex-grow mx-8 bg-[#BE9B32]/30 hidden sm:block" />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
