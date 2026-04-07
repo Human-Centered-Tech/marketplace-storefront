@@ -64,7 +64,7 @@ export const UserDropdown = ({
             {isVendor ? (
               <a
                 href="/api/vendor-handoff"
-                className="block px-4 py-2 text-sm text-primary hover:bg-[rgba(var(--neutral-50))] transition-colors"
+                className="label-md uppercase px-4 py-3 my-3 md:my-0 flex items-center justify-between"
               >
                 Vendor Dashboard
               </a>
