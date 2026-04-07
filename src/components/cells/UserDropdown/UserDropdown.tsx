@@ -13,8 +13,6 @@ import { HttpTypes } from "@medusajs/types"
 import { useUnreads } from "@talkjs/react"
 import { useState } from "react"
 
-const VENDOR_URL = process.env.NEXT_PUBLIC_VENDOR_URL || "/vendor"
-
 export const UserDropdown = ({
   user,
   isVendor = false,
@@ -65,9 +63,7 @@ export const UserDropdown = ({
             <NavigationItem href="/user/settings">Settings</NavigationItem>
             {isVendor ? (
               <a
-                href={VENDOR_URL}
-                target="_blank"
-                rel="noopener noreferrer"
+                href="/api/vendor-handoff"
                 className="block px-4 py-2 text-sm text-primary hover:bg-[rgba(var(--neutral-50))] transition-colors"
               >
                 Vendor Dashboard

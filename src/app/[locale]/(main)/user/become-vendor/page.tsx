@@ -33,7 +33,7 @@ export default async function BecomeVendorPage() {
                 to manage your store.
               </p>
               <a
-                href={process.env.NEXT_PUBLIC_VENDOR_URL || "/vendor"}
+                href="/api/vendor-handoff"
                 className="bg-navy text-white px-6 py-2 rounded-sm text-sm uppercase font-medium inline-block"
               >
                 Go to Vendor Dashboard

@@ -10,8 +10,6 @@ import { useUnreads } from "@talkjs/react"
 import { usePathname } from "next/navigation"
 import { useEffect, useState } from "react"
 
-const VENDOR_URL = process.env.NEXT_PUBLIC_VENDOR_URL || "/vendor"
-
 function useIsVendor(): boolean {
   const [isVendor, setIsVendor] = useState(false)
   useEffect(() => {
@@ -87,9 +85,7 @@ export const UserNavigation = () => {
       </NavigationItem>
       {isVendor ? (
         <a
-          href={VENDOR_URL}
-          target="_blank"
-          rel="noopener noreferrer"
+          href="/api/vendor-handoff"
           className="block px-4 py-2 text-sm text-primary hover:bg-[rgba(var(--neutral-50))] transition-colors"
         >
           Vendor Dashboard
