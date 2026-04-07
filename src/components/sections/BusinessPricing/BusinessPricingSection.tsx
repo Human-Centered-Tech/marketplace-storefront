@@ -33,7 +33,7 @@ const tiers = [
       { text: "Event promotion access", icon: "check_circle", bold: false },
     ],
     btnClass:
-      "bg-[#F2CD69] text-[#17294A] hover:bg-[#DECF8F] shadow-lg shadow-[#F2CD69]/20",
+      "bg-[#BE9B32] text-[#17294A] hover:bg-[#DECF8F] shadow-lg shadow-[#BE9B32]/20",
   },
   {
     id: "enterprise",
@@ -165,7 +165,7 @@ export const BusinessPricingSection = ({
             excellence, and the common good. Choose the plan that fits your
             mission.
           </p>
-          <div className="mt-12 h-[1px] w-48 bg-[#F2CD69] mx-auto" />
+          <div className="mt-12 h-[1px] w-48 bg-[#BE9B32] mx-auto" />
         </div>
       </header>
 
@@ -174,9 +174,9 @@ export const BusinessPricingSection = ({
         <div className="max-w-7xl mx-auto">
           {/* Marketplace banner */}
           <div className="mb-12 flex justify-center">
-            <div className="bg-[#17294A]/5 border border-[#F2CD69]/30 px-8 py-3 rounded-full flex items-center gap-3">
+            <div className="bg-[#17294A]/5 border border-[#BE9B32]/30 px-8 py-3 rounded-full flex items-center gap-3">
               <span
-                className="material-symbols-outlined text-[#F2CD69]"
+                className="material-symbols-outlined text-[#BE9B32]"
                 style={{
                   fontVariationSettings: "'FILL' 0, 'wght' 300",
                 }}
@@ -200,15 +200,15 @@ export const BusinessPricingSection = ({
                 key={tier.id}
                 className={`p-10 rounded-xl flex flex-col h-full transition-all ${
                   tier.highlight
-                    ? "bg-white shadow-xl border-2 border-[#F2CD69] relative transform md:-translate-y-4"
+                    ? "bg-white shadow-xl border-2 border-[#BE9B32] relative transform md:-translate-y-4"
                     : tier.enterprise
-                    ? "bg-[#F2CD69] shadow-sm"
+                    ? "bg-[#BE9B32] shadow-sm"
                     : "bg-white shadow-sm border border-transparent hover:shadow-md"
                 }`}
               >
                 {tier.highlight && (
                   <div
-                    className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#F2CD69] text-[#17294A] px-6 py-1 rounded-full font-bold text-[10px] uppercase tracking-widest whitespace-nowrap"
+                    className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#BE9B32] text-[#17294A] px-6 py-1 rounded-full font-bold text-[10px] uppercase tracking-widest whitespace-nowrap"
                     style={{ fontFamily: "Poppins, sans-serif" }}
                   >
                     Most Popular
@@ -220,7 +220,7 @@ export const BusinessPricingSection = ({
                       tier.enterprise
                         ? "text-[#17294A]/70"
                         : tier.highlight
-                        ? "text-[#F2CD69]"
+                        ? "text-[#BE9B32]"
                         : "text-[#44474e]"
                     }`}
                     style={{ fontFamily: "Poppins, sans-serif" }}
@@ -274,7 +274,7 @@ export const BusinessPricingSection = ({
                         className={`material-symbols-outlined text-lg ${
                           tier.enterprise
                             ? "text-[#17294A]"
-                            : "text-[#F2CD69]"
+                            : "text-[#BE9B32]"
                         }`}
                         style={{
                           fontVariationSettings: f.bold
@@ -311,7 +311,7 @@ export const BusinessPricingSection = ({
         <div className="max-w-7xl mx-auto">
           <div className="mb-12">
             <span
-              className="text-xs font-bold uppercase tracking-widest text-[#F2CD69] block mb-2"
+              className="text-xs font-bold uppercase tracking-widest text-[#BE9B32] block mb-2"
               style={{ fontFamily: "Poppins, sans-serif" }}
             >
               Voices of Excellence
@@ -329,7 +329,7 @@ export const BusinessPricingSection = ({
                 key={t.name}
                 className="bg-white p-8 rounded-xl shadow-sm border border-[#c5c6cf]/20 hover:shadow-md transition-shadow"
               >
-                <div className="flex text-[#F2CD69] mb-6">
+                <div className="flex text-[#BE9B32] mb-6">
                   {[...Array(5)].map((_, i) => (
                     <span
                       key={i}
@@ -349,7 +349,7 @@ export const BusinessPricingSection = ({
                   &ldquo;{t.quote}&rdquo;
                 </p>
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-[#dbdad6] border border-[#F2CD69]/30 flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-full bg-[#dbdad6] border border-[#BE9B32]/30 flex items-center justify-center">
                     <span
                       className="material-symbols-outlined text-[#17294A]/40"
                       style={{
@@ -447,7 +447,7 @@ export const BusinessPricingSection = ({
 
       {/* Gold divider */}
       <div className="max-w-4xl mx-auto py-12 px-8">
-        <div className="h-[1px] bg-[#F2CD69] w-full opacity-50" />
+        <div className="h-[1px] bg-[#BE9B32] w-full opacity-50" />
       </div>
 
       {/* FAQs */}
@@ -455,7 +455,7 @@ export const BusinessPricingSection = ({
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
             <span
-              className="text-xs font-bold uppercase tracking-widest text-[#F2CD69] block mb-2"
+              className="text-xs font-bold uppercase tracking-widest text-[#BE9B32] block mb-2"
               style={{ fontFamily: "Poppins, sans-serif" }}
             >
               Clarity in Mission
@@ -489,7 +489,7 @@ export const BusinessPricingSection = ({
                         >
                           {faq.q}
                         </span>
-                        <span className="material-symbols-outlined text-[#F2CD69] transition-transform duration-300 group-open:rotate-180">
+                        <span className="material-symbols-outlined text-[#BE9B32] transition-transform duration-300 group-open:rotate-180">
                           expand_more
                         </span>
                       </summary>
@@ -526,7 +526,7 @@ export const BusinessPricingSection = ({
           </p>
           <LocalizedClientLink
             href={getStartedHref}
-            className="inline-block bg-[#F2CD69] text-[#17294A] py-4 px-10 rounded-lg font-bold text-sm uppercase tracking-widest hover:bg-[#DECF8F] transition-colors shadow-lg shadow-[#F2CD69]/20"
+            className="inline-block bg-[#BE9B32] text-[#17294A] py-4 px-10 rounded-lg font-bold text-sm uppercase tracking-widest hover:bg-[#DECF8F] transition-colors shadow-lg shadow-[#BE9B32]/20"
             style={{ fontFamily: "Poppins, sans-serif" }}
           >
             Get Started

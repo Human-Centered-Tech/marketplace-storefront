@@ -36,7 +36,7 @@ export function ShopByStyleSection() {
         {/* Steps */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 lg:gap-16 relative">
           {/* Connecting line (desktop only) */}
-          <div className="hidden lg:block absolute top-12 left-[15%] right-[15%] h-[1px] bg-[#F2CD69]/30" />
+          <div className="hidden lg:block absolute top-12 left-[15%] right-[15%] h-[1px] bg-[#BE9B32]/30" />
 
           {steps.map((step) => (
             <div
@@ -44,7 +44,7 @@ export function ShopByStyleSection() {
               className="flex flex-col items-center text-center space-y-6 relative z-10"
             >
               {/* Gold numbered circle with white border ring */}
-              <div className="w-24 h-24 rounded-full bg-[#F2CD69] text-[#001435] flex items-center justify-center text-3xl font-serif font-bold shadow-xl border-8 border-[#faf9f5]">
+              <div className="w-24 h-24 rounded-full bg-[#BE9B32] text-[#001435] flex items-center justify-center text-3xl font-serif font-bold shadow-xl border-8 border-[#faf9f5]">
                 {step.number}
               </div>
               <div className="space-y-2">

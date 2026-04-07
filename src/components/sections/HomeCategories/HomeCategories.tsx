@@ -23,7 +23,7 @@ export const HomeCategories = async ({ heading }: { heading: string }) => {
               href={`/categories/${category.handle}`}
               className="flex flex-col items-center gap-2 min-w-[80px] group"
             >
-              <div className="w-16 h-16 rounded-full bg-[#faf9f5] border border-[rgba(var(--neutral-100))] flex items-center justify-center text-2xl group-hover:border-[#F2CD69] group-hover:shadow-md transition-all">
+              <div className="w-16 h-16 rounded-full bg-[#faf9f5] border border-[rgba(var(--neutral-100))] flex items-center justify-center text-2xl group-hover:border-[#BE9B32] group-hover:shadow-md transition-all">
                 {category.icon}
               </div>
               <span className="font-sans text-[11px] font-medium uppercase tracking-[0.06em] text-[#1b1c1a] whitespace-nowrap group-hover:text-[#001435] transition-colors">

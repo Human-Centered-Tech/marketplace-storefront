@@ -21,10 +21,10 @@ export const HomeProductSection = async ({
         <h2 className="font-serif text-3xl md:text-4xl font-bold text-[#001435] italic whitespace-nowrap">
           {heading}
         </h2>
-        <div className="h-[1px] flex-grow mx-8 bg-[#F2CD69]/30 hidden sm:block" />
+        <div className="h-[1px] flex-grow mx-8 bg-[#BE9B32]/30 hidden sm:block" />
         <LocalizedClientLink
           href="/categories"
-          className="font-sans text-[11px] font-bold uppercase tracking-[0.15em] text-[#001435] hover:text-[#755b00] transition-colors whitespace-nowrap underline decoration-[#F2CD69] underline-offset-8"
+          className="font-sans text-[11px] font-bold uppercase tracking-[0.15em] text-[#001435] hover:text-[#755b00] transition-colors whitespace-nowrap underline decoration-[#BE9B32] underline-offset-8"
         >
           View All Shop
         </LocalizedClientLink>

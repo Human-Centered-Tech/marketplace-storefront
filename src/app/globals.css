@@ -103,7 +103,7 @@ button:disabled svg path {
 
 /* Gold accent button */
 .button-gold {
-  background-color: #F2CD69;
+  background-color: #BE9B32;
 }
 .button-gold:hover {
   background-color: #e6c05a;
@@ -137,7 +137,7 @@ button:disabled svg path {
     from 180deg at 50% 50%,
     #001435 0deg,
     rgba(var(--brand-600)) 90deg,
-    #F2CD69 180deg,
+    #BE9B32 180deg,
     rgba(var(--brand-700)) 270deg,
     #001435 360deg
   );
@@ -176,5 +176,5 @@ button:disabled svg path {
 /* Gold divider line */
 .gold-divider {
   height: 2px;
-  background: linear-gradient(90deg, #F2CD69, transparent);
+  background: linear-gradient(90deg, #BE9B32, transparent);
 }

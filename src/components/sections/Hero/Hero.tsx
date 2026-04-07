@@ -29,7 +29,7 @@ export const Hero = ({ image, heading, paragraph, buttons }: HeroProps) => {
           <h1 className="font-serif text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 max-w-xl uppercase leading-[1.1]">
             Building the New{" "}
             <span className="italic">Catholic Economy</span>
-            <sup className="text-[#F2CD69] text-[0.25em] relative top-[-0.8em] ml-[2px]">&reg;</sup>
+            <sup className="text-[#BE9B32] text-[0.25em] relative top-[-0.8em] ml-[2px]">&reg;</sup>
           </h1>
           <p className="font-serif text-lg italic text-white/60 mb-10 max-w-md">
             {paragraph}
@@ -41,7 +41,7 @@ export const Hero = ({ image, heading, paragraph, buttons }: HeroProps) => {
                 href={path}
                 className={`inline-flex items-center px-8 py-4 text-[13px] font-semibold uppercase tracking-[0.1em] rounded-xs transition-colors ${
                   i === 0
-                    ? "bg-[#F2CD69] text-[#001435] hover:bg-[#e6c05a]"
+                    ? "bg-[#BE9B32] text-[#001435] hover:bg-[#e6c05a]"
                     : "bg-transparent border border-white/30 text-white hover:bg-white/10"
                 }`}
               >

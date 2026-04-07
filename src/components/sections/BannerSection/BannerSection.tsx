@@ -30,11 +30,11 @@ function BarterCard({
 }) {
   return (
     <div
-      className="rounded-xl p-8 space-y-6 hover:bg-[#17294a]/80 transition-all border border-white/5"
-      style={{ backgroundColor: "#17294a" }}
+      className="rounded-xl p-8 space-y-6 hover:bg-[#1e3660]/80 transition-all border border-[#BE9B32]/40"
+      style={{ backgroundColor: "#1e3660" }}
     >
       <div className="space-y-1">
-        <span className="font-sans text-[10px] tracking-[0.2em] uppercase text-[#F2CD69] font-bold">
+        <span className="font-sans text-[10px] tracking-[0.2em] uppercase text-[#BE9B32] font-bold">
           {category}
         </span>
         <h4 className="font-serif text-lg font-medium text-white leading-tight">
@@ -62,12 +62,11 @@ export const BannerSection = async () => {
       style={{ backgroundColor: "#001435" }}
     >
       {/* Decorative glow */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-[#F2CD69]/10 blur-[150px] rounded-full -mr-48 -mt-48" />
+      <div className="absolute top-0 right-0 w-96 h-96 bg-[#BE9B32]/10 blur-[150px] rounded-full -mr-48 -mt-48" />
 
       <div className="max-w-7xl mx-auto relative z-10">
         {/* Header */}
         <div className="flex items-center gap-4 mb-16">
-          <span className="text-[#F2CD69] text-4xl">&#9782;</span>
           <h2 className="font-serif text-3xl md:text-4xl font-bold text-white italic">
             Community Trade &amp; Barter
           </h2>

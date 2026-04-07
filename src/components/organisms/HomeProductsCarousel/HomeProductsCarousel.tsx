@@ -134,7 +134,7 @@ export const HomeProductsCarousel = async ({
               <span className="text-lg font-bold text-[#001435]">
                 {product.price}
               </span>
-              <span className="bg-[#F2CD69] text-[#001435] px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-[0.15em]">
+              <span className="bg-[#BE9B32] text-[#001435] px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-[0.15em]">
                 Add to Cart
               </span>
             </div>

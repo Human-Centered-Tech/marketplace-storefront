@@ -31,9 +31,9 @@
     --gold-25: 255, 251, 240;
     --gold-50: 255, 245, 220;
     --gold-100: 255, 235, 185;
-    --gold-200: 245, 215, 140;
-    --gold-300: 242, 205, 105;     /* #F2CD69 — gold buttons/accents */
-    --gold-400: 242, 205, 105;     /* #F2CD69 — gold buttons/accents */
+    --gold-200: 231, 195, 96;      /* #e7c360 — secondary-fixed-dim */
+    --gold-300: 210, 175, 55;      /* #D2AF37 — darker gold accents */
+    --gold-400: 190, 155, 50;      /* #BE9B32 — gold buttons (darker to match Stitch) */
     --gold-500: 190, 155, 50;
     --gold-600: 117, 91, 0;        /* #755b00 — secondary gold */
     --gold-700: 117, 91, 0;        /* #755b00 — secondary gold */
