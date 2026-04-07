@@ -23,7 +23,12 @@ export const SellerPageHeader = ({
     <>
       {/* Hero Banner */}
       <header className="relative w-full overflow-hidden bg-[#f4f4f0]">
-        <div className="h-[400px] w-full relative bg-[#17294a]">
+        <div className="h-[400px] w-full relative">
+          <img
+            className="w-full h-full object-cover opacity-90"
+            src="/images/seller-banner-default.jpg"
+            alt={`${seller.name} storefront`}
+          />
           <div className="absolute inset-0 bg-gradient-to-t from-[#001435]/60 to-transparent" />
         </div>
 
