@@ -8,6 +8,7 @@ import { listCategories } from "@/lib/data/categories"
 import { PARENT_CATEGORIES } from "@/const"
 import { UserDropdown } from "@/components/cells/UserDropdown/UserDropdown"
 import { retrieveCustomer } from "@/lib/data/customer"
+import { retrieveVendorStatus } from "@/lib/data/vendor"
 import { getUserWishlists } from "@/lib/data/wishlist"
 import { Wishlist } from "@/types/wishlist"
 import { Badge } from "@/components/atoms"
@@ -19,10 +20,16 @@ import { MessageButton } from "@/components/molecules/MessageButton/MessageButto
 export const Header = async () => {
   const regions = await listRegions()
   const user = await retrieveCustomer()
+  const vendorStatus = user ? await retrieveVendorStatus() : null
+  const isVendor = vendorStatus?.isVendor ?? false
   let wishlist: Wishlist[] = []
   if (user) {
-    const response = await getUserWishlists()
-    wishlist = response.wishlists
+    try {
+      const response = await getUserWishlists()
+      wishlist = response.wishlists
+    } catch {
+      // Wishlist service unavailable — continue without it
+    }
   }
 
   const wishlistCount = wishlist?.[0]?.products.length || 0
@@ -98,7 +105,7 @@ export const Header = async () => {
             </LocalizedClientLink>
           )}
           {user && <MessageButton />}
-          <UserDropdown user={user} />
+          <UserDropdown user={user} isVendor={isVendor} />
           {!user && (
             <LocalizedClientLink
               href="/user/register"

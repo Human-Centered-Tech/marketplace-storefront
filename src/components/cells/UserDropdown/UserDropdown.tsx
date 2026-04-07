@@ -15,8 +15,10 @@ import { useState } from "react"
 
 export const UserDropdown = ({
   user,
+  isVendor = false,
 }: {
   user: HttpTypes.StoreCustomer | null
+  isVendor?: boolean
 }) => {
   const [open, setOpen] = useState(false)
 
@@ -59,6 +61,19 @@ export const UserDropdown = ({
             <NavigationItem href="/user/wishlist">Wishlist</NavigationItem>
             <Divider />
             <NavigationItem href="/user/settings">Settings</NavigationItem>
+            {isVendor ? (
+              <a
+                href="/api/vendor-handoff"
+                className="label-md uppercase px-4 py-3 my-3 md:my-0 flex items-center justify-between"
+              >
+                Vendor Dashboard
+              </a>
+            ) : (
+              <NavigationItem href="/user/become-vendor">
+                Become a Vendor
+              </NavigationItem>
+            )}
+            <Divider />
             <LogoutButton />
           </div>
         ) : (
