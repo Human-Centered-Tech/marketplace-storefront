@@ -24,8 +24,12 @@ export const Header = async () => {
   const isVendor = vendorStatus?.isVendor ?? false
   let wishlist: Wishlist[] = []
   if (user) {
-    const response = await getUserWishlists()
-    wishlist = response.wishlists
+    try {
+      const response = await getUserWishlists()
+      wishlist = response.wishlists
+    } catch {
+      // Wishlist service unavailable — continue without it
+    }
   }
 
   const wishlistCount = wishlist?.[0]?.products.length || 0

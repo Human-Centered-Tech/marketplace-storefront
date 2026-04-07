@@ -21,9 +21,9 @@ export async function retrieveVendorStatus(): Promise<VendorStatus> {
     return { isVendor: false }
   }
 
-  // Optionally fetch richer data from the backend
   const headers = await getAuthHeaders()
   if (!headers || !("authorization" in headers)) {
+    // Have a vendor token but no customer token — treat as vendor
     return { isVendor: true }
   }
 
@@ -34,6 +34,8 @@ export async function retrieveVendorStatus(): Promise<VendorStatus> {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
+          "x-publishable-api-key":
+            process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "",
           ...headers,
         },
       }
@@ -51,6 +53,7 @@ export async function retrieveVendorStatus(): Promise<VendorStatus> {
     // Fall back to cookie-based check
   }
 
+  // Backend call failed — fall back to cookie presence
   return { isVendor: true }
 }
 
