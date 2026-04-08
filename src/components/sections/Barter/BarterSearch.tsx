@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import { BarterListing, BarterCategory } from "@/types/barter"
 import { BarterListingCard } from "./BarterListingCard"
 
@@ -15,19 +15,18 @@ export const BarterSearch = ({
   initialCount,
   categories,
 }: BarterSearchProps) => {
-  const [listings, setListings] = useState(initialListings)
-  const [count, setCount] = useState(initialCount)
+  const [allListings, setAllListings] = useState(initialListings)
   const [search, setSearch] = useState("")
   const [categoryId, setCategoryId] = useState("")
   const [listingType, setListingType] = useState("")
   const [condition, setCondition] = useState("")
   const [loading, setLoading] = useState(false)
 
+  // Fetch all listings from backend (server-side filtering may not be supported)
   const fetchListings = useCallback(async () => {
     setLoading(true)
     try {
       const params = new URLSearchParams()
-      if (search) params.set("q", search)
       if (categoryId) params.set("category_id", categoryId)
       if (listingType) params.set("listing_type", listingType)
       if (condition) params.set("condition", condition)
@@ -44,21 +43,44 @@ export const BarterSearch = ({
         }
       )
       const data = await res.json()
-      setListings(data.listings || [])
-      setCount(data.count || 0)
-    } catch {
-      // keep current state
+      setAllListings(data.listings || [])
+    } catch (err) {
+      console.error("[BarterSearch] fetch failed:", err)
     } finally {
       setLoading(false)
     }
-  }, [search, categoryId, listingType, condition])
+  }, [categoryId, listingType, condition])
 
+  // Re-fetch when dropdown filters change
   useEffect(() => {
     const timer = setTimeout(() => {
       fetchListings()
     }, 300)
     return () => clearTimeout(timer)
   }, [fetchListings])
+
+  // Client-side text search over fetched listings
+  const filteredListings = useMemo(() => {
+    if (!search.trim()) return allListings
+    const q = search.toLowerCase()
+    return allListings.filter(
+      (l) =>
+        l.title.toLowerCase().includes(q) ||
+        l.description?.toLowerCase().includes(q) ||
+        l.trade_terms?.toLowerCase().includes(q) ||
+        l.location?.city?.toLowerCase().includes(q) ||
+        l.location?.state?.toLowerCase().includes(q)
+    )
+  }, [allListings, search])
+
+  const clearFilters = () => {
+    setSearch("")
+    setCategoryId("")
+    setListingType("")
+    setCondition("")
+  }
+
+  const hasActiveFilters = search || categoryId || listingType || condition
 
   return (
     <>
@@ -127,12 +149,22 @@ export const BarterSearch = ({
               </select>
             </div>
 
-            {/* Filters button */}
+            {/* Clear filters button */}
             <div className="md:col-span-2">
-              <button className="w-full flex items-center justify-center gap-2 bg-navy-dark text-white py-3 rounded-lg label-sm hover:bg-navy transition-all active:scale-95">
-                <span className="material-symbols-outlined text-sm">tune</span>
-                Filters
-              </button>
+              {hasActiveFilters ? (
+                <button
+                  onClick={clearFilters}
+                  className="w-full flex items-center justify-center gap-2 bg-navy-dark text-white py-3 rounded-lg label-sm hover:bg-navy transition-all active:scale-95"
+                >
+                  <span className="material-symbols-outlined text-sm">close</span>
+                  Clear
+                </button>
+              ) : (
+                <button className="w-full flex items-center justify-center gap-2 bg-navy-dark text-white py-3 rounded-lg label-sm hover:bg-navy transition-all active:scale-95 opacity-60 cursor-default">
+                  <span className="material-symbols-outlined text-sm">tune</span>
+                  Filters
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -147,7 +179,7 @@ export const BarterSearch = ({
       <section className="px-4 lg:px-8 pb-24 max-w-7xl mx-auto">
         {loading ? (
           <div className="text-center py-12 text-secondary">Searching...</div>
-        ) : listings.length === 0 ? (
+        ) : filteredListings.length === 0 ? (
           <div className="text-center py-12 text-secondary">
             No listings found. Try adjusting your search.
           </div>
@@ -160,19 +192,20 @@ export const BarterSearch = ({
               </h2>
               <div className="h-px flex-grow mx-8 bg-gray-200" />
               <span className="font-serif italic text-secondary shrink-0">
-                Showing {count} {count === 1 ? "result" : "results"}
+                Showing {filteredListings.length}{" "}
+                {filteredListings.length === 1 ? "result" : "results"}
               </span>
             </div>
 
             {/* Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-              {listings.map((listing) => (
+              {filteredListings.map((listing) => (
                 <BarterListingCard key={listing.id} listing={listing} />
               ))}
             </div>
 
             {/* Load More */}
-            {listings.length < count && (
+            {filteredListings.length < allListings.length && !search && (
               <div className="mt-20 text-center">
                 <button className="px-10 py-4 border-b-2 border-gold text-navy-dark label-sm tracking-[0.2em] hover:bg-gold/5 transition-all duration-300">
                   Load More Discoveries

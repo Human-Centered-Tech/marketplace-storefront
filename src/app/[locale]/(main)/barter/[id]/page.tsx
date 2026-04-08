@@ -32,8 +32,14 @@ export default async function BarterDetailPage({ params }: Props) {
   }
 
   return (
-    <main className="container px-4 lg:px-8 py-8">
-      <BarterDetail listing={listing} />
+    <main>
+      <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet"
+      />
+      <div className="max-w-7xl mx-auto px-4 lg:px-8 pt-8 pb-20">
+        <BarterDetail listing={listing} />
+      </div>
     </main>
   )
 }
