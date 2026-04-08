@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import { useSearchParams } from "next/navigation"
 import { DirectoryListing, DirectoryCategory } from "@/types/directory"
 import { DirectoryListingCard } from "./DirectoryListingCard"
 
@@ -15,12 +16,21 @@ export const DirectorySearch = ({
   initialCount,
   categories,
 }: DirectorySearchProps) => {
+  const searchParams = useSearchParams()
+  const urlQuery = searchParams.get("q") || ""
   const [listings, setListings] = useState(initialListings)
   const [count, setCount] = useState(initialCount)
-  const [search, setSearch] = useState("")
+  const [search, setSearch] = useState(urlQuery)
   const [categoryId, setCategoryId] = useState("")
   const [state, setState] = useState("")
   const [loading, setLoading] = useState(false)
+
+  // Sync search field when URL query changes (e.g. from header search bar)
+  useEffect(() => {
+    if (urlQuery && urlQuery !== search) {
+      setSearch(urlQuery)
+    }
+  }, [urlQuery])
 
   const fetchListings = useCallback(async () => {
     setLoading(true)
