@@ -33,6 +33,10 @@ export const metadata: Metadata = {
   description:
     process.env.NEXT_PUBLIC_SITE_DESCRIPTION ||
     "A Catholic marketplace and business directory supporting Catholic-owned businesses",
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+  },
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
   ),
