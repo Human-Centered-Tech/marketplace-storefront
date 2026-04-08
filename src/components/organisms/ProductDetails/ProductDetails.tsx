@@ -23,8 +23,12 @@ export const ProductDetails = async ({
 
   let wishlist: Wishlist[] = []
   if (user) {
-    const response = await getUserWishlists()
-    wishlist = response.wishlists
+    try {
+      const response = await getUserWishlists()
+      wishlist = response.wishlists
+    } catch {
+      // Wishlist service unavailable — continue without it
+    }
   }
 
   return (

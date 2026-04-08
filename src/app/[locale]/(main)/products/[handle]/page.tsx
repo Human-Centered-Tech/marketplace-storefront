@@ -10,13 +10,19 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { handle, locale } = await params
 
-  const prod = await listProducts({
-    countryCode: locale,
-    queryParams: { handle: [handle], limit: 1 },
-    forceCache: false,
-  }).then(({ response }) => response.products[0])
+  try {
+    const prod = await listProducts({
+      countryCode: locale,
+      queryParams: { handle: [handle], limit: 1 },
+      forceCache: false,
+    }).then(({ response }) => response.products[0])
 
-  return generateProductMetadata(prod)
+    if (!prod) return { title: "Product Not Found" }
+
+    return generateProductMetadata(prod)
+  } catch {
+    return { title: "Product" }
+  }
 }
 
 export default async function ProductPage({

@@ -27,7 +27,7 @@ export function FoundersVision() {
           <span className="font-sans text-[11px] tracking-[0.2em] uppercase text-[#001435] font-bold">
             Our Heart &amp; Soul
           </span>
-          <h2 className="font-serif text-4xl md:text-5xl font-bold text-[#001435] italic leading-tight">
+          <h2 className="font-serif text-4xl md:text-5xl font-bold text-[#001435] leading-tight">
             A Vision for the Marketplace
           </h2>
           <div className="space-y-6 text-lg text-[#44474e] leading-relaxed font-serif">

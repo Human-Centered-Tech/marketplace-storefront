@@ -40,7 +40,7 @@ export const SellerPageHeader = ({
                 <SellerAvatar photo={seller.photo} size={160} alt={seller.name} />
               ) : (
                 <span className="text-[#e7c360] text-6xl font-serif font-bold">
-                  {seller.name.charAt(0)}
+                  {seller.name?.charAt(0) || "?"}
                 </span>
               )}
             </div>
