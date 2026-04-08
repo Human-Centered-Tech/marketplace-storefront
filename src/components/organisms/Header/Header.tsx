@@ -12,13 +12,10 @@ import { retrieveVendorStatus } from "@/lib/data/vendor"
 import { getUserWishlists } from "@/lib/data/wishlist"
 import { Wishlist } from "@/types/wishlist"
 import { Badge } from "@/components/atoms"
-import CountrySelector from "@/components/molecules/CountrySelector/CountrySelector"
-import { listRegions } from "@/lib/data/regions"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 import { MessageButton } from "@/components/molecules/MessageButton/MessageButton"
 
 export const Header = async () => {
-  const regions = await listRegions()
   const user = await retrieveCustomer()
   const vendorStatus = user ? await retrieveVendorStatus() : null
   const isVendor = vendorStatus?.isVendor ?? false
@@ -92,7 +89,6 @@ export const Header = async () => {
         {/* Right — Actions */}
         <div className="flex items-center justify-end gap-3 lg:gap-4 lg:w-1/4">
           <SearchBar variant="header" placeholder="Search curated goods..." />
-          <CountrySelector regions={regions} />
           <CartDropdown />
           {user && (
             <LocalizedClientLink href="/user/wishlist" className="relative">
