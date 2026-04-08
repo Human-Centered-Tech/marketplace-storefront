@@ -76,6 +76,7 @@ export const ProductCard = ({
         href={`/products/${product.handle}`}
         aria-label={`Go to ${productName} page`}
         title={`Go to ${productName} page`}
+        className="flex flex-col flex-1"
       >
         <div className="p-6 flex flex-col flex-1">
           {/* Category label */}
