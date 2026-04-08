@@ -74,10 +74,10 @@ async function AllCategories({
   searchParams,
 }: {
   params: Promise<{ locale: string }>
-  searchParams: Promise<{ q?: string }>
+  searchParams: Promise<{ q?: string; category_id?: string; max_price?: string; sort?: string; seller_id?: string }>
 }) {
   const { locale } = await params
-  const { q } = await searchParams
+  const { q, category_id, max_price, sort, seller_id } = await searchParams
 
   const ua = (await headers()).get("user-agent") || ""
   const bot = isBot(ua)
@@ -157,13 +157,17 @@ async function AllCategories({
 
       <div className="w-full" style={{ backgroundColor: "#faf9f5" }}>
         <div className="max-w-screen-2xl mx-auto px-4 lg:px-8 py-12">
-          <div className="hidden md:block mb-2">
-            <Breadcrumbs items={breadcrumbsItems} />
-          </div>
-
           <Suspense fallback={<ProductListingSkeleton />}>
             {bot || !ALGOLIA_ID || !ALGOLIA_SEARCH_KEY ? (
-              <ProductListing showSidebar locale={locale} searchQuery={q} />
+              <ProductListing
+                showSidebar
+                locale={locale}
+                searchQuery={q}
+                category_id={category_id}
+                maxPrice={max_price ? parseInt(max_price) : undefined}
+                sortBy={sort}
+                seller_id={seller_id}
+              />
             ) : (
               <AlgoliaProductsListing
                 locale={locale}

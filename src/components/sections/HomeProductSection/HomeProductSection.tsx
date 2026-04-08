@@ -18,7 +18,7 @@ export const HomeProductSection = async ({
       <div className="max-w-7xl mx-auto">
       {/* Header row: title — gold line — View All */}
       <div className="flex items-center justify-between mb-12">
-        <h2 className="font-serif text-3xl md:text-4xl font-bold text-[#001435] italic whitespace-nowrap">
+        <h2 className="font-serif text-3xl md:text-4xl font-bold text-[#001435] whitespace-nowrap">
           {heading}
         </h2>
         <div className="h-[1px] flex-grow mx-8 bg-[#BE9B32]/30 hidden sm:block" />

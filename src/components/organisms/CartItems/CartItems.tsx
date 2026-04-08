@@ -14,16 +14,22 @@ export const CartItems = ({ cart }: { cart: HttpTypes.StoreCart | null }) => {
   if (!Object.keys(groupedItems).length) return <EmptyCart />
 
   return Object.keys(groupedItems).map((key) => (
-    <div key={key} className="mb-4">
-      <CartItemsHeader seller={groupedItems[key]?.seller} />
-      <CartItemsProducts
-        products={groupedItems[key].items || []}
-        currency_code={cart.currency_code}
-      />
-      <CartItemsFooter
-        currency_code={cart.currency_code}
-        price={cart.shipping_subtotal}
-      />
+    <div key={key} className="mb-6 border border-[rgba(var(--neutral-100))] rounded-sm overflow-hidden">
+      <div className="p-5 border-b border-[rgba(var(--neutral-100))]">
+        <CartItemsHeader seller={groupedItems[key]?.seller} />
+      </div>
+      <div className="p-5">
+        <CartItemsProducts
+          products={groupedItems[key].items || []}
+          currency_code={cart.currency_code}
+        />
+      </div>
+      <div className="p-5 border-t border-[rgba(var(--neutral-100))] bg-[rgba(var(--neutral-25))]">
+        <CartItemsFooter
+          currency_code={cart.currency_code}
+          price={cart.shipping_subtotal}
+        />
+      </div>
     </div>
   ))
 }

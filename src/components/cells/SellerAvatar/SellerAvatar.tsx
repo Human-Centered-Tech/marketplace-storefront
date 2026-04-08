@@ -16,6 +16,7 @@ export const SellerAvatar = ({
       width={size}
       height={size}
       style={{ width: size, height: size }}
+      className="object-contain"
     />
   ) : (
     <Image

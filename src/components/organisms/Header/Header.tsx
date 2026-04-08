@@ -88,7 +88,7 @@ export const Header = async () => {
 
         {/* Right — Actions */}
         <div className="flex items-center justify-end gap-3 lg:gap-4 lg:w-1/4">
-          <SearchBar variant="header" placeholder="Search curated goods..." />
+          <SearchBar variant="header" placeholder="Search Catholic Owned" />
           <CartDropdown />
           {user && (
             <LocalizedClientLink href="/user/wishlist" className="relative">

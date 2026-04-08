@@ -25,7 +25,7 @@ export const ProductCard = ({
   return (
     <div
       className={clsx(
-        "relative group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 w-full"
+        "relative group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 w-full flex flex-col h-full"
       )}
     >
       {/* Image */}
@@ -77,21 +77,21 @@ export const ProductCard = ({
         aria-label={`Go to ${productName} page`}
         title={`Go to ${productName} page`}
       >
-        <div className="p-6 space-y-2">
+        <div className="p-6 flex flex-col flex-1">
           {/* Category label */}
           <p className="font-sans text-[10px] tracking-[0.2em] uppercase text-[#755b00]">
             {categoryName || "Liturgy & Home"}
           </p>
           {/* Product name */}
-          <h3 className="font-serif text-xl font-bold text-[#001435] leading-snug">
+          <h3 className="font-serif text-xl font-bold text-[#001435] leading-snug mt-2">
             {product.title}
           </h3>
           {/* Vendor name */}
-          <p className="text-sm text-[#75777f] font-medium italic">
+          <p className="text-sm text-[#75777f] font-medium italic mt-2">
             {sellerName ? `by ${sellerName}` : "by Catholic Artisan"}
           </p>
-          {/* Price + Add to Cart */}
-          <div className="flex items-center justify-between pt-4">
+          {/* Price + Add to Cart — pinned to bottom */}
+          <div className="flex items-center justify-between pt-4 mt-auto">
             <div className="flex items-center gap-2">
               <span className="text-lg font-bold text-[#001435]">
                 {cheapestPrice?.calculated_price || "View Price"}

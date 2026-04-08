@@ -50,7 +50,7 @@ export const RelatedProducts = async ({
         <p className="font-sans text-[11px] uppercase tracking-[0.2em] text-[#755b00] mb-2">
           You May Also Seek
         </p>
-        <h2 className="font-serif text-3xl md:text-4xl font-bold text-[#001435] italic">
+        <h2 className="font-serif text-3xl md:text-4xl font-bold text-[#001435]">
           Related Essentials
         </h2>
       </div>

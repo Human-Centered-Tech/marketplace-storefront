@@ -70,7 +70,7 @@ export function SearchBar({
         ref={formRef}
         onSubmit={handleSearch}
         className={`relative hidden lg:flex items-center transition-all duration-300 ${
-          isExpanded ? "w-96" : "w-64"
+          isExpanded ? "w-96" : "w-80"
         }`}
       >
         {/* Scope toggle */}
