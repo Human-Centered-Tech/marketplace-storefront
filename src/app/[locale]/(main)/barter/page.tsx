@@ -16,29 +16,37 @@ export default async function BarterPage() {
 
   return (
     <main>
-      {/* Hero banner */}
-      <div className="bg-navy-dark py-12 lg:py-16 text-center">
-        <div className="max-w-3xl mx-auto px-4">
-          <p className="label-sm text-white/50 tracking-[0.15em] mb-3">
+      {/* Material Symbols for icons */}
+      <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet"
+      />
+      {/* Hero Section */}
+      <section className="relative pt-20 pb-24 lg:pt-24 lg:pb-28 px-4 overflow-hidden bg-cream">
+        <div className="absolute inset-0 pointer-events-none opacity-10" style={{
+          backgroundImage: "radial-gradient(#DECF8F 0.5px, transparent 0.5px)",
+          backgroundSize: "24px 24px",
+        }} />
+        <div className="max-w-5xl mx-auto text-center relative z-10">
+          <p className="label-sm text-gold-dark tracking-[0.3em] mb-4 opacity-80">
             Faith-Led Commerce
           </p>
-          <h1 className="font-serif text-4xl lg:text-5xl font-bold text-white mb-4">
+          <h1 className="display-md text-navy-dark mb-6 tracking-tight">
             Sacred Exchange
           </h1>
-          <p className="text-[16px] text-white/70 italic">
-            &ldquo;Strengthening our community through faithful barter and
-            trade.&rdquo;
+          <p className="font-serif text-xl lg:text-2xl italic text-secondary max-w-2xl mx-auto leading-relaxed">
+            &ldquo;Strengthening our community through faithful barter
+            and trade.&rdquo;
           </p>
         </div>
-      </div>
+      </section>
 
-      <div className="max-w-7xl mx-auto px-4 lg:px-8 py-8 lg:py-12">
-        <BarterSearch
-          initialListings={listingsResult.listings}
-          initialCount={listingsResult.count}
-          categories={categories}
-        />
-      </div>
+      {/* Search, Filters & Listings */}
+      <BarterSearch
+        initialListings={listingsResult.listings}
+        initialCount={listingsResult.count}
+        categories={categories}
+      />
     </main>
   )
 }
