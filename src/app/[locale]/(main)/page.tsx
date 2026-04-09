@@ -164,7 +164,7 @@ export default async function Home({
 
       {/* 1. Hero Section */}
       <Hero
-        image="/images/hero/stpeters.png"
+        image="/images/hero/stpeters.jpg"
         heading="Building the New Catholic Economy"
         paragraph="Discover and support faithful Catholic businesses. Shop artisan goods, browse the professional directory, or connect at networking events."
         buttons={[

@@ -279,25 +279,6 @@ export const BarterDetail = ({
             </div>
           </div>
 
-          {/* Verified Badge */}
-          <div className="bg-[#DECF8F]/10 p-4 rounded-xl flex items-center gap-4 border border-[#DECF8F]/30">
-            <div className="bg-[#DECF8F] text-[#17294A] w-10 h-10 rounded-full flex items-center justify-center shrink-0">
-              <span
-                className="material-symbols-outlined text-xl"
-                style={{
-                  fontVariationSettings: "'FILL' 1",
-                }}
-              >
-                verified_user
-              </span>
-            </div>
-            <div className="label-sm text-[10px] text-secondary leading-tight">
-              <strong className="text-navy-dark">
-                Catholic Owned Community
-              </strong>
-              . All listings are moderated to maintain a faithful marketplace.
-            </div>
-          </div>
         </aside>
       </div>
     </div>
@@ -354,7 +335,8 @@ function LocationMap({
     <div className="h-64 rounded-xl overflow-hidden relative">
       <iframe
         src={embedUrl}
-        className="w-full h-full border-0"
+        className="w-full border-0"
+        style={{ height: "calc(100% + 30px)" }}
         title={`Map of ${locationStr}`}
         loading="lazy"
       />
