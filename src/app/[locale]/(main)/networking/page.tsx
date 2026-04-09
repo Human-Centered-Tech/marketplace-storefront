@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 import { listNetworkingEvents } from "@/lib/data/networking"
-import { NetworkingEventCard } from "@/components/sections/Networking/NetworkingEventCard"
+import { NetworkingEventsView } from "@/components/sections/Networking/NetworkingEventsView"
 
 export const metadata: Metadata = {
   title: "Speed Networking",
@@ -12,43 +12,36 @@ export default async function NetworkingPage() {
   const { events } = await listNetworkingEvents({ status: "published" })
 
   return (
-    <main>
-      {/* Hero banner */}
-      <div className="bg-navy-dark py-12 lg:py-16 text-center">
-        <div className="max-w-3xl mx-auto px-4">
-          <p className="label-sm text-white/50 tracking-[0.15em] mb-3">
+    <main className="bg-[#FAF9F5]">
+      <style>{`body { background-image: none !important; }`}</style>
+      <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet"
+      />
+
+      {/* Hero Section */}
+      <section className="relative py-24 lg:py-32 px-4 text-center overflow-hidden bg-[#FAF9F5]" style={{ backgroundImage: "none" }}>
+        <div className="max-w-4xl mx-auto relative z-10">
+          <p className="label-sm text-gold-dark tracking-[0.3em] mb-4 font-bold opacity-80">
             Building the Mystical Body in Business
           </p>
-          <h1 className="font-serif text-4xl lg:text-5xl font-bold text-white mb-4">
+          <h1 className="display-md text-navy-dark mb-6 tracking-tight">
             Speed Networking
           </h1>
-          <p className="text-[16px] text-white/70">
+          <p className="font-serif text-xl italic text-secondary max-w-2xl mx-auto leading-relaxed">
             Connect with faithful entrepreneurs, skilled artisans, and principled
             professionals. Foster relationships rooted in tradition and excellence.
           </p>
         </div>
-      </div>
+        <div className="absolute bottom-0 left-0 w-full h-px bg-gold/30" />
+      </section>
 
-      <div className="max-w-7xl mx-auto px-4 lg:px-8 py-8 lg:py-12">
-        {events.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-[rgba(var(--neutral-100))] flex items-center justify-center">
-              <span className="font-serif text-2xl text-secondary">📅</span>
-            </div>
-            <p className="font-serif text-xl text-primary mb-2">
-              No upcoming events
-            </p>
-            <p className="text-[14px] text-secondary">
-              Check back soon for new networking opportunities.
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {events.map((event) => (
-              <NetworkingEventCard key={event.id} event={event} />
-            ))}
-          </div>
-        )}
+      {/* Events View (list/calendar + filters) */}
+      <NetworkingEventsView events={events} />
+
+      {/* Decorative vertical accent */}
+      <div className="flex justify-center py-16">
+        <div className="h-24 w-px bg-gradient-to-b from-gold to-transparent" />
       </div>
     </main>
   )

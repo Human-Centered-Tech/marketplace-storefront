@@ -32,7 +32,12 @@ export default async function NetworkingEventPage({ params }: Props) {
   }
 
   return (
-    <main className="container px-4 lg:px-8 py-8">
+    <main className="bg-[#FAF9F5]">
+      <style>{`body { background-image: none !important; }`}</style>
+      <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet"
+      />
       <NetworkingEventDetail event={event} />
     </main>
   )
