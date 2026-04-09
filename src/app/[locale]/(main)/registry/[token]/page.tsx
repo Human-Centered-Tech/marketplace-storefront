@@ -1,5 +1,6 @@
 import { getSharedRegistry } from "@/lib/data/registry"
 import type { Metadata } from "next"
+import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 import { MarkPurchasedButton } from "./MarkPurchasedButton"
 
 type Props = {
@@ -120,21 +121,29 @@ export default async function SharedRegistryPage({ params }: Props) {
                     </p>
                   </div>
 
-                  <div className="flex-shrink-0">
+                  <div className="flex-shrink-0 flex flex-col items-end gap-2">
                     {fulfilled ? (
                       <span className="text-xs px-3 py-1.5 bg-green-100 text-green-800 rounded border border-green-300">
                         Fulfilled
                       </span>
-                    ) : registry.status === "active" ? (
-                      <MarkPurchasedButton
-                        token={token}
-                        itemId={item.id}
-                        remaining={remaining}
-                      />
                     ) : (
-                      <span className="text-xs px-3 py-1.5 bg-yellow-100 text-yellow-800 rounded border border-yellow-300">
-                        {remaining} needed
-                      </span>
+                      <>
+                        {item.product_id && !item.product_id.startsWith("prod_") && (
+                          <LocalizedClientLink
+                            href={`/products/${item.product_id}`}
+                            className="bg-navy-dark text-white px-4 py-2 rounded-sm text-xs uppercase font-medium hover:bg-navy transition-colors text-center"
+                          >
+                            Buy This Gift
+                          </LocalizedClientLink>
+                        )}
+                        {registry.status === "active" && (
+                          <MarkPurchasedButton
+                            token={token}
+                            itemId={item.id}
+                            remaining={remaining}
+                          />
+                        )}
+                      </>
                     )}
                   </div>
                 </div>

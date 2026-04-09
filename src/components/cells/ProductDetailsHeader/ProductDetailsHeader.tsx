@@ -9,7 +9,9 @@ import { addToCart } from "@/lib/data/cart"
 import { Chat } from "@/components/organisms/Chat/Chat"
 import { SellerProps } from "@/types/seller"
 import { WishlistButton } from "../WishlistButton/WishlistButton"
+import { AddToRegistryButton } from "../AddToRegistryButton/AddToRegistryButton"
 import { Wishlist } from "@/types/wishlist"
+import { GiftRegistry } from "@/types/registry"
 import { toast } from "@/lib/helpers/toast"
 import { useCartContext } from "@/components/providers"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
@@ -35,11 +37,13 @@ export const ProductDetailsHeader = ({
   locale,
   user,
   wishlist,
+  registries,
 }: {
   product: HttpTypes.StoreProduct & { seller?: SellerProps }
   locale: string
   user: HttpTypes.StoreCustomer | null
   wishlist?: Wishlist[]
+  registries?: GiftRegistry[]
 }) => {
   const { onAddToCart, cart } = useCartContext()
   const [isAdding, setIsAdding] = useState(false)
@@ -299,6 +303,13 @@ export const ProductDetailsHeader = ({
           productId={product.id}
           wishlist={wishlist}
           user={user}
+        />
+
+        {/* Add to Registry button */}
+        <AddToRegistryButton
+          product={product}
+          user={user}
+          registries={registries || []}
         />
       </div>
 

@@ -3,7 +3,15 @@
 import { useEffect, useState, useCallback } from "react"
 import { useRouter, useParams } from "next/navigation"
 import { GiftRegistry } from "@/types/registry"
+import {
+  getRegistry,
+  updateRegistry,
+  addRegistryItem,
+  deleteRegistryItem,
+  deleteRegistry,
+} from "@/lib/data/registry"
 import { RegistryItemRow } from "@/components/sections/Registry/RegistryItemRow"
+import { ConfirmDialog } from "@/components/molecules/ConfirmDialog/ConfirmDialog"
 import { ShareRegistryButton } from "@/components/sections/Registry/ShareRegistryButton"
 
 const SACRAMENT_TYPES = [
@@ -15,36 +23,23 @@ const SACRAMENT_TYPES = [
   { value: "other", label: "Other" },
 ]
 
-const backendUrl =
-  process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9000"
-const apiKey = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || ""
-
-const fetchHeaders = {
-  "Content-Type": "application/json",
-  "x-publishable-api-key": apiKey,
-}
-
 export default function RegistryDetailPage() {
   const router = useRouter()
   const params = useParams()
   const id = params.id as string
+  const locale = params.locale as string
 
   const [registry, setRegistry] = useState<GiftRegistry | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [editing, setEditing] = useState(false)
   const [addingItem, setAddingItem] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
 
   const fetchRegistry = useCallback(async () => {
     try {
-      const res = await fetch(`${backendUrl}/store/registry/${id}`, {
-        headers: { "x-publishable-api-key": apiKey },
-        credentials: "include",
-        cache: "no-cache",
-      })
-      if (!res.ok) throw new Error("Failed to fetch registry")
-      const data = await res.json()
-      setRegistry(data.registry)
+      const data = await getRegistry(id)
+      setRegistry(data)
     } catch {
       setError("Could not load registry")
     } finally {
@@ -67,15 +62,8 @@ export default function RegistryDetailPage() {
     }
 
     try {
-      const res = await fetch(`${backendUrl}/store/registry/${id}`, {
-        method: "PUT",
-        headers: fetchHeaders,
-        credentials: "include",
-        body: JSON.stringify(body),
-      })
-      if (!res.ok) throw new Error("Failed to update registry")
-      const data = await res.json()
-      setRegistry(data.registry)
+      const updated = await updateRegistry(id, body)
+      setRegistry(updated)
       setEditing(false)
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Update failed")
@@ -93,13 +81,7 @@ export default function RegistryDetailPage() {
     }
 
     try {
-      const res = await fetch(`${backendUrl}/store/registry/${id}/items`, {
-        method: "POST",
-        headers: fetchHeaders,
-        credentials: "include",
-        body: JSON.stringify(body),
-      })
-      if (!res.ok) throw new Error("Failed to add item")
+      await addRegistryItem(id, body)
       setAddingItem(false)
       fetchRegistry()
     } catch (err: unknown) {
@@ -109,18 +91,21 @@ export default function RegistryDetailPage() {
 
   const handleDeleteItem = async (itemId: string) => {
     try {
-      const res = await fetch(
-        `${backendUrl}/store/registry/${id}/items/${itemId}`,
-        {
-          method: "DELETE",
-          headers: fetchHeaders,
-          credentials: "include",
-        }
-      )
-      if (!res.ok) throw new Error("Failed to delete item")
+      await deleteRegistryItem(id, itemId)
       fetchRegistry()
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to delete item")
+    }
+  }
+
+  const handleDelete = async () => {
+    try {
+      await deleteRegistry(id)
+      router.push(`/${locale}/user/registry`)
+      router.refresh()
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to delete registry")
+      setConfirmDelete(false)
     }
   }
 
@@ -128,15 +113,8 @@ export default function RegistryDetailPage() {
     status: "active" | "closed" | "archived"
   ) => {
     try {
-      const res = await fetch(`${backendUrl}/store/registry/${id}`, {
-        method: "PUT",
-        headers: fetchHeaders,
-        credentials: "include",
-        body: JSON.stringify({ status }),
-      })
-      if (!res.ok) throw new Error("Failed to update status")
-      const data = await res.json()
-      setRegistry(data.registry)
+      const updated = await updateRegistry(id, { status })
+      setRegistry(updated)
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Status update failed")
     }
@@ -161,7 +139,7 @@ export default function RegistryDetailPage() {
   return (
     <main className="container py-8">
       <button
-        onClick={() => router.push("/user/registry")}
+        onClick={() => router.push(`/${locale}/user/registry`)}
         className="text-sm text-secondary underline mb-4 inline-block"
       >
         &larr; Back to My Registries
@@ -183,7 +161,7 @@ export default function RegistryDetailPage() {
       {editing ? (
         <form onSubmit={handleUpdateRegistry} className="space-y-4 mb-8">
           <div>
-            <label className="block text-sm font-medium text-primary mb-1">
+            <label className="block text-sm font-medium text-navy-dark mb-1">
               Title
             </label>
             <input
@@ -195,7 +173,7 @@ export default function RegistryDetailPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-primary mb-1">
+            <label className="block text-sm font-medium text-navy-dark mb-1">
               Description
             </label>
             <textarea
@@ -206,7 +184,7 @@ export default function RegistryDetailPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-primary mb-1">
+            <label className="block text-sm font-medium text-navy-dark mb-1">
               Sacrament Type
             </label>
             <select
@@ -222,7 +200,7 @@ export default function RegistryDetailPage() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-primary mb-1">
+            <label className="block text-sm font-medium text-navy-dark mb-1">
               Event Date
             </label>
             <input
@@ -235,14 +213,14 @@ export default function RegistryDetailPage() {
           <div className="flex gap-3">
             <button
               type="submit"
-              className="bg-primary text-white px-4 py-2 rounded-sm text-sm uppercase font-medium"
+              className="bg-navy-dark text-white px-4 py-2 rounded-sm text-sm uppercase font-medium"
             >
               Save Changes
             </button>
             <button
               type="button"
               onClick={() => setEditing(false)}
-              className="border border-primary text-primary px-4 py-2 rounded-sm text-sm uppercase font-medium"
+              className="border border-navy-dark text-navy-dark px-4 py-2 rounded-sm text-sm uppercase font-medium"
             >
               Cancel
             </button>
@@ -252,7 +230,7 @@ export default function RegistryDetailPage() {
         <div className="border rounded-sm p-6 mb-6">
           <div className="flex items-start justify-between">
             <div>
-              <h1 className="heading-xl text-primary">{registry.title}</h1>
+              <h1 className="heading-xl text-navy-dark">{registry.title}</h1>
               <p className="text-sm text-secondary mt-1">
                 {SACRAMENT_TYPES.find(
                   (t) => t.value === registry.sacrament_type
@@ -278,14 +256,14 @@ export default function RegistryDetailPage() {
             <div className="flex gap-2">
               <button
                 onClick={() => setEditing(true)}
-                className="bg-primary text-white px-4 py-2 rounded-sm text-sm uppercase font-medium"
+                className="bg-navy-dark text-white px-4 py-2 rounded-sm text-sm uppercase font-medium"
               >
                 Edit
               </button>
               {registry.status === "active" && (
                 <button
                   onClick={() => handleStatusChange("closed")}
-                  className="border border-primary text-primary px-4 py-2 rounded-sm text-sm uppercase font-medium"
+                  className="border border-navy-dark text-navy-dark px-4 py-2 rounded-sm text-sm uppercase font-medium"
                 >
                   Close
                 </button>
@@ -306,6 +284,12 @@ export default function RegistryDetailPage() {
                   </button>
                 </>
               )}
+              <button
+                onClick={() => setConfirmDelete(true)}
+                className="border border-red-600 text-red-600 px-4 py-2 rounded-sm text-sm uppercase font-medium hover:bg-red-50 transition-colors"
+              >
+                Delete
+              </button>
             </div>
           </div>
           {registry.description && (
@@ -318,20 +302,20 @@ export default function RegistryDetailPage() {
 
       {/* Share Link */}
       <div className="mb-6">
-        <h2 className="heading-sm text-primary mb-2">Share This Registry</h2>
+        <h2 className="heading-sm text-navy-dark mb-2">Share This Registry</h2>
         <ShareRegistryButton token={registry.sharing_token} />
       </div>
 
       {/* Items */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="heading-sm text-primary">
+          <h2 className="heading-sm text-navy-dark">
             Items ({registry.items?.length || 0})
           </h2>
           {registry.status === "active" && (
             <button
               onClick={() => setAddingItem(!addingItem)}
-              className="bg-primary text-white px-4 py-2 rounded-sm text-sm uppercase font-medium"
+              className="bg-navy-dark text-white px-4 py-2 rounded-sm text-sm uppercase font-medium"
             >
               {addingItem ? "Cancel" : "Add Item"}
             </button>
@@ -344,7 +328,7 @@ export default function RegistryDetailPage() {
             className="border rounded-sm p-4 mb-4 space-y-3"
           >
             <div>
-              <label className="block text-sm font-medium text-primary mb-1">
+              <label className="block text-sm font-medium text-navy-dark mb-1">
                 Product Title *
               </label>
               <input
@@ -356,7 +340,7 @@ export default function RegistryDetailPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-primary mb-1">
+              <label className="block text-sm font-medium text-navy-dark mb-1">
                 Product Image URL
               </label>
               <input
@@ -368,7 +352,7 @@ export default function RegistryDetailPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-primary mb-1">
+                <label className="block text-sm font-medium text-navy-dark mb-1">
                   Quantity Desired *
                 </label>
                 <input
@@ -381,7 +365,7 @@ export default function RegistryDetailPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-primary mb-1">
+                <label className="block text-sm font-medium text-navy-dark mb-1">
                   Note
                 </label>
                 <input
@@ -394,7 +378,7 @@ export default function RegistryDetailPage() {
             </div>
             <button
               type="submit"
-              className="bg-primary text-white px-4 py-2 rounded-sm text-sm uppercase font-medium"
+              className="bg-navy-dark text-white px-4 py-2 rounded-sm text-sm uppercase font-medium"
             >
               Add Item
             </button>
@@ -419,6 +403,16 @@ export default function RegistryDetailPage() {
           </p>
         )}
       </div>
+      <ConfirmDialog
+        open={confirmDelete}
+        title="Delete Registry"
+        message="Are you sure you want to delete this registry? All items will be removed and shared links will stop working. This cannot be undone."
+        confirmLabel="Delete Registry"
+        cancelLabel="Keep It"
+        variant="danger"
+        onConfirm={handleDelete}
+        onCancel={() => setConfirmDelete(false)}
+      />
     </main>
   )
 }
