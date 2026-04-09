@@ -1,6 +1,7 @@
 "use client"
 
 import { GiftRegistryItem } from "@/types/registry"
+import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 
 export const RegistryItemRow = ({
   item,
@@ -28,8 +29,17 @@ export const RegistryItemRow = ({
       )}
 
       <div className="flex-1 min-w-0">
-        <h4 className="text-sm font-medium text-primary truncate">
-          {item.product_title}
+        <h4 className="text-sm font-medium text-navy-dark truncate">
+          {item.product_id ? (
+            <LocalizedClientLink
+              href={`/products/${item.product_id}`}
+              className="hover:text-gold-dark underline underline-offset-2 decoration-gold/30 transition-colors"
+            >
+              {item.product_title}
+            </LocalizedClientLink>
+          ) : (
+            item.product_title
+          )}
         </h4>
         {item.note && (
           <p className="text-xs text-secondary mt-0.5 line-clamp-1">

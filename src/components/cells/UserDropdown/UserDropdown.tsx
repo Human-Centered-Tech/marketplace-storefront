@@ -46,6 +46,7 @@ export const UserDropdown = ({
                 Your account
               </h3>
             </div>
+            <NavigationItem href="/user">My Account</NavigationItem>
             <NavigationItem href="/user/orders">Orders</NavigationItem>
             <NavigationItem href="/user/messages" className="relative">
               Messages

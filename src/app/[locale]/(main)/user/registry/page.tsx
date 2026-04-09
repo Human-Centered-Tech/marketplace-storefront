@@ -25,7 +25,7 @@ export default async function UserRegistryPage() {
             <h1 className="heading-xl uppercase">My Gift Registries</h1>
             <LocalizedClientLink
               href="/user/registry/create"
-              className="bg-primary text-white px-6 py-2 rounded-sm text-sm uppercase font-medium"
+              className="bg-navy-dark text-white px-6 py-2 rounded-sm text-sm uppercase font-medium"
             >
               Create Registry
             </LocalizedClientLink>

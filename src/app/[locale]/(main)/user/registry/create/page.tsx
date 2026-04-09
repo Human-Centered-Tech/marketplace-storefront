@@ -1,7 +1,8 @@
 "use client"
 
-import { useRouter } from "next/navigation"
+import { useRouter, useParams } from "next/navigation"
 import { useState } from "react"
+import { createRegistry } from "@/lib/data/registry"
 
 const SACRAMENT_TYPES = [
   { value: "wedding", label: "Wedding" },
@@ -14,6 +15,7 @@ const SACRAMENT_TYPES = [
 
 export default function CreateRegistryPage() {
   const router = useRouter()
+  const { locale } = useParams()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -31,26 +33,8 @@ export default function CreateRegistryPage() {
     }
 
     try {
-      const backendUrl =
-        process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9000"
-      const res = await fetch(`${backendUrl}/store/registry`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-publishable-api-key":
-            process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "",
-        },
-        credentials: "include",
-        body: JSON.stringify(data),
-      })
-
-      if (!res.ok) {
-        const err = await res.json()
-        throw new Error(err.message || "Failed to create registry")
-      }
-
-      const { registry } = await res.json()
-      router.push(`/user/registry/${registry.id}`)
+      await createRegistry(data)
+      router.push(`/${locale}/user/registry`)
       router.refresh()
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong")
@@ -73,7 +57,7 @@ export default function CreateRegistryPage() {
           <div>
             <label
               htmlFor="title"
-              className="block text-sm font-medium text-primary mb-1"
+              className="block text-sm font-medium text-navy-dark mb-1"
             >
               Registry Title *
             </label>
@@ -90,7 +74,7 @@ export default function CreateRegistryPage() {
           <div>
             <label
               htmlFor="description"
-              className="block text-sm font-medium text-primary mb-1"
+              className="block text-sm font-medium text-navy-dark mb-1"
             >
               Description
             </label>
@@ -106,7 +90,7 @@ export default function CreateRegistryPage() {
           <div>
             <label
               htmlFor="sacrament_type"
-              className="block text-sm font-medium text-primary mb-1"
+              className="block text-sm font-medium text-navy-dark mb-1"
             >
               Sacrament Type *
             </label>
@@ -128,7 +112,7 @@ export default function CreateRegistryPage() {
           <div>
             <label
               htmlFor="event_date"
-              className="block text-sm font-medium text-primary mb-1"
+              className="block text-sm font-medium text-navy-dark mb-1"
             >
               Event Date
             </label>
@@ -144,14 +128,14 @@ export default function CreateRegistryPage() {
             <button
               type="submit"
               disabled={loading}
-              className="bg-primary text-white px-6 py-2 rounded-sm text-sm uppercase font-medium disabled:opacity-50"
+              className="bg-navy-dark text-white px-6 py-2 rounded-sm text-sm uppercase font-medium disabled:opacity-50"
             >
               {loading ? "Creating..." : "Create Registry"}
             </button>
             <button
               type="button"
               onClick={() => router.back()}
-              className="border border-primary text-primary px-6 py-2 rounded-sm text-sm uppercase font-medium"
+              className="border border-navy-dark text-navy-dark px-6 py-2 rounded-sm text-sm uppercase font-medium"
             >
               Cancel
             </button>
