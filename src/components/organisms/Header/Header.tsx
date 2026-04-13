@@ -42,7 +42,7 @@ export const Header = async () => {
     <header className="border-b border-[rgba(var(--neutral-100))] bg-[rgba(var(--neutral-0),0.95)] backdrop-blur-sm sticky top-0 z-50">
       {/* Top row — Logo, Search, Actions */}
       <div className="flex items-center py-3 lg:px-8 px-4">
-        <div className="flex items-center shrink-0">
+        <div className="flex items-center shrink-0 self-center">
           <MobileNavbar
             parentCategories={parentCategories}
             childrenCategories={categories}
@@ -54,6 +54,7 @@ export const Header = async () => {
               height={70}
               alt="Catholic Owned"
               priority
+              className="object-contain"
             />
           </LocalizedClientLink>
         </div>
@@ -90,7 +91,7 @@ export const Header = async () => {
       </div>
 
       {/* Bottom row — Navigation */}
-      <nav className="hidden lg:flex items-center justify-center gap-8 pb-2 lg:px-8">
+      <nav className="hidden lg:flex items-center justify-center gap-8 -mt-4 pb-1 lg:px-8">
         <LocalizedClientLink
           href="/categories"
           className="text-[13px] font-medium uppercase tracking-[0.1em] text-primary hover:text-action transition-colors"
