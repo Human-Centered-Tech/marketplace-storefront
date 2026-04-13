@@ -53,7 +53,7 @@ export function SearchBar({
       <form
         ref={formRef}
         onSubmit={handleSearch}
-        className="relative flex items-center w-full max-w-2xl"
+        className="relative flex items-center w-[500px]"
       >
         <input
           ref={inputRef}
