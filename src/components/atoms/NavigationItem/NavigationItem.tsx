@@ -15,7 +15,7 @@ export const NavigationItem: React.FC<NavigationItemProps> = ({
   <LocalizedClientLink
     href={href}
     className={cn(
-      "label-md uppercase px-4 py-3 my-3 md:my-0 flex items-center justify-between",
+      "label-md uppercase px-4 py-3 my-3 md:my-0 flex items-center justify-between rounded-sm hover:bg-black/5 transition-colors",
       active && "underline  underline-offset-8",
       className
     )}

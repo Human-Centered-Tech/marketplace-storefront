@@ -40,9 +40,9 @@ export const Header = async () => {
 
   return (
     <header className="border-b border-[rgba(var(--neutral-100))] bg-[rgba(var(--neutral-0),0.95)] backdrop-blur-sm sticky top-0 z-50">
+      {/* Top row — Logo, Search, Actions */}
       <div className="flex items-center py-3 lg:px-8 px-4">
-        {/* Left — Logo */}
-        <div className="flex items-center lg:w-1/4">
+        <div className="flex items-center shrink-0 self-center">
           <MobileNavbar
             parentCategories={parentCategories}
             childrenCategories={categories}
@@ -54,41 +54,18 @@ export const Header = async () => {
               height={70}
               alt="Catholic Owned"
               priority
+              className="object-contain"
             />
           </LocalizedClientLink>
         </div>
 
-        {/* Center — Navigation */}
-        <nav className="hidden lg:flex items-center justify-center gap-8 flex-1">
-          <LocalizedClientLink
-            href="/categories"
-            className="text-[13px] font-medium uppercase tracking-[0.1em] text-primary hover:text-action transition-colors"
-          >
-            Shop
-          </LocalizedClientLink>
-          <LocalizedClientLink
-            href="/directory"
-            className="text-[13px] font-medium uppercase tracking-[0.1em] text-primary hover:text-action transition-colors"
-          >
-            Directory
-          </LocalizedClientLink>
-          <LocalizedClientLink
-            href="/networking"
-            className="text-[13px] font-medium uppercase tracking-[0.1em] text-primary hover:text-action transition-colors"
-          >
-            Events
-          </LocalizedClientLink>
-          <LocalizedClientLink
-            href="/barter"
-            className="text-[13px] font-medium uppercase tracking-[0.1em] text-primary hover:text-action transition-colors"
-          >
-            Barter
-          </LocalizedClientLink>
-        </nav>
+        {/* Center — Search bar */}
+        <div className="hidden lg:flex flex-1 justify-center px-8">
+          <SearchBar variant="header" placeholder="Search Catholic Owned" />
+        </div>
 
         {/* Right — Actions */}
-        <div className="flex items-center justify-end gap-3 lg:gap-4 lg:w-1/4">
-          <SearchBar variant="header" placeholder="Search Catholic Owned" />
+        <div className="flex items-center justify-end gap-3 lg:gap-4 shrink-0">
           <CartDropdown />
           {user && (
             <LocalizedClientLink href="/user/wishlist" className="relative">
@@ -112,6 +89,34 @@ export const Header = async () => {
           )}
         </div>
       </div>
+
+      {/* Bottom row — Navigation */}
+      <nav className="hidden lg:flex items-center justify-center gap-8 -mt-4 pb-1 lg:px-8">
+        <LocalizedClientLink
+          href="/categories"
+          className="text-[13px] font-medium uppercase tracking-[0.1em] text-primary hover:text-action transition-colors"
+        >
+          Shop
+        </LocalizedClientLink>
+        <LocalizedClientLink
+          href="/directory"
+          className="text-[13px] font-medium uppercase tracking-[0.1em] text-primary hover:text-action transition-colors"
+        >
+          Directory
+        </LocalizedClientLink>
+        <LocalizedClientLink
+          href="/networking"
+          className="text-[13px] font-medium uppercase tracking-[0.1em] text-primary hover:text-action transition-colors"
+        >
+          Events
+        </LocalizedClientLink>
+        <LocalizedClientLink
+          href="/barter"
+          className="text-[13px] font-medium uppercase tracking-[0.1em] text-primary hover:text-action transition-colors"
+        >
+          Barter
+        </LocalizedClientLink>
+      </nav>
     </header>
   )
 }
