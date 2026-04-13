@@ -314,6 +314,11 @@ export const updateCustomerPassword = async (
   return res
 }
 
+export async function acceptCustomerHandoff(token: string) {
+  await setAuthToken(token)
+  await setVendorFlag(true)
+}
+
 export const sendResetPasswordEmail = async (email: string) => {
   const res = await sdk.auth
     .resetPassword("customer", "emailpass", {
