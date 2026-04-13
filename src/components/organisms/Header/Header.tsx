@@ -41,8 +41,8 @@ export const Header = async () => {
   return (
     <header className="border-b border-[rgba(var(--neutral-100))] bg-[rgba(var(--neutral-0),0.95)] backdrop-blur-sm sticky top-0 z-50">
       {/* Top row — Logo, Search, Actions */}
-      <div className="flex items-center py-3 lg:px-8 px-4">
-        <div className="flex items-center shrink-0 self-center">
+      <div className="flex items-center py-3 lg:px-8 px-4 lg:grid lg:grid-cols-[1fr_auto_1fr]">
+        <div className="flex items-center self-center">
           <MobileNavbar
             parentCategories={parentCategories}
             childrenCategories={categories}
@@ -60,12 +60,12 @@ export const Header = async () => {
         </div>
 
         {/* Center — Search bar */}
-        <div className="hidden lg:flex flex-1 justify-center px-8">
+        <div className="hidden lg:flex justify-center px-8">
           <SearchBar variant="header" placeholder="Search Catholic Owned" />
         </div>
 
         {/* Right — Actions */}
-        <div className="flex items-center justify-end gap-3 lg:gap-4 shrink-0">
+        <div className="flex items-center justify-end gap-3 lg:gap-4">
           <CartDropdown />
           {user && (
             <LocalizedClientLink href="/user/wishlist" className="relative">
