@@ -9,33 +9,37 @@ import {
 import { Button } from "@/components/atoms"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { LabeledInput } from "@/components/cells"
-import { registerFormSchema, RegisterFormData } from "./schema"
+import { registerFormSchema, vendorRegisterFormSchema, RegisterFormData } from "./schema"
 import { signup } from "@/lib/data/customer"
+import { becomeVendor } from "@/lib/data/vendor"
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { PasswordValidator } from "@/components/cells/PasswordValidator/PasswordValidator"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 
-export const RegisterForm = () => {
+export const RegisterForm = ({ vendorFlow = false }: { vendorFlow?: boolean }) => {
   const methods = useForm<RegisterFormData>({
-    resolver: zodResolver(registerFormSchema),
+    resolver: zodResolver(vendorFlow ? vendorRegisterFormSchema : registerFormSchema),
     defaultValues: {
       firstName: "",
       lastName: "",
       phone: "",
       email: "",
       password: "",
+      businessName: "",
     },
   })
 
   return (
     <FormProvider {...methods}>
-      <Form />
+      <Form vendorFlow={vendorFlow} />
     </FormProvider>
   )
 }
 
-const Form = () => {
+const Form = ({ vendorFlow }: { vendorFlow: boolean }) => {
+  const router = useRouter()
   const [passwordError, setPasswordError] = useState({
     isValid: false,
     lower: false,
@@ -61,7 +65,23 @@ const Form = () => {
 
     const res = passwordError.isValid && (await signup(formData))
 
-    if (res && !res?.id) setError(res)
+    if (res && !res?.id) {
+      setError(res)
+      return
+    }
+
+    if (res?.id && vendorFlow && data.businessName) {
+      const vendorFormData = new FormData()
+      vendorFormData.append("name", data.businessName)
+      vendorFormData.append("email", data.email)
+      vendorFormData.append("password", data.password)
+
+      const vendorRes = await becomeVendor(vendorFormData)
+      if (!vendorRes.success) {
+        setError(vendorRes.error as any)
+        return
+      }
+    }
   }
 
   return (
@@ -75,8 +95,9 @@ const Form = () => {
               Catholic Economy®
             </h1>
             <p className="text-[14px] text-secondary">
-              Create your account to start shopping or selling with faithful
-              Catholic businesses.
+              {vendorFlow
+                ? "Create your account to start selling on Catholic Owned."
+                : "Create your account to start shopping or selling with faithful Catholic businesses."}
             </p>
           </div>
 
@@ -103,6 +124,14 @@ const Form = () => {
               error={errors.email as FieldError}
               {...register("email")}
             />
+            {vendorFlow && (
+              <LabeledInput
+                label="Business Name"
+                placeholder="Your business or company name"
+                error={errors.businessName as FieldError}
+                {...register("businessName")}
+              />
+            )}
             <div className="flex flex-col md:flex-row gap-4">
               <LabeledInput
                 className="md:w-1/2"
@@ -147,7 +176,7 @@ const Form = () => {
               disabled={isSubmitting}
               loading={isSubmitting}
             >
-              Create Account ✝
+              {vendorFlow ? "Create Vendor Account ✝" : "Create Account ✝"}
             </Button>
           </form>
 
