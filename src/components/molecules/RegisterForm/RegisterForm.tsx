@@ -9,8 +9,9 @@ import {
 import { Button } from "@/components/atoms"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { LabeledInput } from "@/components/cells"
-import { registerFormSchema, RegisterFormData } from "./schema"
+import { registerFormSchema, vendorRegisterFormSchema, RegisterFormData } from "./schema"
 import { signup } from "@/lib/data/customer"
+import { becomeVendor } from "@/lib/data/vendor"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
@@ -19,13 +20,14 @@ import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedL
 
 export const RegisterForm = ({ vendorFlow = false }: { vendorFlow?: boolean }) => {
   const methods = useForm<RegisterFormData>({
-    resolver: zodResolver(registerFormSchema),
+    resolver: zodResolver(vendorFlow ? vendorRegisterFormSchema : registerFormSchema),
     defaultValues: {
       firstName: "",
       lastName: "",
       phone: "",
       email: "",
       password: "",
+      businessName: "",
     },
   })
 
@@ -63,9 +65,22 @@ const Form = ({ vendorFlow }: { vendorFlow: boolean }) => {
 
     const res = passwordError.isValid && (await signup(formData))
 
-    if (res && !res?.id) setError(res)
-    if (res?.id && vendorFlow) {
-      router.push("/user/become-vendor")
+    if (res && !res?.id) {
+      setError(res)
+      return
+    }
+
+    if (res?.id && vendorFlow && data.businessName) {
+      const vendorFormData = new FormData()
+      vendorFormData.append("name", data.businessName)
+      vendorFormData.append("email", data.email)
+      vendorFormData.append("password", data.password)
+
+      const vendorRes = await becomeVendor(vendorFormData)
+      if (!vendorRes.success) {
+        setError(vendorRes.error as any)
+        return
+      }
     }
   }
 
@@ -109,6 +124,14 @@ const Form = ({ vendorFlow }: { vendorFlow: boolean }) => {
               error={errors.email as FieldError}
               {...register("email")}
             />
+            {vendorFlow && (
+              <LabeledInput
+                label="Business Name"
+                placeholder="Your business or company name"
+                error={errors.businessName as FieldError}
+                {...register("businessName")}
+              />
+            )}
             <div className="flex flex-col md:flex-row gap-4">
               <LabeledInput
                 className="md:w-1/2"
@@ -153,7 +176,7 @@ const Form = ({ vendorFlow }: { vendorFlow: boolean }) => {
               disabled={isSubmitting}
               loading={isSubmitting}
             >
-              Create Account ✝
+              {vendorFlow ? "Create Vendor Account ✝" : "Create Account ✝"}
             </Button>
           </form>
 

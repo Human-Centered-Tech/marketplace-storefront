@@ -16,6 +16,11 @@ export const registerFormSchema = z.object({
     .string()
     .min(6, "Please enter phone number")
     .regex(/^\+?\d+$/, { message: "Mobile phone must contain digits only" }),
+  businessName: z.string().optional(),
+})
+
+export const vendorRegisterFormSchema = registerFormSchema.extend({
+  businessName: z.string().nonempty("Please enter your business name"),
 })
 
 export type RegisterFormData = z.infer<typeof registerFormSchema>
