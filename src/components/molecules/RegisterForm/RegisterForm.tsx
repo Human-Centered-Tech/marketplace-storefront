@@ -12,11 +12,12 @@ import { LabeledInput } from "@/components/cells"
 import { registerFormSchema, RegisterFormData } from "./schema"
 import { signup } from "@/lib/data/customer"
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { PasswordValidator } from "@/components/cells/PasswordValidator/PasswordValidator"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 
-export const RegisterForm = () => {
+export const RegisterForm = ({ vendorFlow = false }: { vendorFlow?: boolean }) => {
   const methods = useForm<RegisterFormData>({
     resolver: zodResolver(registerFormSchema),
     defaultValues: {
@@ -30,12 +31,13 @@ export const RegisterForm = () => {
 
   return (
     <FormProvider {...methods}>
-      <Form />
+      <Form vendorFlow={vendorFlow} />
     </FormProvider>
   )
 }
 
-const Form = () => {
+const Form = ({ vendorFlow }: { vendorFlow: boolean }) => {
+  const router = useRouter()
   const [passwordError, setPasswordError] = useState({
     isValid: false,
     lower: false,
@@ -62,6 +64,9 @@ const Form = () => {
     const res = passwordError.isValid && (await signup(formData))
 
     if (res && !res?.id) setError(res)
+    if (res?.id && vendorFlow) {
+      router.push("/user/become-vendor")
+    }
   }
 
   return (
@@ -75,8 +80,9 @@ const Form = () => {
               Catholic Economy®
             </h1>
             <p className="text-[14px] text-secondary">
-              Create your account to start shopping or selling with faithful
-              Catholic businesses.
+              {vendorFlow
+                ? "Create your account to start selling on Catholic Owned."
+                : "Create your account to start shopping or selling with faithful Catholic businesses."}
             </p>
           </div>
 
