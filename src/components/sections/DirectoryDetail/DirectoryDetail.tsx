@@ -29,6 +29,14 @@ const dayNames = [
   "sunday",
 ]
 
+const ctaLabels: Record<string, string> = {
+  visit_shop: "Visit Our Shop",
+  book_now: "Book Now",
+  shop_now: "Shop Now",
+  learn_more: "Learn More",
+  book_a_call: "Book a Call",
+}
+
 export const DirectoryDetail = ({
   listing,
 }: {
@@ -163,6 +171,95 @@ export const DirectoryDetail = ({
               </div>
             )}
 
+            {/* Owner Interview */}
+            {listing.owner_interview &&
+              ([1, 2, 3, 4] as const).some(
+                (n) => (listing.owner_interview as any)?.[`q${n}_answer`]
+              ) && (
+                <div>
+                  <h2 className="label-sm text-[10px] text-gold-dark font-bold tracking-[0.2em] mb-4">
+                    MEET THE OWNER
+                  </h2>
+                  <div className="h-px w-full bg-gold/30 mb-8" />
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+                    {listing.owner_interview.photo_url && (
+                      <div className="md:col-span-1">
+                        <img
+                          src={listing.owner_interview.photo_url}
+                          alt="Owner"
+                          className="w-full aspect-square object-cover rounded-xl"
+                        />
+                      </div>
+                    )}
+                    <div
+                      className={`space-y-5 ${
+                        listing.owner_interview.photo_url
+                          ? "md:col-span-2"
+                          : "md:col-span-3"
+                      }`}
+                    >
+                      {([1, 2, 3, 4] as const).map((n) => {
+                        const prompt = (listing.owner_interview as any)?.[
+                          `q${n}_prompt`
+                        ]
+                        const answer = (listing.owner_interview as any)?.[
+                          `q${n}_answer`
+                        ]
+                        if (!answer) return null
+                        return (
+                          <div key={n}>
+                            <p className="font-serif italic text-secondary mb-1">
+                              {prompt}
+                            </p>
+                            <p className="font-serif text-lg text-primary whitespace-pre-wrap">
+                              {answer}
+                            </p>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+            {/* Devotional */}
+            {listing.devotional &&
+              (listing.devotional.question || listing.devotional.image_url) && (
+                <div>
+                  <h2 className="label-sm text-[10px] text-gold-dark font-bold tracking-[0.2em] mb-4">
+                    DEVOTIONAL
+                  </h2>
+                  <div className="h-px w-full bg-gold/30 mb-8" />
+                  <div className="bg-gray-50 p-6 rounded-xl grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                    {listing.devotional.image_url && (
+                      <img
+                        src={listing.devotional.image_url}
+                        alt="Devotional"
+                        className="w-full aspect-square object-cover rounded-xl md:col-span-1"
+                      />
+                    )}
+                    <div
+                      className={
+                        listing.devotional.image_url
+                          ? "md:col-span-2"
+                          : "md:col-span-3"
+                      }
+                    >
+                      {listing.devotional.question && (
+                        <p className="font-serif italic text-lg text-navy-dark mb-2">
+                          {listing.devotional.question}
+                        </p>
+                      )}
+                      {listing.devotional.answer && (
+                        <p className="font-serif text-primary whitespace-pre-wrap">
+                          {listing.devotional.answer}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
             {/* Parish Affiliations */}
             {listing.affiliations && listing.affiliations.length > 0 && (
               <div className="bg-gray-50 p-6 rounded-xl flex items-center gap-4">
@@ -272,28 +369,68 @@ export const DirectoryDetail = ({
 
           {/* Right Column / Sidebar */}
           <div className="lg:col-span-4 space-y-8">
-            {/* CTA Card */}
-            {listing.website_url && (
-              <div className="bg-navy-dark p-8 rounded-xl text-center shadow-2xl">
-                <a
-                  href={listing.website_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full bg-[#F2CD69] text-navy-dark py-4 rounded-xl label-sm text-[10px] font-bold tracking-widest flex items-center justify-center gap-3 hover:brightness-105 transition-all active:scale-95 mb-4"
-                >
-                  <span className="material-symbols-outlined">language</span>
-                  Visit Website
-                </a>
-                {locationStr && (
-                  <p className="text-white/60 text-xs label-sm tracking-wider">
-                    {locationStr}
-                  </p>
-                )}
-              </div>
-            )}
+            {/* CTA Card — conditional per 4/1 */}
+            {(() => {
+              const ctaType = listing.cta_type || "visit_shop"
+              const hasShop = Boolean(listing.vendor_id)
+              let href: string | null = null
+              let label = ctaLabels[ctaType] || "Learn More"
+
+              if (ctaType === "visit_shop") {
+                if (hasShop) {
+                  href = `/sellers/${listing.slug}`
+                  label = "Visit Our Shop"
+                } else if (listing.website_url) {
+                  href = listing.website_url
+                  label = "Visit Website"
+                }
+              } else {
+                href = listing.cta_url || null
+              }
+
+              if (!href) return null
+
+              const external = href.startsWith("http")
+              return (
+                <div className="bg-navy-dark p-8 rounded-xl text-center shadow-2xl">
+                  <a
+                    href={href}
+                    target={external ? "_blank" : undefined}
+                    rel={external ? "noopener noreferrer" : undefined}
+                    className="w-full bg-[#F2CD69] text-navy-dark py-4 rounded-xl label-sm text-[10px] font-bold tracking-widest flex items-center justify-center gap-3 hover:brightness-105 transition-all active:scale-95 mb-4"
+                  >
+                    <span className="material-symbols-outlined">
+                      {ctaType === "book_now" || ctaType === "book_a_call"
+                        ? "event"
+                        : ctaType === "shop_now" || ctaType === "visit_shop"
+                        ? "storefront"
+                        : "language"}
+                    </span>
+                    {label}
+                  </a>
+                  {locationStr && (
+                    <p className="text-white/60 text-xs label-sm tracking-wider">
+                      {locationStr}
+                    </p>
+                  )}
+                </div>
+              )
+            })()}
 
             {/* Hours */}
-            {listing.hours && Object.keys(listing.hours).length > 0 && (
+            {listing.always_open ? (
+              <div className="bg-gray-50 p-8 rounded-xl text-center">
+                <span className="material-symbols-outlined text-gold-dark text-3xl mb-1">
+                  schedule
+                </span>
+                <h3 className="label-sm text-[10px] text-navy-dark font-bold tracking-widest mb-1">
+                  ALWAYS OPEN
+                </h3>
+                <p className="font-serif text-secondary">
+                  Open 24 hours, every day.
+                </p>
+              </div>
+            ) : listing.hours && Object.keys(listing.hours).length > 0 && (
               <div className="bg-gray-50 p-8 rounded-xl">
                 <h3 className="label-sm text-[10px] text-navy-dark font-bold tracking-widest mb-6 border-b border-gray-200 pb-4">
                   HOURS OF OPERATION

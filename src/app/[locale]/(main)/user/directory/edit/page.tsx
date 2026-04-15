@@ -85,6 +85,8 @@ export default function EditDirectoryListingPage() {
 
   const addr = listing.address as any
   const social = listing.social_links as any
+  const interview = listing.owner_interview as any
+  const devotional = listing.devotional as any
 
   return (
     <main className="container py-8">
@@ -107,6 +109,21 @@ export default function EditDirectoryListingPage() {
             instagram: social?.instagram || "",
             twitter: social?.twitter || "",
             linkedin: social?.linkedin || "",
+            always_open: listing.always_open ?? false,
+            owner_photo_url: interview?.photo_url || "",
+            owner_q1_prompt: interview?.q1_prompt,
+            owner_q1_answer: interview?.q1_answer || "",
+            owner_q2_prompt: interview?.q2_prompt,
+            owner_q2_answer: interview?.q2_answer || "",
+            owner_q3_prompt: interview?.q3_prompt,
+            owner_q3_answer: interview?.q3_answer || "",
+            owner_q4_prompt: interview?.q4_prompt,
+            owner_q4_answer: interview?.q4_answer || "",
+            devotional_image_url: devotional?.image_url || "",
+            devotional_question: devotional?.question || "",
+            devotional_answer: devotional?.answer || "",
+            cta_type: listing.cta_type || "visit_shop",
+            cta_url: listing.cta_url || "",
           }}
           categories={categories}
           onSubmit={handleSubmit}

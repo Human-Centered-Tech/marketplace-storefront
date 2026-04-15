@@ -56,6 +56,30 @@ export type DirectoryListing = {
     linkedin?: string
   } | null
   hours: Record<string, { open: string; close: string }> | null
+  always_open?: boolean
+  owner_interview?: {
+    photo_url?: string
+    q1_prompt?: string
+    q1_answer?: string
+    q2_prompt?: string
+    q2_answer?: string
+    q3_prompt?: string
+    q3_answer?: string
+    q4_prompt?: string
+    q4_answer?: string
+  } | null
+  devotional?: {
+    image_url?: string
+    question?: string
+    answer?: string
+  } | null
+  cta_type?:
+    | "visit_shop"
+    | "book_now"
+    | "shop_now"
+    | "learn_more"
+    | "book_a_call"
+  cta_url?: string | null
   logo_url: string | null
   cover_image_url: string | null
   gallery_urls: string[] | null
