@@ -13,7 +13,7 @@ import { LabeledInput } from "@/components/cells"
 import { loginFormSchema, LoginFormData } from "./schema"
 import { useState } from "react"
 import { login } from "@/lib/data/customer"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams, usePathname } from "next/navigation"
 
 export const LoginForm = () => {
   const methods = useForm<LoginFormData>({
@@ -39,6 +39,32 @@ const Form = () => {
     formState: { errors, isSubmitting },
   } = useFormContext()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const pathname = usePathname()
+
+  // Where to send the user after login. Priority:
+  //   1. ?return_to= query param (set by mid-shopping login triggers)
+  //   2. Any previously-browsed path stashed in sessionStorage
+  //   3. /user (default — the account dashboard)
+  // Per 3/31 decision: if login is triggered mid-shopping, return to where
+  // they were, not the routing/account screen.
+  const resolveReturnTo = () => {
+    const fromQuery = searchParams.get("return_to")
+    if (fromQuery && fromQuery.startsWith("/")) return fromQuery
+    if (typeof window !== "undefined") {
+      const stashed = window.sessionStorage.getItem("post_login_return_to")
+      if (stashed && stashed.startsWith("/")) {
+        window.sessionStorage.removeItem("post_login_return_to")
+        return stashed
+      }
+    }
+    // If LoginForm is embedded on a protected /user/* subpage, return
+    // the user there after login instead of the /user dashboard.
+    if (pathname && pathname.startsWith("/user/") && pathname !== "/user") {
+      return pathname
+    }
+    return "/user"
+  }
 
   const submit = async (data: FieldValues) => {
     const formData = new FormData()
@@ -51,8 +77,17 @@ const Form = () => {
       return
     }
     setError("")
-    router.push("/user")
+    router.push(resolveReturnTo())
   }
+
+  // Used by register link to carry the return_to forward.
+  const registerHref = (() => {
+    const fromQuery = searchParams.get("return_to")
+    const target = fromQuery && fromQuery.startsWith("/") ? fromQuery : null
+    if (!target) return "/user/register"
+    return `/user/register?return_to=${encodeURIComponent(target)}`
+  })()
+
 
   return (
     <main className="min-h-[70vh] flex items-center justify-center py-12 px-4">
@@ -103,7 +138,7 @@ const Form = () => {
           <p className="text-center text-[14px] text-secondary mt-6">
             Don&apos;t have an account?{" "}
             <LocalizedClientLink
-              href="/user/register"
+              href={registerHref}
               className="font-semibold text-primary hover:underline"
             >
               Sign Up
