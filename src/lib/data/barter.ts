@@ -116,3 +116,26 @@ export const deleteBarterImage = async (listingId: string, imageId: string) => {
     }
   )
 }
+
+export const listMyBarterListings = async () => {
+  return authedFetch<{ listings: BarterListing[]; count: number }>(
+    "/store/barter/me"
+  )
+}
+
+export const updateBarterListing = async (
+  id: string,
+  body: Record<string, unknown>
+) => {
+  return authedFetch<{ listing: BarterListing }>(
+    `/store/barter/listings/${id}`,
+    { method: "PUT", body: JSON.stringify(body) }
+  )
+}
+
+export const renewBarterListing = async (id: string) => {
+  return authedFetch<{ listing: BarterListing }>(
+    `/store/barter/listings/${id}/renew`,
+    { method: "POST" }
+  )
+}
