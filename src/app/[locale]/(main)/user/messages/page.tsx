@@ -13,7 +13,7 @@ export default async function MessagesPage() {
       <div className="grid grid-cols-1 md:grid-cols-4 mt-6 gap-5 md:gap-8">
         <UserNavigation />
         <div className="md:col-span-3 space-y-8">
-          <UserMessagesSection />
+          <UserMessagesSection currentUserId={user.id} />
         </div>
       </div>
     </main>
