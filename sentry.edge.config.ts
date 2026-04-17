@@ -1,11 +1,11 @@
 /**
  * Sentry edge-runtime config — middleware and edge-runtime route
- * handlers. Pairs with sentry.server.config.ts and sentry.client.config.ts.
+ * handlers. Pairs with sentry.server.config.ts + sentry.client.config.ts.
  */
+;(() => {
+  const dsn = process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN
+  if (!dsn) return
 
-const dsn = process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN
-
-if (dsn) {
   try {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const Sentry = require("@sentry/nextjs") as any
@@ -17,4 +17,6 @@ if (dsn) {
   } catch {
     // @sentry/nextjs not installed — no-op
   }
-}
+})()
+
+export {}
