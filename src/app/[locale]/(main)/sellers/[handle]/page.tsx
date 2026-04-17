@@ -1,5 +1,6 @@
 import { SellerTabs } from "@/components/organisms"
 import { SellerPageHeader } from "@/components/sections"
+import { TrackPageView } from "@/components/sections/Analytics/TrackPageView"
 import { retrieveCustomer } from "@/lib/data/customer"
 import { getRegion } from "@/lib/data/regions"
 import { getSellerByHandle } from "@/lib/data/seller"
@@ -26,6 +27,7 @@ export default async function SellerPage({
 
   return (
     <main className="flex flex-col items-center text-[#1b1c1a]">
+      <TrackPageView entity_type="seller" entity_id={seller.id} />
       <SellerPageHeader seller={seller} user={user} />
 
       {/* Decorative Divider */}

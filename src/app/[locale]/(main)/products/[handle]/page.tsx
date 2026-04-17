@@ -1,6 +1,7 @@
 import { ProductDetailsPage } from "@/components/sections"
 import { listProducts } from "@/lib/data/products"
 import { generateProductMetadata } from "@/lib/helpers/seo"
+import { TrackPageView } from "@/components/sections/Analytics/TrackPageView"
 import type { Metadata } from "next"
 
 export async function generateMetadata({
@@ -34,6 +35,7 @@ export default async function ProductPage({
 
   return (
     <main className="max-w-7xl mx-auto px-4 lg:px-8 py-8">
+      <TrackPageView entity_type="product" entity_id={handle} />
       <ProductDetailsPage handle={handle} locale={locale} />
     </main>
   )

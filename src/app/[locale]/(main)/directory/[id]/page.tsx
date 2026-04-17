@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { getDirectoryListing } from "@/lib/data/directory"
 import { DirectoryDetail } from "@/components/sections/DirectoryDetail/DirectoryDetail"
+import { TrackPageView } from "@/components/sections/Analytics/TrackPageView"
 
 type Props = {
   params: Promise<{ id: string; locale: string }>
@@ -38,6 +39,7 @@ export default async function DirectoryDetailPage({ params }: Props) {
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         rel="stylesheet"
       />
+      <TrackPageView entity_type="directory_listing" entity_id={listing.id} />
       <DirectoryDetail listing={listing} />
     </main>
   )
