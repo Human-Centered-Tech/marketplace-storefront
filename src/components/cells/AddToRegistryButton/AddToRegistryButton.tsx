@@ -1,8 +1,9 @@
 "use client"
 
 import { useState } from "react"
-// Using inline type to avoid @medusajs/types dependency issue
+// Using inline types to avoid @medusajs/types dependency resolution issue
 type StoreProduct = { id: string; title?: string; thumbnail?: string | null; handle?: string }
+type StoreCustomer = { id: string } | null
 import { GiftRegistry } from "@/types/registry"
 import { addRegistryItem } from "@/lib/data/registry"
 import { Button } from "@/components/atoms"
@@ -14,7 +15,7 @@ export const AddToRegistryButton = ({
   registries,
 }: {
   product: StoreProduct
-  user: HttpTypes.StoreCustomer | null
+  user: StoreCustomer
   registries: GiftRegistry[]
 }) => {
   const [open, setOpen] = useState(false)
