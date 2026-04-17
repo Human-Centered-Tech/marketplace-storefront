@@ -155,11 +155,62 @@ function DirectoryCard({
   )
 }
 
+/**
+ * Rotate the featured vendor slots daily so all Enterprise +
+ * Featured-tier vendors eventually land on the homepage. Seed is the
+ * current UTC day, so everyone sees the same set within a day but
+ * it cycles on the date boundary. Enterprise tier is always preferred
+ * over Featured.
+ */
+function pickFeaturedRotation<T>(pool: T[], count: number, seed: number): T[] {
+  if (pool.length <= count) return pool.slice(0, count)
+  // Fisher-Yates with a deterministic PRNG so the same seed returns
+  // the same order for all viewers in a given day.
+  const out = pool.slice()
+  let state = seed
+  const rand = () => {
+    state = (state * 1664525 + 1013904223) >>> 0
+    return state / 0x100000000
+  }
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1))
+    ;[out[i], out[j]] = [out[j], out[i]]
+  }
+  return out.slice(0, count)
+}
+
 export async function DirectoryPreview() {
-  const { listings } = await listDirectoryListings({
-    verification_status: "approved",
-    limit: 3,
-  })
+  // Pull enterprise-tier pool first; featured second; verified as last
+  // resort so the homepage never goes empty on a new deploy.
+  const [enterprise, featured, verified] = await Promise.all([
+    listDirectoryListings({
+      verification_status: "approved",
+      tier: "enterprise",
+      limit: 30,
+    } as any),
+    listDirectoryListings({
+      verification_status: "approved",
+      tier: "featured",
+      limit: 30,
+    } as any),
+    listDirectoryListings({
+      verification_status: "approved",
+      limit: 10,
+    }),
+  ])
+
+  const daySeed = Math.floor(Date.now() / (24 * 60 * 60 * 1000))
+  const ePicks = pickFeaturedRotation(enterprise.listings, 3, daySeed)
+  const needed = Math.max(0, 3 - ePicks.length)
+  const fPicks = needed
+    ? pickFeaturedRotation(featured.listings, needed, daySeed + 1)
+    : []
+  const vNeeded = Math.max(0, 3 - ePicks.length - fPicks.length)
+  const vPicks = vNeeded
+    ? pickFeaturedRotation(verified.listings, vNeeded, daySeed + 2)
+    : []
+
+  const listings = [...ePicks, ...fPicks, ...vPicks].slice(0, 3)
 
   const hasData = listings.length > 0
 
