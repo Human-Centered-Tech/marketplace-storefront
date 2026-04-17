@@ -121,7 +121,7 @@ const CartPaymentSection = ({
     !isOpen && !!cart?.payment_collection?.payment_sessions?.length
 
   return (
-    <div className="border p-4 rounded-sm bg-ui-bg-interactive">
+    <div className="border border-[#d6d0c4]/40 p-6 rounded-xl bg-white shadow-sm">
       <div className="flex flex-row items-center justify-between mb-6">
         <Heading
           level="h2"

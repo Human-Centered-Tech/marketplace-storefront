@@ -14,24 +14,31 @@ const Review = ({ cart }: { cart: any }) => {
     (cart.payment_collection || paidByGiftcard)
 
   return (
-    <div>
-      <div className="w-full mb-6">
-        <CartItems cart={cart} />
-      </div>
-      <div className="w-full mb-6 border rounded-sm p-4">
-        <CartSummary
-          item_total={cart?.item_subtotal || 0}
-          shipping_total={cart?.shipping_subtotal || 0}
-          total={cart?.total || 0}
-          currency_code={cart?.currency_code || ""}
-          tax={cart?.tax_total || 0}
-          discount_total={cart?.discount_total || 0}
-        />
-      </div>
+    <div className="sticky top-8">
+      <div className="border border-[#d6d0c4]/40 rounded-xl bg-white shadow-sm p-6">
+        <h3 className="font-serif text-lg font-semibold text-[#17294A] mb-4">
+          Order Summary
+        </h3>
+        <div className="mb-4">
+          <CartItems cart={cart} />
+        </div>
+        <div className="border-t border-[#d6d0c4]/30 pt-4">
+          <CartSummary
+            item_total={cart?.item_subtotal || 0}
+            shipping_total={cart?.shipping_subtotal || 0}
+            total={cart?.total || 0}
+            currency_code={cart?.currency_code || ""}
+            tax={cart?.tax_total || 0}
+            discount_total={cart?.discount_total || 0}
+          />
+        </div>
 
-      {previousStepsCompleted && (
-        <PaymentButton cart={cart} data-testid="submit-order-button" />
-      )}
+        {previousStepsCompleted && (
+          <div className="mt-4">
+            <PaymentButton cart={cart} data-testid="submit-order-button" />
+          </div>
+        )}
+      </div>
     </div>
   )
 }
