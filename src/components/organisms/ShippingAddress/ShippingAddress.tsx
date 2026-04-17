@@ -204,6 +204,25 @@ const ShippingAddress = ({
           data-testid="shipping-phone-input"
         />
       </div>
+      {/* Marketing opt-in — per 3/24 decision, default checked on guest
+          checkout. Only shown when customer is null (guest). */}
+      {!customer && (
+        <div className="mb-2">
+          <label className="flex items-start gap-2 text-sm text-secondary">
+            <input
+              type="checkbox"
+              name="marketing_opt_in"
+              defaultChecked
+              className="mt-1"
+            />
+            <span>
+              Keep me posted on new Catholic Owned products, seasonal gift
+              guides, and upcoming networking events. You can unsubscribe
+              any time.
+            </span>
+          </label>
+        </div>
+      )}
     </>
   )
 }

@@ -377,6 +377,18 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
       email: formData.get("email"),
     } as any
 
+    // Marketing opt-in — per 3/24 decision, stored on cart metadata so
+    // it flows through to the order and can be synced to SendGrid /
+    // Freshworks on order.placed. Unchecked boxes don't post a value,
+    // so absence = opted-out.
+    const marketingOptIn = formData.get("marketing_opt_in")
+    if (marketingOptIn !== null) {
+      data.metadata = {
+        marketing_opt_in: marketingOptIn === "on" || marketingOptIn === "true",
+        marketing_opt_in_at: new Date().toISOString(),
+      }
+    }
+
     // const sameAsBilling = formData.get("same_as_billing")
     // if (sameAsBilling === "on") data.billing_address = data.shipping_address
     data.billing_address = data.shipping_address
