@@ -1,13 +1,14 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import { DirectorySubscriptionCard } from "@/components/sections/DirectoryManagement/DirectorySubscriptionCard"
 import { DirectoryListing } from "@/types/directory"
 
 export default function DirectorySubscriptionPage() {
   const [listing, setListing] = useState<DirectoryListing | null>(null)
   const [loading, setLoading] = useState(true)
-  const [purchasing, setPurchasing] = useState(false)
+  const router = useRouter()
 
   const backendUrl =
     typeof window !== "undefined"
@@ -32,37 +33,8 @@ export default function DirectorySubscriptionPage() {
       .finally(() => setLoading(false))
   }, [backendUrl])
 
-  const handleSelectTier = async (tier: string) => {
-    if (!listing) return
-    setPurchasing(true)
-
-    try {
-      const res = await fetch(
-        `${backendUrl}/store/directory/subscriptions`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-publishable-api-key":
-              process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "",
-          },
-          credentials: "include",
-          body: JSON.stringify({
-            listing_id: listing.id,
-            tier,
-          }),
-        }
-      )
-
-      const data = await res.json()
-      if (data.checkout_url) {
-        window.location.href = data.checkout_url
-      }
-    } catch {
-      // handle error
-    } finally {
-      setPurchasing(false)
-    }
+  const handleSelectTier = (tier: string) => {
+    router.push(`/user/directory/checkout?tier=${tier}`)
   }
 
   if (loading) {
@@ -94,7 +66,6 @@ export default function DirectorySubscriptionPage() {
         currentTier={listing.subscription_tier}
         subscriptionStatus={listing.subscription_status}
         onSelectTier={handleSelectTier}
-        loading={purchasing}
       />
     </main>
   )

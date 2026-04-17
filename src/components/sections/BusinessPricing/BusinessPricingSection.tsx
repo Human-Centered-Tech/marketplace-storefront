@@ -123,9 +123,10 @@ type BusinessPricingSectionProps = {
 export const BusinessPricingSection = ({
   isLoggedIn,
 }: BusinessPricingSectionProps) => {
-  const getStartedHref = isLoggedIn
-    ? "/user/directory/create"
-    : "/user/register"
+  const getTierHref = (tierId: string) =>
+    isLoggedIn
+      ? `/user/directory/checkout?tier=${tierId}`
+      : `/user/register?return_to=${encodeURIComponent(`/user/directory/checkout?tier=${tierId}`)}`
 
   return (
     <div>
@@ -294,7 +295,7 @@ export const BusinessPricingSection = ({
                   ))}
                 </ul>
                 <LocalizedClientLink
-                  href={getStartedHref}
+                  href={getTierHref(tier.id)}
                   className={`w-full py-4 rounded-lg font-bold uppercase tracking-widest text-sm text-center block transition-colors ${tier.btnClass}`}
                   style={{ fontFamily: "Poppins, sans-serif" }}
                 >
@@ -525,7 +526,7 @@ export const BusinessPricingSection = ({
             already on the platform.
           </p>
           <LocalizedClientLink
-            href={getStartedHref}
+            href={getTierHref("verified")}
             className="inline-block bg-[#BE9B32] text-[#17294A] py-4 px-10 rounded-lg font-bold text-sm uppercase tracking-widest hover:bg-[#DECF8F] transition-colors shadow-lg shadow-[#BE9B32]/20"
             style={{ fontFamily: "Poppins, sans-serif" }}
           >
