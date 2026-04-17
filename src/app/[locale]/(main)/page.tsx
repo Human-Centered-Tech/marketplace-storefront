@@ -169,6 +169,7 @@ export default async function Home({
         paragraph="Discover and support faithful Catholic businesses. Shop artisan goods, browse the professional directory, or connect at networking events."
         buttons={[
           { label: "Shop Marketplace", path: "/categories" },
+          { label: "Gift Guides", path: "/gifts" },
           { label: "Join Directory", path: "/directory" },
         ]}
       />
