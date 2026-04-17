@@ -123,12 +123,17 @@ export async function becomeVendor(formData: FormData) {
       return { success: false, error: err.message || "Failed to create seller" }
     }
 
+    const sellerData = await createRes.json()
+    const sellerId = sellerData?.seller?.id
+
     // Step 3: Store vendor token and flag
     await setVendorToken(vendorToken)
     await setVendorFlag(true)
 
     // Step 4: Auto-create a draft directory listing so the vendor has a
     // directory presence from the start (per 3/31 decision). Non-fatal.
+    // Includes vendor_id so the floor-enforcement middleware can look up
+    // the listing by seller ID without an email join.
     try {
       const customerHeaders = await getAuthHeaders()
       if (customerHeaders && "authorization" in customerHeaders) {
@@ -145,6 +150,7 @@ export async function becomeVendor(formData: FormData) {
             body: JSON.stringify({
               business_name: name,
               contact_email: email,
+              ...(sellerId ? { vendor_id: sellerId } : {}),
             }),
           }
         )
