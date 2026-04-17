@@ -2,8 +2,8 @@ import PaymentWrapper from "@/components/organisms/PaymentContainer/PaymentWrapp
 import { CartAddressSection } from "@/components/sections/CartAddressSection/CartAddressSection"
 import CartPaymentSection from "@/components/sections/CartPaymentSection/CartPaymentSection"
 import CartReview from "@/components/sections/CartReview/CartReview"
+import { AutoShippingSelect } from "@/components/sections/AutoShippingSelect/AutoShippingSelect"
 
-import CartShippingMethodsSection from "@/components/sections/CartShippingMethodsSection/CartShippingMethodsSection"
 import { retrieveCart } from "@/lib/data/cart"
 import { retrieveCustomer } from "@/lib/data/customer"
 import { listCartShippingMethods } from "@/lib/data/fulfillment"
@@ -14,7 +14,7 @@ import { Suspense } from "react"
 
 export const metadata: Metadata = {
   title: "Checkout",
-  description: "My cart page - Checkout",
+  description: "Checkout — Catholic Owned",
 }
 
 export default async function CheckoutPage({}) {
@@ -44,14 +44,15 @@ async function CheckoutPageContent({}) {
 
   return (
     <PaymentWrapper cart={cart}>
+      {/* Auto-select shipping — no shipping step for MVP (4/1 decision) */}
+      <AutoShippingSelect
+        cart={cart}
+        availableShippingMethods={shippingMethods as any}
+      />
       <main className="container">
         <div className="grid lg:grid-cols-11 gap-8">
           <div className="flex flex-col gap-4 lg:col-span-6">
             <CartAddressSection cart={cart} customer={customer} />
-            <CartShippingMethodsSection
-              cart={cart}
-              availableShippingMethods={shippingMethods as any}
-            />
             <CartPaymentSection
               cart={cart}
               availablePaymentMethods={paymentMethods}

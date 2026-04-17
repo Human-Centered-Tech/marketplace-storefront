@@ -73,7 +73,7 @@ export const CartAddressSection = ({
       <form
         action={async (data) => {
           await formAction(data)
-          router.replace(`${pathname}?step=delivery`)
+          router.replace(`${pathname}?step=payment`)
           router.refresh()
         }}
       >
