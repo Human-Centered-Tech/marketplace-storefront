@@ -109,6 +109,29 @@ export const DirectoryDetail = ({
                   </span>
                 </div>
               )}
+              {listing.badges
+                ?.map((lb) => lb.badge)
+                .filter(Boolean)
+                .map((badge) => (
+                  <span
+                    key={badge!.id}
+                    className="px-3 py-1 rounded-full label-sm text-[10px] font-bold tracking-widest"
+                    style={{
+                      backgroundColor: badge!.color || "#F2CD69",
+                      color: "#17294A",
+                    }}
+                    title={badge!.description || badge!.name}
+                  >
+                    {badge!.icon_url && (
+                      <img
+                        src={badge!.icon_url}
+                        alt=""
+                        className="inline-block w-3 h-3 mr-1 -mt-0.5"
+                      />
+                    )}
+                    {badge!.name}
+                  </span>
+                ))}
             </div>
             <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl text-navy-dark mb-2">
               {listing.business_name}

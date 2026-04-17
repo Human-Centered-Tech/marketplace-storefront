@@ -23,6 +23,23 @@ export type DirectoryParishAffiliation = {
   parish?: Parish
 }
 
+export type DirectoryBadge = {
+  id: string
+  name: string
+  slug: string
+  description: string | null
+  icon_url: string | null
+  color: string
+  sort_order: number
+}
+
+export type DirectoryListingBadge = {
+  id: string
+  listing_id: string
+  badge_id: string
+  badge?: DirectoryBadge
+}
+
 export type DirectoryListing = {
   id: string
   business_name: string
@@ -85,6 +102,7 @@ export type DirectoryListing = {
   gallery_urls: string[] | null
   metadata: Record<string, unknown> | null
   affiliations?: DirectoryParishAffiliation[]
+  badges?: DirectoryListingBadge[]
   created_at: string
   updated_at: string
 }

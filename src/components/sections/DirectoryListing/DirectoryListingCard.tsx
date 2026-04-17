@@ -147,14 +147,31 @@ export const DirectoryListingCard = ({
           <span className="text-gold-dark label-sm text-[10px] font-bold tracking-wider">
             {listing.category?.name || "Business"}
           </span>
-          <span
-            className={`text-[9px] font-bold px-2 py-0.5 rounded uppercase ${
-              tierBadgeStyles[listing.subscription_tier] ||
-              tierBadgeStyles.verified
-            }`}
-          >
-            {tierLabels[listing.subscription_tier] || "Verified"}
-          </span>
+          <div className="flex items-center gap-1 flex-wrap justify-end">
+            <span
+              className={`text-[9px] font-bold px-2 py-0.5 rounded uppercase ${
+                tierBadgeStyles[listing.subscription_tier] ||
+                tierBadgeStyles.verified
+              }`}
+            >
+              {tierLabels[listing.subscription_tier] || "Verified"}
+            </span>
+            {listing.badges
+              ?.map((lb) => lb.badge)
+              .filter(Boolean)
+              .map((badge) => (
+                <span
+                  key={badge!.id}
+                  className="text-[9px] font-bold px-2 py-0.5 rounded uppercase"
+                  style={{
+                    backgroundColor: badge!.color || "#F2CD69",
+                    color: "#17294A",
+                  }}
+                >
+                  {badge!.name}
+                </span>
+              ))}
+          </div>
         </div>
         <h3 className="font-serif text-xl font-bold text-navy-dark mb-3">
           {listing.business_name}
