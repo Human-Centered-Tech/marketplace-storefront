@@ -333,3 +333,23 @@ export const sendResetPasswordEmail = async (email: string) => {
 
   return res
 }
+
+/**
+ * Complete an OAuth sign-in. Medusa's Google auth provider redirects
+ * the user back with a ?token= query param that's a short-lived JWT.
+ * We persist it as the customer's auth token; the customer record
+ * (if new) is auto-created by Medusa the first time the token is used.
+ *
+ * Returns true on success so the caller can redirect forward.
+ */
+export async function completeOAuthSignIn(token: string): Promise<boolean> {
+  if (!token) return false
+  try {
+    await setAuthToken(token)
+    const cacheTag = await getCacheTag("customers")
+    revalidateTag(cacheTag)
+    return true
+  } catch {
+    return false
+  }
+}

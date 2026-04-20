@@ -14,6 +14,7 @@ import { loginFormSchema, LoginFormData } from "./schema"
 import { useState } from "react"
 import { login } from "@/lib/data/customer"
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
+import { SocialSignIn } from "./SocialSignIn"
 
 export const LoginForm = () => {
   const methods = useForm<LoginFormData>({
@@ -135,6 +136,8 @@ const Form = () => {
               Sign In to the Economy →
             </Button>
           </form>
+          <SocialSignIn />
+
           <p className="text-center text-[14px] text-secondary mt-6">
             Don&apos;t have an account?{" "}
             <LocalizedClientLink
