@@ -1,3 +1,5 @@
+"use server"
+
 import { BarterListing, BarterCategory } from "@/types/barter"
 import { sdk } from "../config"
 
