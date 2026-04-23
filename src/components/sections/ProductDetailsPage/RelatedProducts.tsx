@@ -14,8 +14,11 @@ export const RelatedProducts = async ({
   locale: string
   currentProductId: string
 }) => {
-  // Filter out the current product and take up to 4
-  const relatedHandles = products
+  // Filter out null entries and the current product, then take up to 4
+  const safeProducts = (products ?? []).filter(
+    (p): p is Product => p != null && p.id != null
+  )
+  const relatedHandles = safeProducts
     .filter((p) => String(p.id) !== currentProductId)
     .slice(0, 4)
     .map((p) => p.handle)
@@ -37,7 +40,7 @@ export const RelatedProducts = async ({
     }
   }
 
-  const displayProducts = products
+  const displayProducts = safeProducts
     .filter((p) => String(p.id) !== currentProductId)
     .slice(0, 4)
 
