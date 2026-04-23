@@ -1,7 +1,9 @@
 import { ProductDetails, ProductGallery } from "@/components/organisms"
 import { listProducts } from "@/lib/data/products"
+import { listProductVendorTags } from "@/lib/data/vendor-tags"
 import NotFound from "@/app/not-found"
 import { ProductDetailsTabs } from "./ProductDetailsTabs"
+import { ProductTagsRow } from "./ProductTagsRow"
 import { RelatedProducts } from "./RelatedProducts"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 
@@ -17,6 +19,8 @@ export const ProductDetailsPage = async ({
     queryParams: { handle: [handle], limit: 1 },
     forceCache: false,
   }).then(({ response }) => response.products[0])
+
+  const vendorTags = prod ? await listProductVendorTags(prod.id) : []
 
   if (!prod) {
     return (
@@ -84,6 +88,8 @@ export const ProductDetailsPage = async ({
         shippingInfo=""
         attributes={(prod as any)?.attribute_values || []}
       />
+
+      {vendorTags.length > 0 && <ProductTagsRow tags={vendorTags} />}
 
       {/* Related Products */}
       {prod.seller?.products && prod.seller.products.length > 0 && (
