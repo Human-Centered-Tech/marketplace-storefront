@@ -22,6 +22,7 @@ import { BarterDetail } from "./Barter/BarterDetail"
 import { DirectoryPreview } from "./DirectoryPreview/DirectoryPreview"
 import { UpcomingEvents } from "./UpcomingEvents/UpcomingEvents"
 import { FoundersVision } from "./FoundersVision/FoundersVision"
+import { SellerCollectionsStrip } from "./SellerCollectionsStrip/SellerCollectionsStrip"
 
 export {
   Hero,
@@ -48,4 +49,5 @@ export {
   DirectoryPreview,
   UpcomingEvents,
   FoundersVision,
+  SellerCollectionsStrip,
 }
