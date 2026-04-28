@@ -78,6 +78,13 @@ const nextConfig: NextConfig = {
         hostname: process.env.NEXT_PUBLIC_MINIO_ENDPOINT,
       }] : []),
       ...(backendImageHost() ? [backendImageHost()!] : []),
+      // Railway-generated subdomains for any service (e.g. the auto-assigned
+      // bucket domain). Existing image URLs in the DB may reference these
+      // even after a custom CDN domain is wired up.
+      {
+        protocol: "https",
+        hostname: "**.up.railway.app",
+      },
     ],
   },
 }
