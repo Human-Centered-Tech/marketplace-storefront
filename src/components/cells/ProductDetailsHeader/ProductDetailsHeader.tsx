@@ -82,12 +82,15 @@ export const ProductDetailsHeader = ({
     variantId,
   })
 
-  const variantStock =
-    product.variants?.find(({ id }) => id === variantId)?.inventory_quantity ||
-    0
+  const selectedVariantData = product.variants?.find(
+    ({ id }) => id === variantId
+  )
 
-  const variantHasPrice = !!product.variants?.find(({ id }) => id === variantId)
-    ?.calculated_price
+  const variantStock = selectedVariantData?.manage_inventory
+    ? selectedVariantData.inventory_quantity ?? 0
+    : Infinity
+
+  const variantHasPrice = !!selectedVariantData?.calculated_price
 
   const isVariantStockMaxLimitReached =
     (cart?.items?.find((item) => item.variant_id === variantId)?.quantity ??
@@ -252,7 +255,9 @@ export const ProductDetailsHeader = ({
           </span>
           <button
             onClick={() =>
-              setQuantity((q) => Math.min(variantStock || 99, q + 1))
+              setQuantity((q) =>
+                Math.min(Number.isFinite(variantStock) ? variantStock : 99, q + 1)
+              )
             }
             className="w-10 h-12 flex items-center justify-center text-[#001435] hover:bg-[#f4f4f0] transition-colors text-lg"
             aria-label="Increase quantity"
