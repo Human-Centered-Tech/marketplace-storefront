@@ -14,8 +14,10 @@ export const registerFormSchema = z.object({
     }),
   phone: z
     .string()
-    .min(6, "Please enter phone number")
-    .regex(/^\+?\d+$/, { message: "Mobile phone must contain digits only" }),
+    .optional()
+    .refine((v) => !v || /^\+?[\d\s()-]+$/.test(v), {
+      message: "Mobile phone must contain digits only",
+    }),
   businessName: z.string().optional(),
 })
 
