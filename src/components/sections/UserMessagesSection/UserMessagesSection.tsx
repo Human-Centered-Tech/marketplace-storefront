@@ -16,11 +16,15 @@ type ConversationWithMessages = Conversation & { messages: Message[] }
 
 export const UserMessagesSection = ({
   currentUserId,
+  initialConversationId = null,
 }: {
   currentUserId: string
+  initialConversationId?: string | null
 }) => {
   const [conversations, setConversations] = useState<Conversation[]>([])
-  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [selectedId, setSelectedId] = useState<string | null>(
+    initialConversationId
+  )
   const [selected, setSelected] = useState<ConversationWithMessages | null>(
     null
   )

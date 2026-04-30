@@ -1,8 +1,10 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { BarterListing } from "@/types/barter"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
+import { startConversation } from "@/lib/data/messaging"
 
 const conditionLabels: Record<string, string> = {
   new: "Mint/New",
@@ -46,12 +48,42 @@ function timeAgo(dateString: string) {
 
 export const BarterDetail = ({
   listing,
+  currentUserId,
 }: {
   listing: BarterListing
+  currentUserId: string | null
 }) => {
+  const router = useRouter()
   const [selectedImage, setSelectedImage] = useState(0)
+  const [messaging, setMessaging] = useState(false)
+  const [messageError, setMessageError] = useState<string | null>(null)
+  const isOwnListing = currentUserId !== null && currentUserId === listing.owner_id
   const images =
     listing.images?.sort((a, b) => a.sort_order - b.sort_order) ?? []
+
+  const handleMessageSeller = async () => {
+    setMessageError(null)
+    if (!currentUserId) {
+      // Not logged in — bounce through login with a return path back here
+      router.push(`/user/messages?return_to=/barter/${listing.id}`)
+      return
+    }
+    if (isOwnListing) return
+
+    setMessaging(true)
+    const res = await startConversation({
+      recipient_id: listing.owner_id,
+      context_type: "barter_listing",
+      context_id: listing.id,
+    })
+    setMessaging(false)
+
+    if (!res?.conversation) {
+      setMessageError("Could not start conversation. Please try again.")
+      return
+    }
+    router.push(`/user/messages?conversation=${res.conversation.id}`)
+  }
 
   return (
     <div>
@@ -248,10 +280,23 @@ export const BarterDetail = ({
             </div>
 
             <div className="space-y-3">
-              <button className="w-full bg-navy-dark text-[#F2CD69] label-sm text-[10px] font-bold tracking-widest py-4 rounded-lg shadow-lg hover:shadow-navy/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+              <button
+                onClick={handleMessageSeller}
+                disabled={messaging || isOwnListing}
+                className="w-full bg-navy-dark text-[#F2CD69] label-sm text-[10px] font-bold tracking-widest py-4 rounded-lg shadow-lg hover:shadow-navy/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
                 <span className="material-symbols-outlined text-lg">mail</span>
-                Message Seller
+                {isOwnListing
+                  ? "Your Listing"
+                  : messaging
+                    ? "Starting…"
+                    : "Message Seller"}
               </button>
+              {messageError && (
+                <p className="text-xs text-red-600 text-center">
+                  {messageError}
+                </p>
+              )}
               {(listing.listing_type === "barter" ||
                 listing.listing_type === "trade") && (
                 <button className="w-full bg-gray-50 border border-gold/30 text-navy-dark label-sm text-[10px] font-bold tracking-widest py-4 rounded-lg hover:bg-[#F2CD69]/10 transition-colors flex items-center justify-center gap-2">
