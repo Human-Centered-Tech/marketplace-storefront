@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { getBarterListing } from "@/lib/data/barter"
+import { retrieveCustomer } from "@/lib/data/customer"
 import { BarterDetail } from "@/components/sections/Barter/BarterDetail"
 
 type Props = {
@@ -25,7 +26,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function BarterDetailPage({ params }: Props) {
   const { id } = await params
-  const listing = await getBarterListing(id)
+  const [listing, user] = await Promise.all([
+    getBarterListing(id),
+    retrieveCustomer(),
+  ])
 
   if (!listing) {
     notFound()
@@ -38,7 +42,7 @@ export default async function BarterDetailPage({ params }: Props) {
         rel="stylesheet"
       />
       <div className="max-w-7xl mx-auto px-4 lg:px-8 pt-8 pb-20">
-        <BarterDetail listing={listing} />
+        <BarterDetail listing={listing} currentUserId={user?.id ?? null} />
       </div>
     </main>
   )
