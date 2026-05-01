@@ -1,17 +1,89 @@
 "use client"
 
-import { useState, useEffect, useCallback, useMemo } from "react"
+import { useState, useEffect, useCallback, useMemo, useRef } from "react"
 import { useSearchParams } from "next/navigation"
+import { algoliasearch } from "algoliasearch"
 import { DirectoryListing, DirectoryCategory } from "@/types/directory"
 import { DirectoryListingCard } from "./DirectoryListingCard"
 import { DirectoryMapView } from "./DirectoryMap"
 
 type ViewMode = "list" | "map"
 
+const PAGE_SIZE = 20
+const ALGOLIA_INDEX = "directory_listings"
+
 type DirectorySearchProps = {
   initialListings: DirectoryListing[]
   initialCount: number
   categories: DirectoryCategory[]
+}
+
+/**
+ * Shape of an Algolia hit from the directory_listings index.
+ * Set in marketplace-backend/src/lib/algolia-directory.ts
+ * (buildAlgoliaListingRecord) and configured in init-algolia.ts
+ * (attributesToRetrieve).
+ */
+type DirectoryHit = {
+  objectID: string
+  business_name: string
+  slug: string
+  description: string | null
+  category_name: string
+  category_id: string | null
+  subscription_tier: "verified" | "featured" | "enterprise"
+  city: string
+  state: string
+  logo_url: string | null
+  cover_image_url: string | null
+  website_url: string | null
+}
+
+/** Map an Algolia hit to the DirectoryListing shape that DirectoryListingCard expects. */
+function hitToListing(hit: DirectoryHit): DirectoryListing {
+  return {
+    id: hit.objectID,
+    business_name: hit.business_name,
+    slug: hit.slug,
+    description: hit.description,
+    category_id: hit.category_id,
+    category: hit.category_id
+      ? ({
+          id: hit.category_id,
+          name: hit.category_name,
+          slug: hit.category_name,
+        } as DirectoryCategory)
+      : undefined,
+    subscription_tier: hit.subscription_tier,
+    // Filled with defaults — Algolia is the source of truth for "what's
+    // searchable", and we already filter the index to approved+active.
+    subscription_status: "active",
+    stripe_subscription_id: null,
+    subscription_expires_at: null,
+    verification_status: "approved",
+    verified_by: null,
+    verified_at: null,
+    owner_id: "",
+    vendor_id: null,
+    contact_email: null,
+    contact_phone: null,
+    website_url: hit.website_url,
+    address: { city: hit.city, state: hit.state },
+    social_links: null,
+    hours_of_operation: null,
+    always_open: false,
+    owner_interview: null,
+    devotional: null,
+    cta_type: "visit_shop",
+    cta_url: null,
+    logo_url: hit.logo_url,
+    cover_image_url: hit.cover_image_url,
+    metadata: null,
+    affiliations: [],
+    badges: [],
+    created_at: "",
+    updated_at: "",
+  } as unknown as DirectoryListing
 }
 
 export const DirectorySearch = ({
@@ -21,12 +93,27 @@ export const DirectorySearch = ({
 }: DirectorySearchProps) => {
   const searchParams = useSearchParams()
   const urlQuery = searchParams.get("q") || ""
-  const [allListings, setAllListings] = useState(initialListings)
+
+  // Algolia client. Memoize so we don't re-create on every render.
+  // If the env vars aren't set we'll fall back to the server-rendered
+  // initialListings — better than rendering an empty page in dev.
+  const algoliaClient = useMemo(() => {
+    const appId = process.env.NEXT_PUBLIC_ALGOLIA_ID
+    const searchKey = process.env.NEXT_PUBLIC_ALGOLIA_SEARCH_KEY
+    if (!appId || !searchKey) return null
+    return algoliasearch(appId, searchKey)
+  }, [])
+  const algoliaEnabled = algoliaClient !== null
+
+  const [allListings, setAllListings] = useState<DirectoryListing[]>(
+    initialListings
+  )
   const [count, setCount] = useState(initialCount)
   const [search, setSearch] = useState(urlQuery)
   const [categoryId, setCategoryId] = useState("")
   const [location, setLocation] = useState("")
   const [loading, setLoading] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
   const [view, setView] = useState<ViewMode>("list")
 
   useEffect(() => {
@@ -35,67 +122,83 @@ export const DirectorySearch = ({
     }
   }, [urlQuery])
 
-  const fetchListings = useCallback(async () => {
-    setLoading(true)
-    try {
-      const params = new URLSearchParams()
-      if (categoryId) params.set("category_id", categoryId)
-      params.set("verification_status", "approved")
+  // Build Algolia query options. `location` is a freeform string that
+  // could be a city or state — we use it as a secondary query term so
+  // typo tolerance + stemming apply.
+  const buildSearchParams = useCallback(
+    (page: number) => {
+      const facetFilters: string[][] = []
+      if (categoryId) facetFilters.push([`category_id:${categoryId}`])
 
-      const backendUrl =
-        process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9000"
-      const res = await fetch(
-        `${backendUrl}/store/directory/listings?${params.toString()}`,
-        {
-          headers: {
-            "x-publishable-api-key":
-              process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "",
-          },
+      // Combine search + location into a single query if both present.
+      const queryParts = [search.trim(), location.trim()].filter(Boolean)
+      const query = queryParts.join(" ")
+
+      return {
+        indexName: ALGOLIA_INDEX,
+        query,
+        page,
+        hitsPerPage: PAGE_SIZE,
+        ...(facetFilters.length ? { facetFilters } : {}),
+      }
+    },
+    [search, location, categoryId]
+  )
+
+  const runSearch = useCallback(
+    async (page: number, append: boolean) => {
+      if (!algoliaClient) return
+      if (append) setLoadingMore(true)
+      else setLoading(true)
+      try {
+        const { results } = await algoliaClient.search<DirectoryHit>({
+          requests: [buildSearchParams(page)],
+        })
+        const result = results[0] as {
+          hits: DirectoryHit[]
+          nbHits: number
         }
-      )
-      const data = await res.json()
-      setAllListings(data.listings || [])
-      setCount(data.count || 0)
-    } catch {
-      // keep current state
-    } finally {
-      setLoading(false)
-    }
-  }, [categoryId])
+        const listings = (result.hits || []).map(hitToListing)
+        if (append) {
+          setAllListings((prev) => [...prev, ...listings])
+        } else {
+          setAllListings(listings)
+        }
+        setCount(result.nbHits ?? 0)
+      } catch {
+        // Keep current state on error — better than wiping the UI.
+      } finally {
+        setLoading(false)
+        setLoadingMore(false)
+      }
+    },
+    [algoliaClient, buildSearchParams]
+  )
 
+  // Refetch from page 0 on filter change. Debounce keystrokes so we
+  // don't fire a request on every char. Skip first render — server
+  // already supplied initialListings.
+  const isFirstRender = useRef(true)
   useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false
+      return
+    }
+    if (!algoliaEnabled) return
     const timer = setTimeout(() => {
-      fetchListings()
+      runSearch(0, false)
     }, 300)
     return () => clearTimeout(timer)
-  }, [fetchListings])
+  }, [runSearch, algoliaEnabled])
 
-  // Client-side filtering for text search and location
-  const filteredListings = useMemo(() => {
-    let results = allListings
+  const loadMore = useCallback(() => {
+    if (loadingMore || allListings.length >= count) return
+    const nextPage = Math.floor(allListings.length / PAGE_SIZE)
+    runSearch(nextPage, true)
+  }, [runSearch, loadingMore, allListings.length, count])
 
-    if (search.trim()) {
-      const q = search.toLowerCase()
-      results = results.filter(
-        (l) =>
-          l.business_name.toLowerCase().includes(q) ||
-          l.description?.toLowerCase().includes(q) ||
-          l.category?.name?.toLowerCase().includes(q)
-      )
-    }
-
-    if (location.trim()) {
-      const loc = location.toLowerCase()
-      results = results.filter(
-        (l) =>
-          l.address?.city?.toLowerCase().includes(loc) ||
-          l.address?.state?.toLowerCase().includes(loc) ||
-          l.address?.zip?.includes(loc)
-      )
-    }
-
-    return results
-  }, [allListings, search, location])
+  // Algolia is now authoritative; keep the variable name for minimal JSX churn.
+  const filteredListings = allListings
 
   return (
     <>
@@ -143,8 +246,9 @@ export const DirectorySearch = ({
           />
         </div>
         <button
-          onClick={() => fetchListings()}
-          className="bg-gold text-navy-dark px-10 py-4 rounded-xl label-sm text-[10px] font-bold tracking-widest active:scale-95 transition-transform"
+          onClick={() => runSearch(0, false)}
+          disabled={!algoliaEnabled}
+          className="bg-gold text-navy-dark px-10 py-4 rounded-xl label-sm text-[10px] font-bold tracking-widest active:scale-95 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Search
         </button>
@@ -209,9 +313,16 @@ export const DirectorySearch = ({
               {filteredListings.length < count && (
                 <div className="mt-16 flex flex-col items-center">
                   <div className="w-24 h-px bg-gold mb-4" />
-                  <button className="bg-gray-100 text-navy-dark px-8 py-3 rounded-xl label-sm text-[10px] font-bold tracking-[0.2em] hover:bg-gray-200 transition-colors">
-                    Load More Partners
+                  <button
+                    onClick={loadMore}
+                    disabled={loadingMore}
+                    className="bg-gray-100 text-navy-dark px-8 py-3 rounded-xl label-sm text-[10px] font-bold tracking-[0.2em] hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {loadingMore ? "Loading…" : "Load More Partners"}
                   </button>
+                  <p className="mt-3 text-xs text-secondary">
+                    Showing {filteredListings.length} of {count}
+                  </p>
                 </div>
               )}
             </>
