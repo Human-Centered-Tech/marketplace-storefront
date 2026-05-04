@@ -90,9 +90,9 @@ export const ProductListing = async ({
         <section className="flex-1 min-w-0">
           <ProductListingHeader total={count} />
           <div
-            className={`grid grid-cols-1 sm:grid-cols-2 ${
+            className={`grid grid-cols-1 md:grid-cols-2 ${
               showSidebar ? "lg:grid-cols-3" : "lg:grid-cols-4"
-            } gap-6`}
+            } gap-y-16 gap-x-8`}
           >
             <ProductsList products={products} />
           </div>
