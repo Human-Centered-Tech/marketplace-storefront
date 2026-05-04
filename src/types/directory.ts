@@ -60,6 +60,7 @@ export type DirectoryListing = {
   contact_phone: string | null
   website_url: string | null
   address: {
+    full?: string
     street?: string
     city?: string
     state?: string
