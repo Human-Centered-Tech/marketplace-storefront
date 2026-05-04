@@ -23,8 +23,11 @@ export const ProductCard = ({
   const priceLabel = cheapestPrice?.calculated_price ?? "View Price"
 
   return (
-    <article className="flex flex-col group">
-      {/* Image with category badge */}
+    <article className="flex flex-col group h-full">
+      {/* Image with category badge — fixed 4:5 aspect, so all images match in
+          a row. The grid stretches articles to equal height; the text block
+          below uses flex-1 + mt-auto on the button so cards align even when
+          titles wrap differently. */}
       <LocalizedClientLink
         href={`/products/${product.handle}`}
         aria-label={`View ${productName}`}
@@ -62,18 +65,18 @@ export const ProductCard = ({
       </LocalizedClientLink>
 
       {/* Title + price + Add to Cart */}
-      <div className="mt-6 space-y-2">
+      <div className="mt-6 flex flex-col flex-1">
         <LocalizedClientLink
           href={`/products/${product.handle}`}
           aria-label={`Go to ${productName} page`}
           title={`Go to ${productName} page`}
         >
-          <h4 className="text-base font-semibold text-[#001435]">
+          <h4 className="text-base font-semibold text-[#001435] leading-snug line-clamp-2 min-h-[2.75rem]">
             {productName}
           </h4>
         </LocalizedClientLink>
-        <p className="font-serif text-2xl text-[#001435]">{priceLabel}</p>
-        <button className="w-full py-3 bg-[#BE9B32] hover:brightness-110 text-[#001435] text-sm font-bold tracking-wide rounded-full mt-4 transition-all duration-300 uppercase shadow-sm">
+        <p className="font-serif text-2xl text-[#001435] mt-2">{priceLabel}</p>
+        <button className="w-full py-3 bg-[#BE9B32] hover:brightness-110 text-[#001435] text-sm font-bold tracking-wide rounded-full mt-auto transition-all duration-300 uppercase shadow-sm">
           Add to Cart
         </button>
       </div>
