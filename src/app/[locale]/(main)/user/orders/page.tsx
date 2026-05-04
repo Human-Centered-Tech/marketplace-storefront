@@ -24,8 +24,11 @@ export default async function UserPage({
   const currentPage = +page || 1
   const offset = (+currentPage - 1) * LIMIT
 
+  // Multi-vendor orders are grouped by order_set. Single-vendor orders
+  // (or orders created without an order_set, e.g. via admin/seed) fall
+  // back to grouping by the order's own id so the page still renders.
   const orderSetsGrouped = orders.reduce((acc, order) => {
-    const orderSetId = (order as any).order_set.id
+    const orderSetId = (order as any).order_set?.id ?? order.id
     if (!acc[orderSetId]) {
       acc[orderSetId] = []
     }
@@ -35,14 +38,14 @@ export default async function UserPage({
 
   const orderSets = Object.entries(orderSetsGrouped).map(
     ([orderSetId, orders]) => {
-      const firstOrder = orders[0]
-      const orderSet = (firstOrder as any).order_set
+      const firstOrder = orders[0] as any
+      const orderSet = firstOrder.order_set
 
       return {
         id: orderSetId,
         orders: orders,
-        created_at: orderSet.created_at,
-        display_id: orderSet.display_id,
+        created_at: orderSet?.created_at ?? firstOrder.created_at,
+        display_id: orderSet?.display_id ?? firstOrder.display_id,
         total: orders.reduce((sum, order) => sum + order.total, 0),
         currency_code: firstOrder.currency_code,
       }
