@@ -76,9 +76,17 @@ export const ProductCard = ({
           </h4>
         </LocalizedClientLink>
         <p className="font-serif text-2xl text-[#001435] mt-2">{priceLabel}</p>
-        <button className="w-full py-3 bg-[#BE9B32] hover:brightness-110 text-[#001435] text-sm font-bold tracking-wide rounded-full mt-auto transition-all duration-300 uppercase shadow-sm">
+        {/* Routes to the product detail page where the real add-to-cart
+            flow lives (variant picker, stock check, optimistic cart
+            update). Direct add-from-card would need to either auto-pick
+            a variant or open a quick-pick popover — punting on that
+            until we have a clear product call. */}
+        <LocalizedClientLink
+          href={`/products/${product.handle}`}
+          className="w-full py-3 bg-[#BE9B32] hover:brightness-110 text-[#001435] text-sm font-bold tracking-wide rounded-full mt-auto transition-all duration-300 uppercase shadow-sm text-center block"
+        >
           Add to Cart
-        </button>
+        </LocalizedClientLink>
       </div>
     </article>
   )
