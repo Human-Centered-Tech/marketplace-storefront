@@ -212,7 +212,7 @@ export const DirectorySearch = ({
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-transparent border-none focus:ring-0 font-sans text-sm py-4"
+            className="w-full bg-transparent border-none focus:ring-0 font-sans text-sm py-4 pl-2"
             placeholder="Search business name..."
           />
         </div>
