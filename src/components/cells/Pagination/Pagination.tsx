@@ -68,7 +68,7 @@ export const Pagination = ({
   }
 
   return (
-    <div className="flex items-center">
+    <div className="flex items-center gap-2">
       <PaginationButton
         disabled={Boolean(currentPage === 1)}
         onClick={() => setPage(currentPage - 1)}
