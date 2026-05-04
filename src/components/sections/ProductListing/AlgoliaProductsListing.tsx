@@ -36,19 +36,37 @@ export const AlgoliaProductsListing = ({
   const facetFilters: string = getFacedFilters(searchParamas)
   const query: string = searchParamas.get("query") || ""
 
-  const filters = `${
-    seller_handle
-      ? `NOT seller:null AND seller.handle:${seller_handle} AND `
-      : "NOT seller:null AND "
-  }NOT seller.store_status:SUSPENDED AND supported_countries:${locale}${
-    category_id
-      ? ` AND categories.id:${category_id}${
-          collection_id !== undefined
-            ? ` AND collections.id:${collection_id}`
-            : ""
-        } ${facetFilters}`
-      : ` ${facetFilters}`
-  }`
+  // Transitional flag — set NEXT_PUBLIC_RELAX_ALGOLIA_PRODUCT_FILTERS=true
+  // while we're still working with test products that lack seller assignments
+  // and supported_countries data. Drops the per-product attribution filters
+  // so the shop renders something instead of an empty list. Should be
+  // removed (or env unset) once all products have proper seller + region
+  // setup. Has no effect on category/collection/seller-handle filters,
+  // which are explicit user choices.
+  const relaxFilters =
+    process.env.NEXT_PUBLIC_RELAX_ALGOLIA_PRODUCT_FILTERS === "true"
+
+  const clauses: string[] = []
+
+  // Seller / supported-countries gates (relaxable)
+  if (!relaxFilters) {
+    clauses.push("NOT seller:null")
+    clauses.push("NOT seller.store_status:SUSPENDED")
+    clauses.push(`supported_countries:${locale}`)
+  }
+
+  // Always-applied filters: vendor storefront, category, collection
+  if (seller_handle) clauses.push(`seller.handle:${seller_handle}`)
+  if (category_id) clauses.push(`categories.id:${category_id}`)
+  if (collection_id !== undefined)
+    clauses.push(`collections.id:${collection_id}`)
+
+  // facetFilters is a free-form fragment (may already contain " AND " etc.)
+  // Append as-is at the end if non-empty.
+  const baseFilter = clauses.join(" AND ")
+  const filters = facetFilters
+    ? `${baseFilter}${baseFilter ? " AND " : ""}${facetFilters}`
+    : baseFilter
 
   return (
     <InstantSearchNext searchClient={client} indexName="products">
