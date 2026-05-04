@@ -201,7 +201,10 @@ const ProductsListing = ({
             </div>
           ) : (
             <div className="w-full">
-              <ul className="flex flex-wrap gap-4">
+              {/* Grid (instead of flex-wrap) so cards in a row stretch to
+                  equal height. Matches the layout used in the non-Algolia
+                  ProductListing for the same visual rhythm. */}
+              <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-16 gap-x-8">
                 {products.map(
                   (hit) =>
                     apiProducts?.find((p: any) => p.id === hit.objectID) && (
