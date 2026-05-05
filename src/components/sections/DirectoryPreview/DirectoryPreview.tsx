@@ -3,6 +3,8 @@ import Image from "next/image"
 import { listDirectoryListings } from "@/lib/data/directory"
 import { DirectoryListing } from "@/types/directory"
 
+const NEARBY_RADIUS_KM = 80 // ~50 mi, matches default user-facing radius
+
 const fallbackListings = [
   {
     id: "fallback-1",
@@ -179,38 +181,61 @@ function pickFeaturedRotation<T>(pool: T[], count: number, seed: number): T[] {
   return out.slice(0, count)
 }
 
-export async function DirectoryPreview() {
-  // Pull enterprise-tier pool first; featured second; verified as last
-  // resort so the homepage never goes empty on a new deploy.
-  const [enterprise, featured, verified] = await Promise.all([
-    listDirectoryListings({
-      verification_status: "approved",
-      tier: "enterprise",
-      limit: 30,
-    } as any),
-    listDirectoryListings({
-      verification_status: "approved",
-      tier: "featured",
-      limit: 30,
-    } as any),
-    listDirectoryListings({
-      verification_status: "approved",
-      limit: 10,
-    }),
-  ])
+export async function DirectoryPreview({
+  userLoc = null,
+}: {
+  userLoc?: { lat: number; lng: number } | null
+} = {}) {
 
-  const daySeed = Math.floor(Date.now() / (24 * 60 * 60 * 1000))
-  const ePicks = pickFeaturedRotation(enterprise.listings, 3, daySeed)
-  const needed = Math.max(0, 3 - ePicks.length)
-  const fPicks = needed
-    ? pickFeaturedRotation(featured.listings, needed, daySeed + 1)
-    : []
-  const vNeeded = Math.max(0, 3 - ePicks.length - fPicks.length)
-  const vPicks = vNeeded
-    ? pickFeaturedRotation(verified.listings, vNeeded, daySeed + 2)
-    : []
+  let listings: DirectoryListing[] = []
+  let isNearby = false
 
-  const listings = [...ePicks, ...fPicks, ...vPicks].slice(0, 3)
+  if (userLoc) {
+    // Tier-then-distance ranking is done server-side by /store/directory/listings
+    // when proximity params are present; we just take the top 3.
+    const nearby = await listDirectoryListings({
+      verification_status: "approved",
+      near_lat: userLoc.lat,
+      near_lon: userLoc.lng,
+      radius_km: NEARBY_RADIUS_KM,
+      limit: 3,
+    } as any)
+    listings = nearby.listings
+    isNearby = listings.length > 0
+  }
+
+  if (listings.length === 0) {
+    // Fallback: existing daily-rotation across enterprise → featured → verified.
+    const [enterprise, featured, verified] = await Promise.all([
+      listDirectoryListings({
+        verification_status: "approved",
+        tier: "enterprise",
+        limit: 30,
+      } as any),
+      listDirectoryListings({
+        verification_status: "approved",
+        tier: "featured",
+        limit: 30,
+      } as any),
+      listDirectoryListings({
+        verification_status: "approved",
+        limit: 10,
+      }),
+    ])
+
+    const daySeed = Math.floor(Date.now() / (24 * 60 * 60 * 1000))
+    const ePicks = pickFeaturedRotation(enterprise.listings, 3, daySeed)
+    const needed = Math.max(0, 3 - ePicks.length)
+    const fPicks = needed
+      ? pickFeaturedRotation(featured.listings, needed, daySeed + 1)
+      : []
+    const vNeeded = Math.max(0, 3 - ePicks.length - fPicks.length)
+    const vPicks = vNeeded
+      ? pickFeaturedRotation(verified.listings, vNeeded, daySeed + 2)
+      : []
+
+    listings = [...ePicks, ...fPicks, ...vPicks].slice(0, 3)
+  }
 
   const hasData = listings.length > 0
 
@@ -219,7 +244,7 @@ export async function DirectoryPreview() {
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-12">
           <h2 className="font-serif text-3xl md:text-4xl font-bold text-[#001435] whitespace-nowrap">
-            From the Directory
+            {isNearby ? "Near You in the Directory" : "From the Directory"}
           </h2>
           <div className="h-[1px] flex-grow mx-8 bg-[#BE9B32]/30 hidden sm:block" />
         </div>

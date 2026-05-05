@@ -2,6 +2,9 @@
 
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
 import { useState, useCallback, useRef, useEffect } from "react"
+import { useUserLocation, readRadiusMi } from "@/hooks/useUserLocation"
+
+const KM_PER_MI = 1.60934
 
 export function SearchBar({
   variant = "hero",
@@ -17,6 +20,7 @@ export function SearchBar({
   const [isExpanded, setIsExpanded] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const formRef = useRef<HTMLFormElement>(null)
+  const { location } = useUserLocation()
 
   const defaultPlaceholder = "Search products, businesses, services..."
 
@@ -24,16 +28,18 @@ export function SearchBar({
     (e: React.FormEvent) => {
       e.preventDefault()
       const locale = pathname.split("/")[1] || "us"
-      if (query.trim()) {
-        router.push(
-          `/${locale}/categories?q=${encodeURIComponent(query.trim())}`
-        )
-      } else {
-        router.push(`/${locale}/categories`)
+      const params = new URLSearchParams()
+      if (query.trim()) params.set("q", query.trim())
+      if (location) {
+        params.set("near_lat", String(location.lat))
+        params.set("near_lon", String(location.lng))
+        params.set("radius_km", String(Math.round(readRadiusMi() * KM_PER_MI)))
       }
+      const qs = params.toString()
+      router.push(`/${locale}/categories${qs ? `?${qs}` : ""}`)
       setIsExpanded(false)
     },
-    [query, pathname, router]
+    [query, pathname, router, location]
   )
 
   // Close expanded search on click outside
@@ -64,7 +70,6 @@ export function SearchBar({
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setIsExpanded(true)}
         />
-
         <button
           type="submit"
           className="absolute right-2 top-1/2 -translate-y-1/2 text-[#75777f] hover:text-[#755b00] transition-colors"

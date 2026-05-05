@@ -2,7 +2,10 @@
 
 import { useEffect, useRef } from "react"
 import L from "leaflet"
+import "leaflet.markercluster"
 import "leaflet/dist/leaflet.css"
+import "leaflet.markercluster/dist/MarkerCluster.css"
+import "leaflet.markercluster/dist/MarkerCluster.Default.css"
 
 type MarkerData = {
   id: string
@@ -42,6 +45,7 @@ export default function LeafletMap({
   const mapRef = useRef<L.Map | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const markersRef = useRef<Map<string, L.Marker>>(new Map())
+  const clusterRef = useRef<L.MarkerClusterGroup | null>(null)
 
   // Initialize map
   useEffect(() => {
@@ -61,21 +65,33 @@ export default function LeafletMap({
     // Default view: US
     map.setView([39.8, -98.5], 4)
 
+    const cluster = L.markerClusterGroup({
+      showCoverageOnHover: false,
+      spiderfyOnMaxZoom: true,
+      // Fan out clusters that won't separate by zoom (e.g. listings sharing
+      // identical city-centroid coords).
+      spiderfyDistanceMultiplier: 1.5,
+      maxClusterRadius: 40,
+    })
+    map.addLayer(cluster)
+
     mapRef.current = map
+    clusterRef.current = cluster
 
     return () => {
       map.remove()
       mapRef.current = null
+      clusterRef.current = null
     }
   }, [])
 
   // Add/update markers
   useEffect(() => {
     const map = mapRef.current
-    if (!map) return
+    const cluster = clusterRef.current
+    if (!map || !cluster) return
 
-    // Clear old markers
-    markersRef.current.forEach((m) => m.remove())
+    cluster.clearLayers()
     markersRef.current.clear()
 
     if (markers.length === 0) return
@@ -84,7 +100,6 @@ export default function LeafletMap({
       const marker = L.marker([m.lat, m.lon], {
         icon: createIcon(m.id === selectedId),
       })
-        .addTo(map)
         .bindTooltip(m.name, {
           direction: "top",
           offset: [0, -10],
@@ -92,12 +107,14 @@ export default function LeafletMap({
         })
         .on("click", () => onSelectMarker(m.id))
 
+      cluster.addLayer(marker)
       markersRef.current.set(m.id, marker)
     })
 
-    // Fit bounds
-    const group = L.featureGroup(Array.from(markersRef.current.values()))
-    map.fitBounds(group.getBounds().pad(0.3))
+    const bounds = cluster.getBounds()
+    if (bounds.isValid()) {
+      map.fitBounds(bounds.pad(0.3))
+    }
   }, [markers, onSelectMarker])
 
   // Update selected marker icon
@@ -106,11 +123,18 @@ export default function LeafletMap({
       marker.setIcon(createIcon(id === selectedId))
     })
 
-    // Pan to selected
+    // Pan to selected; spiderfy its cluster so the marker is visible.
     if (selectedId) {
       const m = markers.find((m) => m.id === selectedId)
+      const marker = markersRef.current.get(selectedId)
+      const cluster = clusterRef.current
       if (m && mapRef.current) {
         mapRef.current.panTo([m.lat, m.lon], { animate: true })
+        if (marker && cluster) {
+          cluster.zoomToShowLayer(marker, () => {
+            // no-op; needed so the layer becomes visible inside its cluster
+          })
+        }
       }
     }
   }, [selectedId, markers])

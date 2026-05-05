@@ -526,31 +526,51 @@ export const DirectoryDetail = ({
 function LocationEmbed({
   address,
 }: {
-  address: { city?: string; state?: string; zip?: string; street?: string }
+  address: {
+    city?: string
+    state?: string
+    zip?: string
+    street?: string
+    lat?: number
+    lng?: number
+  }
 }) {
   const query = [address.city, address.state, address.zip]
     .filter(Boolean)
     .join(", ")
 
+  const lat = Number(address.lat)
+  const lng = Number(address.lng)
+  const hasCoords = Number.isFinite(lat) && Number.isFinite(lng)
+
+  // ~6 mi window around the listing, falling back to a centered US view.
+  const span = 0.05
+  const bbox = hasCoords
+    ? `${lng - span},${lat - span},${lng + span},${lat + span}`
+    : "-125,25,-66,49"
+  const marker = hasCoords ? `&marker=${lat},${lng}` : ""
+
   return (
     <div className="h-48 relative overflow-hidden">
       <iframe
-        src={`https://www.openstreetmap.org/export/embed.html?bbox=-98,30,-96,32&layer=mapnik`}
+        src={`https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik${marker}`}
         className="w-full border-0"
         style={{ height: "calc(100% + 30px)" }}
         title={`Map of ${query}`}
         loading="lazy"
       />
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <div className="w-12 h-12 bg-navy-dark rounded-full flex items-center justify-center border-4 border-[#FAF9F5] shadow-xl">
-          <span
-            className="material-symbols-outlined text-[#F2CD69]"
-            style={{ fontVariationSettings: "'FILL' 1" }}
-          >
-            location_on
-          </span>
+      {!hasCoords && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="w-12 h-12 bg-navy-dark rounded-full flex items-center justify-center border-4 border-[#FAF9F5] shadow-xl">
+            <span
+              className="material-symbols-outlined text-[#F2CD69]"
+              style={{ fontVariationSettings: "'FILL' 1" }}
+            >
+              location_on
+            </span>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }
