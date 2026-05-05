@@ -75,18 +75,23 @@ export const ProductCard = ({
             {productName}
           </h4>
         </LocalizedClientLink>
-        <p className="font-serif text-2xl text-[#001435] mt-2">{priceLabel}</p>
+        <p className="font-serif text-2xl text-[#001435] mt-1">{priceLabel}</p>
         {/* Routes to the product detail page where the real add-to-cart
             flow lives (variant picker, stock check, optimistic cart
             update). Direct add-from-card would need to either auto-pick
             a variant or open a quick-pick popover — punting on that
-            until we have a clear product call. */}
-        <LocalizedClientLink
-          href={`/products/${product.handle}`}
-          className="w-full py-3 bg-[#BE9B32] hover:brightness-110 text-[#001435] text-sm font-bold tracking-wide rounded-full mt-auto transition-all duration-300 uppercase shadow-sm text-center block"
-        >
-          Add to Cart
-        </LocalizedClientLink>
+            until we have a clear product call.
+            mt-auto pins the wrapper to the bottom of the flex column;
+            pt-8 inside the wrapper guarantees ≥2rem of breathing room
+            above the button regardless of the overall card height. */}
+        <div className="mt-auto pt-4">
+          <LocalizedClientLink
+            href={`/products/${product.handle}`}
+            className="w-full py-3 bg-gradient-to-r from-[#D4B043] to-[#9F8129] hover:brightness-110 text-[#001435] text-sm font-bold tracking-wide rounded-full transition-all duration-300 uppercase shadow-sm text-center block"
+          >
+            Add to Cart
+          </LocalizedClientLink>
+        </div>
       </div>
     </article>
   )
