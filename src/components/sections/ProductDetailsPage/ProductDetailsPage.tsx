@@ -70,7 +70,10 @@ export const ProductDetailsPage = async ({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
         {/* Left column: Gallery (7 cols) */}
         <div className="lg:col-span-7">
-          <ProductGallery images={prod?.images || []} />
+          <ProductGallery
+            images={prod?.images || []}
+            thumbnail={prod?.thumbnail}
+          />
         </div>
 
         {/* Right column: Details (5 cols) */}

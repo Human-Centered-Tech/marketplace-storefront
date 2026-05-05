@@ -6,11 +6,21 @@ import { HttpTypes } from "@medusajs/types"
 
 export const ProductGallery = ({
   images,
+  thumbnail,
 }: {
   images: HttpTypes.StoreProduct["images"]
+  thumbnail?: string | null
 }) => {
   const [activeIndex, setActiveIndex] = useState(0)
-  const imageList = images || []
+  // Fall back to the product's thumbnail when no gallery images exist —
+  // most imported products carry only a thumbnail, no rows in the image
+  // table, so the gallery would otherwise render "No image available".
+  const imageList =
+    images && images.length > 0
+      ? images
+      : thumbnail
+        ? [{ id: "thumbnail", url: thumbnail } as HttpTypes.StoreProductImage]
+        : []
   const activeImage = imageList[activeIndex]
 
   return (
