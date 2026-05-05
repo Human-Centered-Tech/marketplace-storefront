@@ -143,11 +143,7 @@ async function AllCategories({
       />
       {/* Hero Search Section */}
       <section
-        className="relative w-full py-14 lg:py-20 flex flex-col items-center justify-center border-b border-[#c5c6cf]/10"
-        style={{
-          backgroundColor: "#f4f4f0",
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0c1.3 5.4 4 10.3 8 14.3s8.9 6.7 14.3 8c-5.4 1.3-10.3 4-14.3 8s-6.7 8.9-8 14.3c-1.3-5.4-4-10.3-8-14.3s-8.9-6.7-14.3-8c5.4-1.3 10.3-4 14.3-8s6.7-8.9 8-14.3z' fill='%2317294a' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E")`,
-        }}
+        className="relative w-full py-14 lg:py-20 flex flex-col items-center justify-center border-b border-[#c5c6cf]/10 bg-gradient-to-b from-white to-[#001435]"
       >
         <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl tracking-[0.15em] uppercase text-[#001435] font-bold mb-6 text-center">
           The Marketplace

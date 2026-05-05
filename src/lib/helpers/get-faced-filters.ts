@@ -34,7 +34,16 @@ export const getFacedFilters = (filters: ReadonlyURLSearchParams): string => {
       key !== "page" &&
       key !== "products[page]" &&
       key !== "sortBy" &&
-      key !== "rating"
+      key !== "rating" &&
+      // Geo params belong to the directory route. They can drift onto a
+      // category URL via shared/legacy links — skip rather than try to
+      // turn them into facet clauses.
+      key !== "near_lat" &&
+      key !== "near_lon" &&
+      key !== "radius_km" &&
+      // Skip any key that maps to no known facet so unknown URL params
+      // can't generate broken `:"value"` clauses.
+      getOption(key) !== ""
     ) {
       let values = ""
       const splittedSize = value.split(",")

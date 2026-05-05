@@ -40,7 +40,7 @@ export const AlgoliaProductSidebar = () => {
       </Button>
       {isOpen && (
         <Modal heading="Filters" onClose={() => setIsOpen(false)}>
-          <div className="px-4">
+          <div className="px-4 space-y-4">
             <ProductListingActiveFilters />
             <PriceFilter
               defaultOpen={Boolean(
@@ -48,19 +48,18 @@ export const AlgoliaProductSidebar = () => {
               )}
             />
             <SizeFilter defaultOpen={Boolean(allSearchParams.size)} />
-            <ColorFilter defaultOpen={Boolean(allSearchParams.color)} />
-            <ConditionFilter defaultOpen={Boolean(allSearchParams.condition)} />
+            {/* Color/Condition hidden until products carry these attributes
+                — Algolia returns empty refinement lists today and an empty
+                filter section reads as broken. Reinstate when the catalog
+                has real values. */}
           </div>
         </Modal>
       )}
     </>
   ) : (
-    <div>
+    <div className="space-y-4">
       <PriceFilter />
       <SizeFilter />
-      <ColorFilter />
-      <ConditionFilter />
-      {/* <RatingFilter /> */}
     </div>
   )
 }
@@ -138,88 +137,91 @@ function SizeFilter({ defaultOpen = true }: { defaultOpen?: boolean }) {
     limit: 100,
     operator: "or",
   })
-  const { updateFilters, isFilterActive } = useFilters("size")
+  const updateSearchParams = useUpdateSearchParams()
+  const searchParams = useSearchParams()
+  const selected = searchParams.get("size") || ""
 
   const selectSizeHandler = (size: string) => {
-    updateFilters(size)
+    // Single-select: clicking the active option clears it; otherwise replaces.
+    updateSearchParams("size", selected === size ? "" : size)
   }
 
   return (
     <Accordion heading="Size" defaultOpen={defaultOpen}>
-      <ul className="grid grid-cols-4 mt-2 gap-2">
-        {items.map(({ label }) => (
-          <li key={label} className="mb-4">
-            <Chip
-              selected={isFilterActive(label)}
-              onSelect={() => selectSizeHandler(label)}
-              value={label}
-              className="w-full !justify-center !py-2 !font-normal"
-            />
-          </li>
-        ))}
+      <ul className="px-4 mt-1 space-y-2">
+        {items.map(({ label, count }) => {
+          const checked = selected === label
+          const disabled = !count
+          return (
+            <li key={label}>
+              <label
+                className={cn(
+                  "flex items-center gap-2 cursor-pointer text-sm",
+                  disabled && "opacity-50 cursor-default"
+                )}
+              >
+                <input
+                  type="radio"
+                  name="size-filter"
+                  checked={checked}
+                  disabled={disabled}
+                  onChange={() => selectSizeHandler(label)}
+                  className="accent-[#755b00]"
+                />
+                <span className={cn(checked && "font-semibold")}>{label}</span>
+              </label>
+            </li>
+          )
+        })}
       </ul>
     </Accordion>
   )
 }
 
-function PriceFilter({ defaultOpen = true }: { defaultOpen?: boolean }) {
-  const [min, setMin] = useState("")
-  const [max, setMax] = useState("")
+// Hardcoded for now — when variants.prices.amount is added to the index's
+// attributesForFaceting, swap to useRange({ attribute: "variants.prices.amount" })
+// to auto-scale these from real catalog data.
+const PRICE_MIN = 0
+const PRICE_MAX = 1000
 
+function PriceFilter({ defaultOpen = true }: { defaultOpen?: boolean }) {
   const updateSearchParams = useUpdateSearchParams()
   const searchParams = useSearchParams()
 
+  // Slider value tracks the *max* — minimum is always $0. Matches the
+  // single-handle pattern from the non-Algolia ProductSidebar.
+  const initial = parseInt(searchParams.get("max_price") || "") || PRICE_MAX
+  const [value, setValue] = useState<number>(initial)
+
   useEffect(() => {
-    setMin(searchParams.get("min_price") || "")
-    setMax(searchParams.get("max_price") || "")
+    const v = parseInt(searchParams.get("max_price") || "")
+    setValue(Number.isFinite(v) && v > 0 ? v : PRICE_MAX)
   }, [searchParams])
 
-  const updateMinPriceHandler = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    updateSearchParams("min_price", min)
+  const commit = () => {
+    // No filter when slider is at the cap; otherwise persist max_price.
+    updateSearchParams("max_price", value >= PRICE_MAX ? "" : String(value))
   }
 
-  const updateMaxPriceHandler = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    updateSearchParams("max_price", max)
-  }
   return (
     <Accordion heading="Price" defaultOpen={defaultOpen}>
-      <div className="flex gap-2 mb-4">
-        <form method="POST" onSubmit={updateMinPriceHandler}>
-          <Input
-            placeholder="Min"
-            onChange={(e) => setMin(e.target.value)}
-            value={min}
-            onBlur={(e) => {
-              setTimeout(() => {
-                updateMinPriceHandler(
-                  e as unknown as React.FormEvent<HTMLFormElement>
-                )
-              }, 500)
-            }}
-            type="number"
-            className="no-arrows-number-input"
-          />
-          <input type="submit" className="hidden" />
-        </form>
-        <form method="POST" onSubmit={updateMaxPriceHandler}>
-          <Input
-            placeholder="Max"
-            onChange={(e) => setMax(e.target.value)}
-            onBlur={(e) => {
-              setTimeout(() => {
-                updateMaxPriceHandler(
-                  e as unknown as React.FormEvent<HTMLFormElement>
-                )
-              }, 500)
-            }}
-            value={max}
-            type="number"
-            className="no-arrows-number-input"
-          />
-          <input type="submit" className="hidden" />
-        </form>
+      <div className="px-4 space-y-4 pb-4">
+        <input
+          type="range"
+          min={PRICE_MIN}
+          max={PRICE_MAX}
+          step={5}
+          value={value}
+          onChange={(e) => setValue(parseInt(e.target.value))}
+          onMouseUp={commit}
+          onTouchEnd={commit}
+          onKeyUp={commit}
+          className="w-full accent-[#755b00] cursor-pointer"
+        />
+        <div className="flex justify-between text-xs font-bold text-[#44474e]">
+          <span>${PRICE_MIN}</span>
+          <span>{value >= PRICE_MAX ? `$${PRICE_MAX}+` : `$${value}`}</span>
+        </div>
       </div>
     </Accordion>
   )
