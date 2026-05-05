@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useState } from "react"
 import { DirectoryListing } from "@/types/directory"
 import dynamic from "next/dynamic"
 
@@ -24,72 +24,31 @@ export function DirectoryMapView({
   const [markers, setMarkers] = useState<MarkerData[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedId, setSelectedId] = useState<string | null>(null)
-  const geocodeCache = useRef(new Map<string, { lat: number; lon: number }>())
 
   useEffect(() => {
-    const geocode = async () => {
-      setLoading(true)
-      const results: MarkerData[] = []
-
-      for (const listing of listings) {
-        if (!listing.address?.city) continue
-        const query = [
-          listing.address.city,
-          listing.address.state,
-          listing.address.zip,
-        ]
-          .filter(Boolean)
-          .join(", ")
-
-        // Check cache first
-        if (geocodeCache.current.has(query)) {
-          const cached = geocodeCache.current.get(query)!
-          results.push({
-            id: listing.id,
-            lat: cached.lat,
-            lon: cached.lon,
-            name: listing.business_name,
-            category: listing.category?.name || "Business",
-            city: [listing.address.city, listing.address.state]
-              .filter(Boolean)
-              .join(", "),
-          })
-          continue
-        }
-
-        try {
-          const res = await fetch(
-            `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
-              query
-            )}&format=json&limit=1`,
-            { headers: { "User-Agent": "CatholicOwned/1.0" } }
-          )
-          const data = await res.json()
-          if (data.length > 0) {
-            const lat = parseFloat(data[0].lat)
-            const lon = parseFloat(data[0].lon)
-            geocodeCache.current.set(query, { lat, lon })
-            results.push({
-              id: listing.id,
-              lat,
-              lon,
-              name: listing.business_name,
-              category: listing.category?.name || "Business",
-              city: [listing.address.city, listing.address.state]
-                .filter(Boolean)
-                .join(", "),
-            })
-          }
-        } catch {
-          // skip failed geocodes
-        }
-      }
-
-      setMarkers(results)
-      setLoading(false)
+    setLoading(true)
+    // Listings now carry lat/lng on address (populated by backend geocoder
+    // on save and by the one-time backfill). Use them directly — no client
+    // geocoding round-trips.
+    const results: MarkerData[] = []
+    for (const listing of listings) {
+      const addr = listing.address as
+        | { lat?: number; lng?: number; city?: string; state?: string }
+        | null
+      const lat = Number(addr?.lat)
+      const lng = Number(addr?.lng)
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) continue
+      results.push({
+        id: listing.id,
+        lat,
+        lon: lng,
+        name: listing.business_name,
+        category: listing.category?.name || "Business",
+        city: [addr?.city, addr?.state].filter(Boolean).join(", "),
+      })
     }
-
-    geocode()
+    setMarkers(results)
+    setLoading(false)
   }, [listings])
 
   const selected = selectedId

@@ -10,10 +10,25 @@ import {
 } from "@/components/sections"
 
 import type { Metadata } from "next"
-import { headers } from "next/headers"
+import { headers, cookies } from "next/headers"
 import Script from "next/script"
 import { listRegions } from "@/lib/data/regions"
 import { toHreflang } from "@/lib/helpers/hreflang"
+
+async function readUserLocation(): Promise<{ lat: number; lng: number } | null> {
+  try {
+    const store = await cookies()
+    const value = store.get("user_location")?.value
+    if (!value) return null
+    const [latStr, lngStr] = decodeURIComponent(value).split(",")
+    const lat = parseFloat(latStr)
+    const lng = parseFloat(lngStr)
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null
+    return { lat, lng }
+  } catch {
+    return null
+  }
+}
 
 export async function generateMetadata({
   params,
@@ -115,6 +130,7 @@ export default async function Home({
 }) {
   const { locale } = await params
 
+  const userLoc = await readUserLocation()
   const headersList = await headers()
   const host = headersList.get("host")
   const protocol = headersList.get("x-forwarded-proto") || "https"
@@ -178,7 +194,7 @@ export default async function Home({
       <HomeProductSection heading="Featured Products" locale={locale} home />
 
       {/* 4. From the Directory */}
-      <DirectoryPreview />
+      <DirectoryPreview userLoc={userLoc} />
 
       {/* 5. Upcoming Networking Events */}
       <UpcomingEvents />

@@ -6,11 +6,18 @@ import { algoliasearch } from "algoliasearch"
 import { DirectoryListing, DirectoryCategory } from "@/types/directory"
 import { DirectoryListingCard } from "./DirectoryListingCard"
 import { DirectoryMapView } from "./DirectoryMap"
+import {
+  useUserLocation,
+  readRadiusMi,
+  writeRadiusMi,
+} from "@/hooks/useUserLocation"
+import { LocationPrompt } from "@/components/molecules/LocationPrompt/LocationPrompt"
 
 type ViewMode = "list" | "map"
 
 const PAGE_SIZE = 20
 const ALGOLIA_INDEX = "directory_listings"
+const KM_PER_MI = 1.60934
 
 type DirectorySearchProps = {
   initialListings: DirectoryListing[]
@@ -37,6 +44,7 @@ type DirectoryHit = {
   logo_url: string | null
   cover_image_url: string | null
   website_url: string | null
+  _geoloc?: { lat: number; lng: number }
 }
 
 /** Map an Algolia hit to the DirectoryListing shape that DirectoryListingCard expects. */
@@ -68,7 +76,15 @@ function hitToListing(hit: DirectoryHit): DirectoryListing {
     contact_email: null,
     contact_phone: null,
     website_url: hit.website_url,
-    address: { city: hit.city, state: hit.state },
+    address: {
+      city: hit.city,
+      state: hit.state,
+      // Pass coords through so the map view can drop pins without a
+      // round-trip back to the backend.
+      ...(hit._geoloc
+        ? { lat: hit._geoloc.lat, lng: hit._geoloc.lng }
+        : {}),
+    },
     social_links: null,
     hours_of_operation: null,
     always_open: false,
@@ -93,6 +109,11 @@ export const DirectorySearch = ({
 }: DirectorySearchProps) => {
   const searchParams = useSearchParams()
   const urlQuery = searchParams.get("q") || ""
+  const urlNearLat = parseFloat(searchParams.get("near_lat") || "")
+  const urlNearLon = parseFloat(searchParams.get("near_lon") || "")
+  const urlRadiusKm = parseFloat(searchParams.get("radius_km") || "")
+
+  const { location: userLocation, hydrated } = useUserLocation()
 
   // Algolia client. Memoize so we don't re-create on every render.
   // If the env vars aren't set we'll fall back to the server-rendered
@@ -115,6 +136,34 @@ export const DirectorySearch = ({
   const [loading, setLoading] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
   const [view, setView] = useState<ViewMode>("list")
+  const [useNearMe, setUseNearMe] = useState(
+    Number.isFinite(urlNearLat) && Number.isFinite(urlNearLon)
+  )
+  // Auto-enable Near-me once location becomes available, unless the user
+  // has explicitly toggled it off.
+  const [nearMeTouched, setNearMeTouched] = useState(false)
+  useEffect(() => {
+    if (hydrated && userLocation && !nearMeTouched && !useNearMe) {
+      setUseNearMe(true)
+    }
+  }, [hydrated, userLocation, nearMeTouched, useNearMe])
+  const [radiusMi, setRadiusMiState] = useState(
+    Number.isFinite(urlRadiusKm) ? Math.round(urlRadiusKm / KM_PER_MI) : 50
+  )
+  // Rehydrate from localStorage after mount; URL still wins if present.
+  useEffect(() => {
+    if (!Number.isFinite(urlRadiusKm)) {
+      setRadiusMiState(readRadiusMi())
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+  const setRadiusMi = (mi: number) => {
+    setRadiusMiState(mi)
+    writeRadiusMi(mi)
+  }
+
+  const proximityActive =
+    hydrated && useNearMe && userLocation !== null
 
   useEffect(() => {
     if (urlQuery && urlQuery !== search) {
@@ -124,15 +173,31 @@ export const DirectorySearch = ({
 
   // Build Algolia query options. `location` is a freeform string that
   // could be a city or state — we use it as a secondary query term so
-  // typo tolerance + stemming apply.
+  // typo tolerance + stemming apply. When the user has shared their
+  // location, we add aroundLatLng so Algolia ranks results by distance
+  // and excludes anything outside the radius.
   const buildSearchParams = useCallback(
     (page: number) => {
       const facetFilters: string[][] = []
       if (categoryId) facetFilters.push([`category_id:${categoryId}`])
 
-      // Combine search + location into a single query if both present.
-      const queryParts = [search.trim(), location.trim()].filter(Boolean)
+      // Combine search + (location text) into a single query if both present.
+      // When proximity is active we drop the freeform location text — the
+      // geosearch is more precise than "Denver" matching "Denver, NC" etc.
+      const queryParts = [
+        search.trim(),
+        proximityActive ? "" : location.trim(),
+      ].filter(Boolean)
       const query = queryParts.join(" ")
+
+      const geoParams =
+        proximityActive && userLocation
+          ? {
+              aroundLatLng: `${userLocation.lat},${userLocation.lng}`,
+              // aroundRadius is in meters.
+              aroundRadius: Math.round(radiusMi * KM_PER_MI * 1000),
+            }
+          : {}
 
       return {
         indexName: ALGOLIA_INDEX,
@@ -140,9 +205,10 @@ export const DirectorySearch = ({
         page,
         hitsPerPage: PAGE_SIZE,
         ...(facetFilters.length ? { facetFilters } : {}),
+        ...geoParams,
       }
     },
-    [search, location, categoryId]
+    [search, location, categoryId, proximityActive, userLocation, radiusMi]
   )
 
   const runSearch = useCallback(
@@ -202,6 +268,8 @@ export const DirectorySearch = ({
 
   return (
     <>
+      <LocationPrompt className="mb-4" />
+
       {/* Search Bar — floating card */}
       <div className="bg-white rounded-2xl shadow-xl p-2 flex flex-col md:flex-row items-stretch gap-2 border border-gray-100/50">
         <div className="flex-1 flex items-center px-4 border-r border-gray-100">
@@ -237,13 +305,43 @@ export const DirectorySearch = ({
           <span className="material-symbols-outlined text-secondary mr-3">
             location_on
           </span>
-          <input
-            type="text"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            className="w-full bg-transparent border-none focus:ring-0 font-sans text-sm py-4 pl-2"
-            placeholder="City or Zip Code"
-          />
+          {hydrated && userLocation ? (
+            <div className="w-full flex items-center gap-3 py-4">
+              <label className="flex items-center gap-2 text-sm text-navy-dark cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={useNearMe}
+                  onChange={(e) => {
+                    setUseNearMe(e.target.checked)
+                    setNearMeTouched(true)
+                  }}
+                  className="rounded border-gray-300"
+                />
+                Near me
+              </label>
+              {useNearMe && (
+                <select
+                  value={radiusMi}
+                  onChange={(e) => setRadiusMi(Number(e.target.value))}
+                  className="bg-transparent border-none focus:ring-0 text-sm cursor-pointer"
+                >
+                  {[25, 50, 100].map((mi) => (
+                    <option key={mi} value={mi}>
+                      {mi} miles
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+          ) : (
+            <input
+              type="text"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              className="w-full bg-transparent border-none focus:ring-0 font-sans text-sm py-4 pl-2"
+              placeholder="City or Zip Code"
+            />
+          )}
         </div>
         <button
           onClick={() => runSearch(0, false)}
@@ -261,7 +359,9 @@ export const DirectorySearch = ({
             Directory Results
           </span>
           <h2 className="font-serif text-2xl lg:text-3xl text-navy-dark mt-1">
-            Local &amp; Global Catholic Businesses
+            {proximityActive
+              ? "Catholic Businesses Near You"
+              : "Local & Global Catholic Businesses"}
           </h2>
         </div>
         <div className="flex items-center bg-gray-100 p-1 rounded-xl border border-gray-200/50">

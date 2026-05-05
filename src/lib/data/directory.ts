@@ -10,6 +10,9 @@ export const listDirectoryListings = async (params?: {
   q?: string
   limit?: number
   offset?: number
+  near_lat?: number
+  near_lon?: number
+  radius_km?: number
 }) => {
   return sdk.client
     .fetch<{
@@ -17,6 +20,8 @@ export const listDirectoryListings = async (params?: {
       count: number
       limit: number
       offset: number
+      filtered_by_proximity?: boolean
+      radius_km?: number
     }>("/store/directory/listings", {
       query: params as Record<string, string | number>,
       cache: "no-cache",
