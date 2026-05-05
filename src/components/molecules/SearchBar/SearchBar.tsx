@@ -2,9 +2,6 @@
 
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
 import { useState, useCallback, useRef, useEffect } from "react"
-import { useUserLocation, readRadiusMi } from "@/hooks/useUserLocation"
-
-const KM_PER_MI = 1.60934
 
 export function SearchBar({
   variant = "hero",
@@ -20,7 +17,6 @@ export function SearchBar({
   const [isExpanded, setIsExpanded] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const formRef = useRef<HTMLFormElement>(null)
-  const { location } = useUserLocation()
 
   const defaultPlaceholder = "Search products, businesses, services..."
 
@@ -30,16 +26,14 @@ export function SearchBar({
       const locale = pathname.split("/")[1] || "us"
       const params = new URLSearchParams()
       if (query.trim()) params.set("q", query.trim())
-      if (location) {
-        params.set("near_lat", String(location.lat))
-        params.set("near_lon", String(location.lng))
-        params.set("radius_km", String(Math.round(readRadiusMi() * KM_PER_MI)))
-      }
+      // Note: products don't have geolocation, so we deliberately do NOT
+      // append near_lat/near_lon/radius_km here. Proximity belongs to the
+      // directory route only.
       const qs = params.toString()
       router.push(`/${locale}/categories${qs ? `?${qs}` : ""}`)
       setIsExpanded(false)
     },
-    [query, pathname, router, location]
+    [query, pathname, router]
   )
 
   // Close expanded search on click outside
