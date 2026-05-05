@@ -1,14 +1,23 @@
 "use client"
 
-import { useState, useEffect, useCallback, useMemo } from "react"
+import { useState, useEffect, useCallback, useMemo, useRef } from "react"
 import { useSearchParams } from "next/navigation"
+import { algoliasearch } from "algoliasearch"
 import { DirectoryListing, DirectoryCategory } from "@/types/directory"
 import { DirectoryListingCard } from "./DirectoryListingCard"
 import { DirectoryMapView } from "./DirectoryMap"
-import { useUserLocation, readRadiusMi, writeRadiusMi } from "@/hooks/useUserLocation"
+import {
+  useUserLocation,
+  readRadiusMi,
+  writeRadiusMi,
+} from "@/hooks/useUserLocation"
 import { LocationPrompt } from "@/components/molecules/LocationPrompt/LocationPrompt"
 
 type ViewMode = "list" | "map"
+
+const PAGE_SIZE = 20
+const ALGOLIA_INDEX = "directory_listings"
+const KM_PER_MI = 1.60934
 
 type DirectorySearchProps = {
   initialListings: DirectoryListing[]
@@ -16,7 +25,82 @@ type DirectorySearchProps = {
   categories: DirectoryCategory[]
 }
 
-const KM_PER_MI = 1.60934
+/**
+ * Shape of an Algolia hit from the directory_listings index.
+ * Set in marketplace-backend/src/lib/algolia-directory.ts
+ * (buildAlgoliaListingRecord) and configured in init-algolia.ts
+ * (attributesToRetrieve).
+ */
+type DirectoryHit = {
+  objectID: string
+  business_name: string
+  slug: string
+  description: string | null
+  category_name: string
+  category_id: string | null
+  subscription_tier: "verified" | "featured" | "enterprise"
+  city: string
+  state: string
+  logo_url: string | null
+  cover_image_url: string | null
+  website_url: string | null
+  _geoloc?: { lat: number; lng: number }
+}
+
+/** Map an Algolia hit to the DirectoryListing shape that DirectoryListingCard expects. */
+function hitToListing(hit: DirectoryHit): DirectoryListing {
+  return {
+    id: hit.objectID,
+    business_name: hit.business_name,
+    slug: hit.slug,
+    description: hit.description,
+    category_id: hit.category_id,
+    category: hit.category_id
+      ? ({
+          id: hit.category_id,
+          name: hit.category_name,
+          slug: hit.category_name,
+        } as DirectoryCategory)
+      : undefined,
+    subscription_tier: hit.subscription_tier,
+    // Filled with defaults — Algolia is the source of truth for "what's
+    // searchable", and we already filter the index to approved+active.
+    subscription_status: "active",
+    stripe_subscription_id: null,
+    subscription_expires_at: null,
+    verification_status: "approved",
+    verified_by: null,
+    verified_at: null,
+    owner_id: "",
+    vendor_id: null,
+    contact_email: null,
+    contact_phone: null,
+    website_url: hit.website_url,
+    address: {
+      city: hit.city,
+      state: hit.state,
+      // Pass coords through so the map view can drop pins without a
+      // round-trip back to the backend.
+      ...(hit._geoloc
+        ? { lat: hit._geoloc.lat, lng: hit._geoloc.lng }
+        : {}),
+    },
+    social_links: null,
+    hours_of_operation: null,
+    always_open: false,
+    owner_interview: null,
+    devotional: null,
+    cta_type: "visit_shop",
+    cta_url: null,
+    logo_url: hit.logo_url,
+    cover_image_url: hit.cover_image_url,
+    metadata: null,
+    affiliations: [],
+    badges: [],
+    created_at: "",
+    updated_at: "",
+  } as unknown as DirectoryListing
+}
 
 export const DirectorySearch = ({
   initialListings,
@@ -30,18 +114,33 @@ export const DirectorySearch = ({
   const urlRadiusKm = parseFloat(searchParams.get("radius_km") || "")
 
   const { location: userLocation, hydrated } = useUserLocation()
-  const [allListings, setAllListings] = useState(initialListings)
+
+  // Algolia client. Memoize so we don't re-create on every render.
+  // If the env vars aren't set we'll fall back to the server-rendered
+  // initialListings — better than rendering an empty page in dev.
+  const algoliaClient = useMemo(() => {
+    const appId = process.env.NEXT_PUBLIC_ALGOLIA_ID
+    const searchKey = process.env.NEXT_PUBLIC_ALGOLIA_SEARCH_KEY
+    if (!appId || !searchKey) return null
+    return algoliasearch(appId, searchKey)
+  }, [])
+  const algoliaEnabled = algoliaClient !== null
+
+  const [allListings, setAllListings] = useState<DirectoryListing[]>(
+    initialListings
+  )
   const [count, setCount] = useState(initialCount)
   const [search, setSearch] = useState(urlQuery)
   const [categoryId, setCategoryId] = useState("")
   const [location, setLocation] = useState("")
   const [loading, setLoading] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
   const [view, setView] = useState<ViewMode>("list")
   const [useNearMe, setUseNearMe] = useState(
     Number.isFinite(urlNearLat) && Number.isFinite(urlNearLon)
   )
-  // Auto-enable Near-me once location becomes available (unless the user
-  // explicitly turned it off later — tracked via touched flag).
+  // Auto-enable Near-me once location becomes available, unless the user
+  // has explicitly toggled it off.
   const [nearMeTouched, setNearMeTouched] = useState(false)
   useEffect(() => {
     if (hydrated && userLocation && !nearMeTouched && !useNearMe) {
@@ -51,7 +150,7 @@ export const DirectorySearch = ({
   const [radiusMi, setRadiusMiState] = useState(
     Number.isFinite(urlRadiusKm) ? Math.round(urlRadiusKm / KM_PER_MI) : 50
   )
-  // Rehydrate from localStorage after mount (URL still wins if present).
+  // Rehydrate from localStorage after mount; URL still wins if present.
   useEffect(() => {
     if (!Number.isFinite(urlRadiusKm)) {
       setRadiusMiState(readRadiusMi())
@@ -63,85 +162,109 @@ export const DirectorySearch = ({
     writeRadiusMi(mi)
   }
 
+  const proximityActive =
+    hydrated && useNearMe && userLocation !== null
+
   useEffect(() => {
     if (urlQuery && urlQuery !== search) {
       setSearch(urlQuery)
     }
   }, [urlQuery])
 
-  const proximityEnabled = useNearMe && userLocation !== null
-  const proximityActive = proximityEnabled && hydrated
+  // Build Algolia query options. `location` is a freeform string that
+  // could be a city or state — we use it as a secondary query term so
+  // typo tolerance + stemming apply. When the user has shared their
+  // location, we add aroundLatLng so Algolia ranks results by distance
+  // and excludes anything outside the radius.
+  const buildSearchParams = useCallback(
+    (page: number) => {
+      const facetFilters: string[][] = []
+      if (categoryId) facetFilters.push([`category_id:${categoryId}`])
 
-  const fetchListings = useCallback(async () => {
-    setLoading(true)
-    try {
-      const params = new URLSearchParams()
-      if (categoryId) params.set("category_id", categoryId)
-      params.set("verification_status", "approved")
+      // Combine search + (location text) into a single query if both present.
+      // When proximity is active we drop the freeform location text — the
+      // geosearch is more precise than "Denver" matching "Denver, NC" etc.
+      const queryParts = [
+        search.trim(),
+        proximityActive ? "" : location.trim(),
+      ].filter(Boolean)
+      const query = queryParts.join(" ")
 
-      if (proximityActive && userLocation) {
-        params.set("near_lat", String(userLocation.lat))
-        params.set("near_lon", String(userLocation.lng))
-        params.set("radius_km", String(Math.round(radiusMi * KM_PER_MI)))
-        params.set("limit", "100")
+      const geoParams =
+        proximityActive && userLocation
+          ? {
+              aroundLatLng: `${userLocation.lat},${userLocation.lng}`,
+              // aroundRadius is in meters.
+              aroundRadius: Math.round(radiusMi * KM_PER_MI * 1000),
+            }
+          : {}
+
+      return {
+        indexName: ALGOLIA_INDEX,
+        query,
+        page,
+        hitsPerPage: PAGE_SIZE,
+        ...(facetFilters.length ? { facetFilters } : {}),
+        ...geoParams,
       }
+    },
+    [search, location, categoryId, proximityActive, userLocation, radiusMi]
+  )
 
-      const backendUrl =
-        process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9000"
-      const res = await fetch(
-        `${backendUrl}/store/directory/listings?${params.toString()}`,
-        {
-          headers: {
-            "x-publishable-api-key":
-              process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "",
-          },
+  const runSearch = useCallback(
+    async (page: number, append: boolean) => {
+      if (!algoliaClient) return
+      if (append) setLoadingMore(true)
+      else setLoading(true)
+      try {
+        const { results } = await algoliaClient.search<DirectoryHit>({
+          requests: [buildSearchParams(page)],
+        })
+        const result = results[0] as {
+          hits: DirectoryHit[]
+          nbHits: number
         }
-      )
-      const data = await res.json()
-      setAllListings(data.listings || [])
-      setCount(data.count || 0)
-    } catch {
-      // keep current state
-    } finally {
-      setLoading(false)
-    }
-  }, [categoryId, proximityActive, userLocation, radiusMi])
+        const listings = (result.hits || []).map(hitToListing)
+        if (append) {
+          setAllListings((prev) => [...prev, ...listings])
+        } else {
+          setAllListings(listings)
+        }
+        setCount(result.nbHits ?? 0)
+      } catch {
+        // Keep current state on error — better than wiping the UI.
+      } finally {
+        setLoading(false)
+        setLoadingMore(false)
+      }
+    },
+    [algoliaClient, buildSearchParams]
+  )
 
+  // Refetch from page 0 on filter change. Debounce keystrokes so we
+  // don't fire a request on every char. Skip first render — server
+  // already supplied initialListings.
+  const isFirstRender = useRef(true)
   useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false
+      return
+    }
+    if (!algoliaEnabled) return
     const timer = setTimeout(() => {
-      fetchListings()
+      runSearch(0, false)
     }, 300)
     return () => clearTimeout(timer)
-  }, [fetchListings])
+  }, [runSearch, algoliaEnabled])
 
-  // Client-side filtering for text search and (when no proximity) location.
-  const filteredListings = useMemo(() => {
-    let results = allListings
+  const loadMore = useCallback(() => {
+    if (loadingMore || allListings.length >= count) return
+    const nextPage = Math.floor(allListings.length / PAGE_SIZE)
+    runSearch(nextPage, true)
+  }, [runSearch, loadingMore, allListings.length, count])
 
-    if (search.trim()) {
-      const q = search.toLowerCase()
-      results = results.filter(
-        (l) =>
-          l.business_name.toLowerCase().includes(q) ||
-          l.description?.toLowerCase().includes(q) ||
-          l.category?.name?.toLowerCase().includes(q)
-      )
-    }
-
-    // When proximity is active the server already filtered by location;
-    // keep the text input as a no-op so the user sees the entire result set.
-    if (!proximityActive && location.trim()) {
-      const loc = location.toLowerCase()
-      results = results.filter(
-        (l) =>
-          l.address?.city?.toLowerCase().includes(loc) ||
-          l.address?.state?.toLowerCase().includes(loc) ||
-          l.address?.zip?.includes(loc)
-      )
-    }
-
-    return results
-  }, [allListings, search, location, proximityActive])
+  // Algolia is now authoritative; keep the variable name for minimal JSX churn.
+  const filteredListings = allListings
 
   return (
     <>
@@ -157,7 +280,7 @@ export const DirectorySearch = ({
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-transparent border-none focus:ring-0 font-sans text-sm py-4"
+            className="w-full bg-transparent border-none focus:ring-0 font-sans text-sm py-4 pl-2"
             placeholder="Search business name..."
           />
         </div>
@@ -221,8 +344,9 @@ export const DirectorySearch = ({
           )}
         </div>
         <button
-          onClick={() => fetchListings()}
-          className="bg-gold text-navy-dark px-10 py-4 rounded-xl label-sm text-[10px] font-bold tracking-widest active:scale-95 transition-transform"
+          onClick={() => runSearch(0, false)}
+          disabled={!algoliaEnabled}
+          className="bg-gold text-navy-dark px-10 py-4 rounded-xl label-sm text-[10px] font-bold tracking-widest active:scale-95 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Search
         </button>
@@ -235,7 +359,9 @@ export const DirectorySearch = ({
             Directory Results
           </span>
           <h2 className="font-serif text-2xl lg:text-3xl text-navy-dark mt-1">
-            Local &amp; Global Catholic Businesses
+            {proximityActive
+              ? "Catholic Businesses Near You"
+              : "Local & Global Catholic Businesses"}
           </h2>
         </div>
         <div className="flex items-center bg-gray-100 p-1 rounded-xl border border-gray-200/50">
@@ -287,9 +413,16 @@ export const DirectorySearch = ({
               {filteredListings.length < count && (
                 <div className="mt-16 flex flex-col items-center">
                   <div className="w-24 h-px bg-gold mb-4" />
-                  <button className="bg-gray-100 text-navy-dark px-8 py-3 rounded-xl label-sm text-[10px] font-bold tracking-[0.2em] hover:bg-gray-200 transition-colors">
-                    Load More Partners
+                  <button
+                    onClick={loadMore}
+                    disabled={loadingMore}
+                    className="bg-gray-100 text-navy-dark px-8 py-3 rounded-xl label-sm text-[10px] font-bold tracking-[0.2em] hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {loadingMore ? "Loading…" : "Load More Partners"}
                   </button>
+                  <p className="mt-3 text-xs text-secondary">
+                    Showing {filteredListings.length} of {count}
+                  </p>
                 </div>
               )}
             </>

@@ -61,7 +61,9 @@ const Form = () => {
     }
     // If LoginForm is embedded on a protected /user/* subpage, return
     // the user there after login instead of the /user dashboard.
-    if (pathname && pathname.startsWith("/user/") && pathname !== "/user") {
+    // includes("/user/") matches both /user/foo and /<locale>/user/foo —
+    // requires the trailing slash so /user (the dashboard itself) falls through.
+    if (pathname && pathname.includes("/user/")) {
       return pathname
     }
     return "/user"
@@ -82,9 +84,14 @@ const Form = () => {
   }
 
   // Used by register link to carry the return_to forward.
+  // Also propagates the current /user/* path so signup → register → return works.
   const registerHref = (() => {
     const fromQuery = searchParams.get("return_to")
-    const target = fromQuery && fromQuery.startsWith("/") ? fromQuery : null
+    const queryTarget =
+      fromQuery && fromQuery.startsWith("/") ? fromQuery : null
+    const pathTarget =
+      pathname && pathname.includes("/user/") ? pathname : null
+    const target = queryTarget ?? pathTarget
     if (!target) return "/user/register"
     return `/user/register?return_to=${encodeURIComponent(target)}`
   })()

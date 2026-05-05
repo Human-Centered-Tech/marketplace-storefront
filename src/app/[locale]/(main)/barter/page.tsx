@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import Image from "next/image"
 import { listBarterListings, listBarterCategories } from "@/lib/data/barter"
 import { BarterSearch } from "@/components/sections/Barter/BarterSearch"
+import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 
 export const metadata: Metadata = {
   title: "Sacred Exchange",
@@ -41,10 +42,16 @@ export default async function BarterPage() {
           <h1 className="display-md text-white mb-6 tracking-tight drop-shadow-lg">
             Sacred Exchange
           </h1>
-          <p className="font-serif text-xl lg:text-2xl italic text-white/80 max-w-2xl mx-auto leading-relaxed drop-shadow">
+          <p className="font-serif text-xl lg:text-2xl italic text-white/80 max-w-2xl mx-auto leading-relaxed drop-shadow mb-8">
             &ldquo;Strengthening our community through faithful barter
             and trade.&rdquo;
           </p>
+          <LocalizedClientLink
+            href="/user/barter/create"
+            className="inline-flex items-center px-6 py-3 bg-[#F2CD69] text-[#001435] text-[13px] font-semibold uppercase tracking-[0.1em] rounded-xs hover:bg-[#e8be4a] transition-colors"
+          >
+            + Post a Listing
+          </LocalizedClientLink>
         </div>
       </section>
 

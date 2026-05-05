@@ -82,12 +82,15 @@ export const ProductDetailsHeader = ({
     variantId,
   })
 
-  const variantStock =
-    product.variants?.find(({ id }) => id === variantId)?.inventory_quantity ||
-    0
+  const selectedVariantData = product.variants?.find(
+    ({ id }) => id === variantId
+  )
 
-  const variantHasPrice = !!product.variants?.find(({ id }) => id === variantId)
-    ?.calculated_price
+  const variantStock = selectedVariantData?.manage_inventory
+    ? selectedVariantData.inventory_quantity ?? 0
+    : Infinity
+
+  const variantHasPrice = !!selectedVariantData?.calculated_price
 
   const isVariantStockMaxLimitReached =
     (cart?.items?.find((item) => item.variant_id === variantId)?.quantity ??
@@ -252,7 +255,9 @@ export const ProductDetailsHeader = ({
           </span>
           <button
             onClick={() =>
-              setQuantity((q) => Math.min(variantStock || 99, q + 1))
+              setQuantity((q) =>
+                Math.min(Number.isFinite(variantStock) ? variantStock : 99, q + 1)
+              )
             }
             className="w-10 h-12 flex items-center justify-center text-[#001435] hover:bg-[#f4f4f0] transition-colors text-lg"
             aria-label="Increase quantity"
@@ -267,7 +272,7 @@ export const ProductDetailsHeader = ({
           disabled={
             !variantStock || !variantHasPrice || !hasAnyPrice || isAdding
           }
-          className="flex-1 h-12 bg-[#755b00] hover:bg-[#5e4900] disabled:bg-[#75777f]/30 disabled:text-[#75777f] text-white font-sans text-[11px] font-bold uppercase tracking-widest rounded-xl transition-all duration-200 flex items-center justify-center"
+          className="flex-1 h-12 bg-gradient-to-r from-[#D4B043] to-[#9F8129] hover:brightness-110 disabled:bg-none disabled:bg-[#75777f]/30 disabled:text-[#75777f] text-white font-sans text-[11px] font-bold uppercase tracking-widest rounded-full transition-all duration-200 flex items-center justify-center"
         >
           {isAdding ? (
             <svg

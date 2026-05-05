@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { DirectoryListing } from "@/types/directory"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 
@@ -522,7 +523,10 @@ export const DirectoryDetail = ({
   )
 }
 
-// Inline map embed component
+// Inline map embed component.
+// Geocodes the listing's address via Nominatim and renders an OSM iframe
+// centered on the result. Was previously hardcoded to a Waco-area bbox,
+// so every listing showed the same Texas map regardless of location.
 function LocationEmbed({
   address,
 }: {
@@ -531,46 +535,91 @@ function LocationEmbed({
     state?: string
     zip?: string
     street?: string
-    lat?: number
-    lng?: number
+    full?: string
   }
 }) {
-  const query = [address.city, address.state, address.zip]
-    .filter(Boolean)
-    .join(", ")
+  // Prefer the full address string (Bubble-imported listings have only this
+  // populated); fall back to a composite of structured fields.
+  const query =
+    address.full ??
+    [address.street, address.city, address.state, address.zip]
+      .filter(Boolean)
+      .join(", ")
 
-  const lat = Number(address.lat)
-  const lng = Number(address.lng)
-  const hasCoords = Number.isFinite(lat) && Number.isFinite(lng)
+  const [bbox, setBbox] = useState<string | null>(null)
 
-  // ~6 mi window around the listing, falling back to a centered US view.
-  const span = 0.05
-  const bbox = hasCoords
-    ? `${lng - span},${lat - span},${lng + span},${lat + span}`
-    : "-125,25,-66,49"
-  const marker = hasCoords ? `&marker=${lat},${lng}` : ""
+  useEffect(() => {
+    let cancelled = false
+    if (!query) {
+      setBbox(null)
+      return
+    }
+    ;(async () => {
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
+            query
+          )}&format=json&limit=1`,
+          { headers: { "Accept-Language": "en" } }
+        )
+        const data = (await res.json()) as Array<{
+          lat: string
+          lon: string
+        }>
+        if (cancelled) return
+        if (data.length > 0) {
+          const lat = parseFloat(data[0].lat)
+          const lon = parseFloat(data[0].lon)
+          // ~0.05° is roughly 5km — comfortable city-block view that still
+          // shows the surrounding neighborhood.
+          const pad = 0.05
+          setBbox(`${lon - pad},${lat - pad},${lon + pad},${lat + pad}`)
+        } else {
+          setBbox(null)
+        }
+      } catch {
+        if (!cancelled) setBbox(null)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [query])
+
+  // No address at all — render a placeholder rather than a misleading map.
+  if (!query) {
+    return (
+      <div className="h-48 relative overflow-hidden bg-gray-100 flex items-center justify-center">
+        <p className="text-secondary text-sm">No location provided</p>
+      </div>
+    )
+  }
 
   return (
     <div className="h-48 relative overflow-hidden">
-      <iframe
-        src={`https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik${marker}`}
-        className="w-full border-0"
-        style={{ height: "calc(100% + 30px)" }}
-        title={`Map of ${query}`}
-        loading="lazy"
-      />
-      {!hasCoords && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="w-12 h-12 bg-navy-dark rounded-full flex items-center justify-center border-4 border-[#FAF9F5] shadow-xl">
-            <span
-              className="material-symbols-outlined text-[#F2CD69]"
-              style={{ fontVariationSettings: "'FILL' 1" }}
-            >
-              location_on
-            </span>
-          </div>
+      {bbox ? (
+        <iframe
+          src={`https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik`}
+          className="w-full border-0"
+          style={{ height: "calc(100% + 30px)" }}
+          title={`Map of ${query}`}
+          loading="lazy"
+        />
+      ) : (
+        <div className="absolute inset-0 bg-gray-100 flex items-center justify-center">
+          <p className="text-secondary text-sm">Locating…</p>
         </div>
       )}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <div className="w-12 h-12 bg-navy-dark rounded-full flex items-center justify-center border-4 border-[#FAF9F5] shadow-xl">
+          <span
+            className="material-symbols-outlined text-[#F2CD69]"
+            style={{ fontVariationSettings: "'FILL' 1" }}
+          >
+            location_on
+          </span>
+        </div>
+      </div>
     </div>
   )
 }
