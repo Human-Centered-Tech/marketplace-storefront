@@ -112,22 +112,23 @@ export function useUserLocation() {
   }, [])
 
   const setFromZip = useCallback(async (zip: string): Promise<UserLocation | null> => {
-    const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN
-    if (!token) return null
     const trimmed = zip.trim()
     if (!/^\d{5}(-\d{4})?$/.test(trimmed)) return null
     try {
-      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+      const url = `https://nominatim.openstreetmap.org/search?postalcode=${encodeURIComponent(
         trimmed
-      )}.json?access_token=${token}&limit=1&country=us&types=postcode`
+      )}&countrycodes=us&format=json&limit=1`
       const res = await fetch(url)
       if (!res.ok) return null
-      const data = (await res.json()) as {
-        features?: Array<{ center?: [number, number] }>
-      }
-      const center = data.features?.[0]?.center
-      if (!center) return null
-      const [lng, lat] = center
+      const data = (await res.json()) as Array<{
+        lat?: string
+        lon?: string
+      }>
+      const hit = data?.[0]
+      if (!hit) return null
+      const lat = parseFloat(hit.lat || "")
+      const lng = parseFloat(hit.lon || "")
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null
       const next: UserLocation = { lat, lng, source: "zip", ts: Date.now() }
       writeStorage(next)
       setLocation(next)
