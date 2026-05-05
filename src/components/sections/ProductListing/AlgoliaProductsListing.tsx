@@ -61,11 +61,18 @@ export const AlgoliaProductsListing = ({
   if (collection_id !== undefined)
     clauses.push(`collections.id:${collection_id}`)
 
-  // facetFilters is a free-form fragment (may already contain " AND " etc.)
-  // Append as-is at the end if non-empty.
+  // getFacedFilters returns fragments that *start* with " AND ..." since
+  // they were designed to be appended after a fixed base filter. When the
+  // relax flag is on and no category/seller/collection is selected,
+  // baseFilter is empty — leading " AND " then makes Algolia reject the
+  // query ("Unexpected token 'AND' expected filter at col 1"). Trim the
+  // leading "AND" defensively so we can always concat cleanly.
+  const trimmedFacetFilters = facetFilters.replace(/^\s*AND\s+/, "")
   const baseFilter = clauses.join(" AND ")
-  const filters = facetFilters
-    ? `${baseFilter}${baseFilter ? " AND " : ""}${facetFilters}`
+  const filters = trimmedFacetFilters
+    ? baseFilter
+      ? `${baseFilter} AND ${trimmedFacetFilters}`
+      : trimmedFacetFilters
     : baseFilter
 
   return (
