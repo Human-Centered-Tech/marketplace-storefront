@@ -34,7 +34,10 @@ export const AlgoliaProductsListing = ({
   const searchParamas = useSearchParams()
 
   const facetFilters: string = getFacedFilters(searchParamas)
-  const query: string = searchParamas.get("query") || ""
+  // The SearchBar writes its term to ?q=, matching the rest of the app.
+  // (Was previously reading ?query=, which nothing sets, so every search
+  // landed here as an empty query and returned the unfiltered list.)
+  const query: string = searchParamas.get("q") || ""
 
   // Transitional flag — set NEXT_PUBLIC_RELAX_ALGOLIA_PRODUCT_FILTERS=true
   // while we're still working with test products that lack seller assignments
