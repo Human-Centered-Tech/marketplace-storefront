@@ -87,7 +87,7 @@ export const ProductCard = ({
         <div className="mt-auto pt-4">
           <LocalizedClientLink
             href={`/products/${product.handle}`}
-            className="w-full py-3 bg-gradient-to-r from-[#D4B043] to-[#9F8129] hover:brightness-110 text-[#001435] text-sm font-bold tracking-wide rounded-full transition-all duration-300 uppercase shadow-sm text-center block"
+            className="w-full py-3 bg-gradient-to-r from-[#D4B043] to-[#9F8129] hover:brightness-110 text-white text-sm font-bold tracking-wide rounded-full transition-all duration-300 uppercase shadow-sm text-center block"
           >
             Add to Cart
           </LocalizedClientLink>
