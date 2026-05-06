@@ -180,9 +180,9 @@ function SizeFilter({ defaultOpen = true }: { defaultOpen?: boolean }) {
 
 // Hardcoded for now — when variants.prices.amount is added to the index's
 // attributesForFaceting, swap to useRange({ attribute: "variants.prices.amount" })
-// to auto-scale these from real catalog data.
+// to auto-scale these from real catalog data. Catalog max today is ~$499.
 const PRICE_MIN = 0
-const PRICE_MAX = 1000
+const PRICE_MAX = 500
 
 function PriceFilter({ defaultOpen = true }: { defaultOpen?: boolean }) {
   const updateSearchParams = useUpdateSearchParams()
