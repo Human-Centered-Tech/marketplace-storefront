@@ -35,7 +35,6 @@ export default async function ProductPage({
 
   return (
     <main className="max-w-7xl mx-auto px-4 lg:px-8 py-8">
-      <style>{`body { background-image: none !important; }`}</style>
       <TrackPageView entity_type="product" entity_id={handle} />
       <ProductDetailsPage handle={handle} locale={locale} />
     </main>
