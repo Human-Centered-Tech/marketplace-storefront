@@ -61,7 +61,7 @@ export const Header = async () => {
 
         {/* Center — Search bar */}
         <div className="hidden lg:flex justify-center px-8">
-          <SearchBar variant="header" placeholder="Search Catholic Owned" />
+          <SearchBar variant="header" placeholder="Search Catholic Owned®" />
         </div>
 
         {/* Right — Actions */}

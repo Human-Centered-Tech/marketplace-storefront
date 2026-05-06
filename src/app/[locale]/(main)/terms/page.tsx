@@ -1,9 +1,9 @@
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Terms of Service — Catholic Owned",
+  title: "Terms of Service — Catholic Owned®",
   description:
-    "The terms and conditions governing use of the Catholic Owned marketplace and Business Directory.",
+    "The terms and conditions governing use of the Catholic Owned® marketplace and Business Directory.",
 }
 
 const UPDATED_DATE = "April 17, 2026"

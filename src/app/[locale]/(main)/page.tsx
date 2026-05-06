@@ -95,13 +95,13 @@ export async function generateMetadata({
     openGraph: {
       title: `${title} | ${
         process.env.NEXT_PUBLIC_SITE_NAME ||
-        "Catholic Owned"
+        "Catholic Owned®"
       }`,
       description,
       url: canonical,
       siteName:
         process.env.NEXT_PUBLIC_SITE_NAME ||
-        "Catholic Owned",
+        "Catholic Owned®",
       type: "website",
       images: [
         {
@@ -110,7 +110,7 @@ export async function generateMetadata({
           height: 630,
           alt:
             process.env.NEXT_PUBLIC_SITE_NAME ||
-            "Catholic Owned",
+            "Catholic Owned®",
         },
       ],
     },
@@ -138,7 +138,7 @@ export default async function Home({
 
   const siteName =
     process.env.NEXT_PUBLIC_SITE_NAME ||
-    "Catholic Owned"
+    "Catholic Owned®"
 
   return (
     <main className="flex flex-col items-center text-[#1b1c1a]">

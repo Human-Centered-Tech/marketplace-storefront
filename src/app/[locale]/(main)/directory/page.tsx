@@ -31,7 +31,7 @@ export default async function DirectoryPage() {
             Trusted Partners
           </h1>
           <p className="font-serif italic text-xl md:text-2xl text-secondary max-w-2xl mx-auto leading-relaxed">
-            Strengthen the domestic church through the new Catholic Economy&reg;
+            Strengthen the domestic church through the new Catholic economy.
           </p>
         </div>
 

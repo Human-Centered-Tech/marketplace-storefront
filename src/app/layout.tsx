@@ -24,11 +24,11 @@ export const metadata: Metadata = {
   title: {
     template: `%s | ${
       process.env.NEXT_PUBLIC_SITE_NAME ||
-      "Catholic Owned"
+      "Catholic Owned®"
     }`,
     default:
       process.env.NEXT_PUBLIC_SITE_NAME ||
-      "Catholic Owned",
+      "Catholic Owned®",
   },
   description:
     process.env.NEXT_PUBLIC_SITE_DESCRIPTION ||

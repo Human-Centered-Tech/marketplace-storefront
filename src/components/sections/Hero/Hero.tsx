@@ -11,13 +11,13 @@ type HeroProps = {
 export const Hero = ({ image, heading, paragraph, buttons }: HeroProps) => {
   return (
     <section className="w-full relative overflow-hidden">
-      <div className="relative min-h-[400px] lg:min-h-[75vh]">
+      <div className="relative min-h-[400px] lg:min-h-[65vh]">
         {/* Full-bleed background image */}
         <Image
           src={decodeURIComponent(image)}
           fill
           alt={`Hero banner - ${heading}`}
-          className="object-cover" style={{ objectPosition: "center 45%" }}
+          className="object-cover" style={{ objectPosition: "center 35%" }}
           priority
           fetchPriority="high"
           quality={80}
@@ -27,9 +27,10 @@ export const Hero = ({ image, heading, paragraph, buttons }: HeroProps) => {
         {/* Dark overlay — heavier at bottom-left for text readability */}
         <div className="absolute inset-0 bg-gradient-to-tr from-[#001435]/75 via-[#001435]/40 to-transparent" />
 
-        {/* Content — pinned to bottom-left */}
-        <div className="absolute inset-0 z-10 flex items-end">
-          <div className="px-6 lg:px-16 pb-16 lg:pb-24 max-w-3xl">
+        {/* Content — vertically centered so top/bottom padding stays
+            balanced when the hero height changes. */}
+        <div className="absolute inset-0 z-10 flex items-center">
+          <div className="px-6 lg:px-16 max-w-3xl">
             <h1 className="font-serif text-4xl md:text-5xl lg:text-7xl font-bold text-white uppercase leading-[1.05] drop-shadow-lg mb-6">
               Building the New<br />
               <span className="italic">Catholic Economy</span>
