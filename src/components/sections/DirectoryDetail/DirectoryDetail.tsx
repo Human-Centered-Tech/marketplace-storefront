@@ -72,13 +72,20 @@ export const DirectoryDetail = ({
       {/* Header Info Overlay */}
       <section className="max-w-7xl mx-auto px-6 -mt-24 relative z-10">
         <div className="bg-white p-8 rounded-xl shadow-xl flex flex-col md:flex-row items-center md:items-end gap-8">
-          {/* Logo / Initial */}
-          <div className="w-28 h-28 lg:w-32 lg:h-32 bg-navy-dark rounded-xl flex items-center justify-center border-4 border-[#FAF9F5] shadow-inner shrink-0">
+          {/* Logo / Initial — white bg when there's a logo (logos are
+              designed for white); navy fallback for the initials. */}
+          <div
+            className={`w-28 h-28 lg:w-32 lg:h-32 rounded-xl flex items-center justify-center border-4 border-[#FAF9F5] shrink-0 ${
+              listing.logo_url
+                ? "bg-white p-2"
+                : "bg-navy-dark shadow-inner"
+            }`}
+          >
             {listing.logo_url ? (
               <img
                 src={listing.logo_url}
                 alt={`${listing.business_name} logo`}
-                className="w-full h-full object-contain rounded-lg"
+                className="max-w-full max-h-full object-contain"
               />
             ) : (
               <span className="font-serif text-[#F2CD69] text-4xl lg:text-5xl">

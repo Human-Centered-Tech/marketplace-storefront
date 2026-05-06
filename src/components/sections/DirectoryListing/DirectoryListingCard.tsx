@@ -5,8 +5,8 @@ import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedL
 
 const tierBadgeStyles: Record<string, string> = {
   enterprise: "bg-gold text-navy-dark",
-  featured: "bg-blue-100 text-blue-800",
-  verified: "bg-green-50 text-green-700 border border-green-100",
+  featured: "bg-navy-dark text-white",
+  verified: "bg-white text-navy-dark border border-navy-dark",
 }
 
 const tierLabels: Record<string, string> = {
@@ -44,30 +44,40 @@ export const DirectoryListingCard = ({
           </span>
         </div>
         <div className="flex flex-col md:flex-row">
-          <div className="w-full md:w-2/5 h-64 md:h-auto overflow-hidden relative">
-            {listing.cover_image_url ? (
+          {listing.cover_image_url ? (
+            // Cover-photo variant: hero image with optional logo badge
+            <div className="w-full md:w-2/5 h-64 md:h-auto overflow-hidden relative">
               <img
                 src={listing.cover_image_url}
                 alt={listing.business_name}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
               />
-            ) : (
-              <div className="w-full h-full min-h-[200px] bg-navy-dark/5 flex items-center justify-center">
-                <span className="text-navy-dark/20 font-serif text-6xl">
-                  {listing.business_name.charAt(0)}
-                </span>
-              </div>
-            )}
-            {listing.logo_url && (
-              <div className="absolute bottom-4 left-4 h-16 w-16 rounded-full bg-white p-1 shadow-lg overflow-hidden border-2 border-gold">
+              {listing.logo_url && (
+                <div className="absolute bottom-4 left-4 h-16 w-16 rounded-full bg-white p-1 shadow-lg overflow-hidden border-2 border-gold">
+                  <img
+                    src={listing.logo_url}
+                    alt={`${listing.business_name} logo`}
+                    className="w-full h-full object-cover rounded-full"
+                  />
+                </div>
+              )}
+            </div>
+          ) : (
+            // Logo-only fallback for vendors without a cover photo
+            <div className="w-full md:w-2/5 h-64 md:h-auto min-h-[200px] overflow-hidden relative bg-[#faf9f5] flex items-center justify-center p-8">
+              {listing.logo_url ? (
                 <img
                   src={listing.logo_url}
                   alt={`${listing.business_name} logo`}
-                  className="w-full h-full object-cover rounded-full"
+                  className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-500"
                 />
-              </div>
-            )}
-          </div>
+              ) : (
+                <span className="text-navy-dark/20 font-serif text-6xl">
+                  {listing.business_name.charAt(0)}
+                </span>
+              )}
+            </div>
+          )}
           <div className="p-8 flex-1 flex flex-col justify-center">
             <div className="flex items-center gap-2 mb-3">
               <span className="bg-green-50 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded border border-green-100 uppercase">
@@ -118,30 +128,40 @@ export const DirectoryListingCard = ({
       href={`/directory/${listing.id}`}
       className="bg-white rounded-2xl overflow-hidden shadow-sm group hover:shadow-md transition-all border border-gray-100/50 block"
     >
-      <div className="h-48 overflow-hidden relative">
-        {listing.cover_image_url ? (
+      {listing.cover_image_url ? (
+        // Cover-photo variant: hero image with optional logo badge
+        <div className="h-48 overflow-hidden relative">
           <img
             src={listing.cover_image_url}
             alt={listing.business_name}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
-        ) : (
-          <div className="w-full h-full bg-navy-dark/5 flex items-center justify-center">
-            <span className="text-navy-dark/20 font-serif text-4xl">
-              {listing.business_name.charAt(0)}
-            </span>
-          </div>
-        )}
-        {listing.logo_url && (
-          <div className="absolute bottom-4 left-4 h-12 w-12 rounded-full bg-white p-0.5 shadow-md overflow-hidden border border-gold">
+          {listing.logo_url && (
+            <div className="absolute bottom-4 left-4 h-12 w-12 rounded-full bg-white p-0.5 shadow-md overflow-hidden border border-gold">
+              <img
+                src={listing.logo_url}
+                alt={`${listing.business_name} logo`}
+                className="w-full h-full object-cover rounded-full"
+              />
+            </div>
+          )}
+        </div>
+      ) : (
+        // Logo-only fallback for vendors without a cover photo
+        <div className="h-48 overflow-hidden relative bg-[#faf9f5] flex items-center justify-center p-6">
+          {listing.logo_url ? (
             <img
               src={listing.logo_url}
               alt={`${listing.business_name} logo`}
-              className="w-full h-full object-cover rounded-full"
+              className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-500"
             />
-          </div>
-        )}
-      </div>
+          ) : (
+            <span className="text-navy-dark/20 font-serif text-5xl">
+              {listing.business_name.charAt(0)}
+            </span>
+          )}
+        </div>
+      )}
       <div className="p-6">
         <div className="flex justify-between items-start mb-2">
           <span className="text-gold-dark label-sm text-[10px] font-bold tracking-wider">

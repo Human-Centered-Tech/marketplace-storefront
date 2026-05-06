@@ -174,6 +174,80 @@ export default function SellPage() {
         </div>
       </section>
 
+      {/* Founding Pillars — eligibility gate */}
+      <section className="py-16 lg:py-24 bg-white">
+        <div className="max-w-3xl mx-auto px-6 lg:px-16">
+          <div className="bg-[#faf9f5] rounded-2xl border border-[#BE9B32]/40 shadow-sm p-8 lg:p-12">
+            <h2 className="font-serif text-2xl lg:text-3xl font-bold text-[#001435] text-center mb-6">
+              Our Founding Pillars
+            </h2>
+            <p className="text-[15px] lg:text-base text-[#001435] font-medium mb-8">
+              Every Featured &amp; Verified business must align with our
+              signature Founding Pillars:
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+              {/* Pillar 1 */}
+              <div className="bg-[#001435] rounded-xl p-6 flex flex-col items-center text-center">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#BE9B32" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mb-4">
+                  <path d="M10 3h4v6h6v4h-6v8h-4v-8H4V9h6V3z" />
+                </svg>
+                <p className="text-[14px] text-white leading-relaxed">
+                  Faithful to the Magisterium &amp; in Full Communion with Rome
+                </p>
+              </div>
+
+              {/* Pillar 2 */}
+              <div className="bg-[#001435] rounded-xl p-6 flex flex-col items-center text-center">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#BE9B32" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mb-4">
+                  <rect x="3" y="4" width="18" height="17" rx="2" />
+                  <line x1="3" y1="9" x2="21" y2="9" />
+                  <line x1="8" y1="2" x2="8" y2="6" />
+                  <line x1="16" y1="2" x2="16" y2="6" />
+                  <path d="M12 17.5l-2.5-2.5a1.7 1.7 0 010-2.4 1.7 1.7 0 012.5 0l0 0a1.7 1.7 0 012.5 0 1.7 1.7 0 010 2.4z" fill="#BE9B32" />
+                </svg>
+                <p className="text-[14px] text-white leading-relaxed">
+                  Regularly practicing, sincere Catholic in good standing
+                  (52‑Sundays per year + Holydays, regular confession)
+                </p>
+              </div>
+
+              {/* Pillar 3 */}
+              <div className="bg-[#001435] rounded-xl p-6 flex flex-col items-center text-center">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#BE9B32" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mb-4">
+                  <path d="M12 2c-1 2-2 4-3 6-1 2-2 4-2 6v4c0 2 2 4 5 4s5-2 5-4v-4c0-2-1-4-2-6-1-2-2-4-3-6z" />
+                  <line x1="9" y1="14" x2="15" y2="14" />
+                </svg>
+                <p className="text-[14px] text-white leading-relaxed">
+                  Prays the Rosary or practices other sincere daily devotion(s)
+                </p>
+              </div>
+
+              {/* Pillar 4 */}
+              <div className="bg-[#001435] rounded-xl p-6 flex flex-col items-center text-center">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#BE9B32" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mb-4">
+                  <line x1="12" y1="3" x2="12" y2="21" />
+                  <line x1="5" y1="6" x2="19" y2="6" />
+                  <path d="M5 6l-3 7c0 2 1.5 3 3 3s3-1 3-3l-3-7z" />
+                  <path d="M19 6l-3 7c0 2 1.5 3 3 3s3-1 3-3l-3-7z" />
+                  <line x1="9" y1="21" x2="15" y2="21" />
+                </svg>
+                <p className="text-[14px] text-white leading-relaxed">
+                  Operates business in accordance with the principles of the
+                  Catholic faith
+                </p>
+              </div>
+            </div>
+
+            <p className="text-[13px] text-[#44474e] leading-relaxed text-center italic">
+              These pillars ensure that Catholic Owned&reg; remains a trusted
+              resource for the faithful—and a powerful witness for Christ in
+              the marketplace.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* How It Works */}
       <section id="how-it-works" className="py-16 lg:py-24 bg-white scroll-mt-20">
         <div className="max-w-5xl mx-auto px-6 lg:px-16">
