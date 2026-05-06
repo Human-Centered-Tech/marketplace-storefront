@@ -14,7 +14,7 @@ import { Suspense } from "react"
 
 export const metadata: Metadata = {
   title: "Checkout",
-  description: "Checkout — Catholic Owned",
+  description: "Checkout — Catholic Owned®",
 }
 
 export default async function CheckoutPage({}) {

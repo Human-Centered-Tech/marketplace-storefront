@@ -3,9 +3,9 @@ import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedL
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Sell on Catholic Owned",
+  title: "Sell on Catholic Owned®",
   description:
-    "Join the Catholic Owned marketplace. Reach thousands of faithful Catholic shoppers and grow your business within the Catholic economy.",
+    "Join the Catholic Owned® marketplace. Reach thousands of faithful Catholic shoppers and grow your business within the Catholic economy.",
 }
 
 const STEPS = [
@@ -82,7 +82,7 @@ const BENEFITS = [
 const TESTIMONIALS = [
   {
     quote:
-      "Catholic Owned gave us a home where our customers understand and appreciate what we make. Sales grew 3x in our first year.",
+      "Catholic Owned® gave us a home where our customers understand and appreciate what we make. Sales grew 3x in our first year.",
     name: "Maria & Joseph",
     business: "Sacred Heart Candle Co.",
   },
@@ -120,6 +120,7 @@ export default function SellPage() {
               Sell on
               <br />
               <span className="italic">Catholic Owned</span>
+              <sup className="text-[#BE9B32] text-[0.2em] relative top-[-1.2em] ml-[2px]">&reg;</sup>
             </h1>
             <p className="font-serif text-base lg:text-lg italic text-white/75 mb-10 max-w-xl drop-shadow leading-relaxed">
               Join a marketplace built by and for the Catholic community.
@@ -148,7 +149,7 @@ export default function SellPage() {
         <div className="max-w-7xl mx-auto px-6 lg:px-16">
           <div className="text-center mb-14">
             <p className="text-[#BE9B32] text-[12px] font-semibold uppercase tracking-[0.2em] mb-3">
-              Why Catholic Owned
+              Why Catholic Owned&reg;
             </p>
             <h2 className="font-serif text-3xl lg:text-4xl font-bold text-[#001435] uppercase">
               Built for Catholic Businesses

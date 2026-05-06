@@ -66,7 +66,7 @@ export function SearchBar({
         />
         <button
           type="submit"
-          className="absolute right-2 top-1/2 -translate-y-1/2 text-[#75777f] hover:text-[#755b00] transition-colors"
+          className="absolute right-4 top-1/2 -translate-y-1/2 text-[#75777f] hover:text-[#755b00] transition-colors"
         >
           <svg
             width="18"
