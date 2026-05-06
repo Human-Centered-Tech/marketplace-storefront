@@ -162,8 +162,56 @@ export const DirectorySearch = ({
     writeRadiusMi(mi)
   }
 
-  const proximityActive =
-    hydrated && useNearMe && userLocation !== null
+  // When the user has NOT shared their location, they can still get
+  // proximity-ranked results by typing a zip code into the location
+  // field. We geocode the zip via Nominatim (debounced) and feed those
+  // coords into Algolia's aroundLatLng. Not persisted — this is a
+  // one-search-only override of proximity origin.
+  const [zipCoords, setZipCoords] = useState<{ lat: number; lng: number } | null>(
+    null
+  )
+  useEffect(() => {
+    const raw = location.trim()
+    const isZip = /^\d{5}(-\d{4})?$/.test(raw)
+    if (!isZip) {
+      if (zipCoords) setZipCoords(null)
+      return
+    }
+    let cancelled = false
+    const t = setTimeout(async () => {
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?postalcode=${encodeURIComponent(
+            raw
+          )}&countrycodes=us&format=json&limit=1`
+        )
+        if (!res.ok) return
+        const data = (await res.json()) as Array<{ lat?: string; lon?: string }>
+        const hit = data?.[0]
+        if (!hit || cancelled) return
+        const lat = parseFloat(hit.lat || "")
+        const lng = parseFloat(hit.lon || "")
+        if (Number.isFinite(lat) && Number.isFinite(lng)) {
+          setZipCoords({ lat, lng })
+        }
+      } catch {
+        // graceful no-op
+      }
+    }, 400)
+    return () => {
+      cancelled = true
+      clearTimeout(t)
+    }
+  }, [location])
+
+  // Effective proximity origin: explicit Near-me wins, then zip-derived.
+  const effectiveProximity =
+    hydrated && useNearMe && userLocation
+      ? { lat: userLocation.lat, lng: userLocation.lng, source: "user" as const }
+      : zipCoords
+        ? { lat: zipCoords.lat, lng: zipCoords.lng, source: "zip" as const }
+        : null
+  const proximityActive = effectiveProximity !== null
 
   useEffect(() => {
     if (urlQuery && urlQuery !== search) {
@@ -184,20 +232,21 @@ export const DirectorySearch = ({
       // Combine search + (location text) into a single query if both present.
       // When proximity is active we drop the freeform location text — the
       // geosearch is more precise than "Denver" matching "Denver, NC" etc.
+      // When proximity is active (geolocation OR zip-derived) we drop the
+      // freeform location text — geosearch is more precise than text match.
       const queryParts = [
         search.trim(),
         proximityActive ? "" : location.trim(),
       ].filter(Boolean)
       const query = queryParts.join(" ")
 
-      const geoParams =
-        proximityActive && userLocation
-          ? {
-              aroundLatLng: `${userLocation.lat},${userLocation.lng}`,
-              // aroundRadius is in meters.
-              aroundRadius: Math.round(radiusMi * KM_PER_MI * 1000),
-            }
-          : {}
+      const geoParams = effectiveProximity
+        ? {
+            aroundLatLng: `${effectiveProximity.lat},${effectiveProximity.lng}`,
+            // aroundRadius is in meters.
+            aroundRadius: Math.round(radiusMi * KM_PER_MI * 1000),
+          }
+        : {}
 
       return {
         indexName: ALGOLIA_INDEX,
@@ -208,7 +257,7 @@ export const DirectorySearch = ({
         ...geoParams,
       }
     },
-    [search, location, categoryId, proximityActive, userLocation, radiusMi]
+    [search, location, categoryId, proximityActive, effectiveProximity, radiusMi]
   )
 
   const runSearch = useCallback(
@@ -334,13 +383,20 @@ export const DirectorySearch = ({
               )}
             </div>
           ) : (
-            <input
-              type="text"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              className="w-full bg-transparent border-none focus:ring-0 font-sans text-sm py-4 pl-2"
-              placeholder="City or Zip Code"
-            />
+            <div className="w-full">
+              <input
+                type="text"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                className="w-full bg-transparent border-none focus:ring-0 font-sans text-sm py-4 pl-2"
+                placeholder="ZIP for nearby, or city name"
+              />
+              {zipCoords && (
+                <span className="block text-[10px] text-gold-dark font-bold uppercase tracking-wider pl-2 -mt-3 pb-1">
+                  Showing within {radiusMi} mi of {location.trim()}
+                </span>
+              )}
+            </div>
           )}
         </div>
         <button
