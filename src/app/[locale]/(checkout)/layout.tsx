@@ -9,7 +9,7 @@ export default async function CheckoutLayout({
   children: React.ReactNode
 }>) {
   return (
-    <div className="bg-catholic-lace min-h-screen">
+    <div className="bg-[#faf9f5] min-h-screen">
       <header className="border-b border-[#d6d0c4]/30">
         <div className="relative w-full py-3 lg:px-8 px-4">
           <div className="absolute top-3 left-4 lg:left-8">
