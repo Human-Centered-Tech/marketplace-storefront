@@ -361,12 +361,21 @@ export const DirectorySearch = ({
         }
       }
 
+      // Mirror Bubble's "Premium State(s)" boost: when the user picks
+      // a state, listings that paid for premium placement in that state
+      // (premium_states contains it) float above peers within the same
+      // tier. optionalFilters affects ranking only, never the result set.
+      const optionalFilters = stateServed
+        ? [`premium_states:${stateServed}`]
+        : undefined
+
       return {
         indexName: ALGOLIA_INDEX,
         query,
         page,
         hitsPerPage: PAGE_SIZE,
         ...(facetFilters.length ? { facetFilters } : {}),
+        ...(optionalFilters ? { optionalFilters } : {}),
         ...geoParams,
       }
     },
