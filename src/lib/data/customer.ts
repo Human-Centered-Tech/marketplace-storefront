@@ -345,6 +345,8 @@ export const sendResetPasswordEmail = async (email: string) => {
 export async function completeOAuthSignIn(token: string): Promise<boolean> {
   if (!token) return false
   try {
+    // The bridge route on the backend has already handled customer
+    // registration + token refresh, so this token is ready to go.
     await setAuthToken(token)
     const cacheTag = await getCacheTag("customers")
     revalidateTag(cacheTag)

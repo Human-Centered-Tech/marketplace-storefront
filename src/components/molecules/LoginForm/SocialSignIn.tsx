@@ -23,11 +23,27 @@ export const SocialSignIn = () => {
   const backendUrl =
     process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || ""
 
-  const startGoogle = () => {
-    // Medusa's Google auth provider exposes /auth/customer/google which
-    // returns a redirect URL; easier to navigate directly.
-    window.location.href = `${backendUrl}/auth/customer/google`
+  // Medusa's auth providers respond with `{ location: "..." }` JSON rather
+  // than an HTTP 302, so we have to fetch and follow it ourselves.
+  const startProvider = async (provider: "google" | "apple") => {
+    try {
+      const res = await fetch(`${backendUrl}/auth/customer/${provider}`, {
+        method: "GET",
+        credentials: "include",
+      })
+      const data = (await res.json()) as { location?: string }
+      if (data?.location) {
+        window.location.href = data.location
+      } else {
+        console.error(`SSO ${provider} response had no location:`, data)
+      }
+    } catch (err) {
+      console.error(`SSO ${provider} kickoff failed:`, err)
+    }
   }
+
+  const startGoogle = () => startProvider("google")
+  const startApple = () => startProvider("apple")
 
   return (
     <>
@@ -70,9 +86,8 @@ export const SocialSignIn = () => {
         {appleEnabled && (
           <button
             type="button"
-            disabled
-            title="Apple sign-in coming soon"
-            className="w-full flex items-center justify-center gap-3 border border-[rgba(var(--neutral-200))] rounded-sm py-3 opacity-50 cursor-not-allowed text-[14px] font-medium"
+            onClick={startApple}
+            className="w-full flex items-center justify-center gap-3 border border-[rgba(var(--neutral-200))] rounded-sm py-3 hover:bg-[rgba(var(--neutral-50))] transition-colors text-[14px] font-medium"
           >
             <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
               <path
