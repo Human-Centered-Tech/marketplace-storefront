@@ -193,6 +193,14 @@ export const DirectorySearch = ({
   const setStateServedAndPersist = useCallback(
     (next: string) => {
       setStateServed(next)
+      // State filter and Near-me are mutually exclusive — picking a state
+      // means "show me businesses serving X regardless of distance," which
+      // contradicts proximity ranking. The query layer already drops geo
+      // when stateServed is set; this just keeps the UI honest.
+      if (next) {
+        setUseNearMe(false)
+        setNearMeTouched(true)
+      }
       const params = new URLSearchParams(searchParams.toString())
       if (next) params.set("state", next)
       else params.delete("state")
@@ -211,10 +219,16 @@ export const DirectorySearch = ({
   // has explicitly toggled it off.
   const [nearMeTouched, setNearMeTouched] = useState(false)
   useEffect(() => {
-    if (hydrated && userLocation && !nearMeTouched && !useNearMe) {
+    if (
+      hydrated &&
+      userLocation &&
+      !nearMeTouched &&
+      !useNearMe &&
+      !stateServed
+    ) {
       setUseNearMe(true)
     }
-  }, [hydrated, userLocation, nearMeTouched, useNearMe])
+  }, [hydrated, userLocation, nearMeTouched, useNearMe, stateServed])
   const [radiusMi, setRadiusMiState] = useState(
     Number.isFinite(urlRadiusKm) ? Math.round(urlRadiusKm / KM_PER_MI) : 100
   )
@@ -592,6 +606,11 @@ export const DirectorySearch = ({
                   onChange={(e) => {
                     setUseNearMe(e.target.checked)
                     setNearMeTouched(true)
+                    // Mutually exclusive with state filter — clear it
+                    // when the user opts back into proximity.
+                    if (e.target.checked && stateServed) {
+                      setStateServedAndPersist("")
+                    }
                   }}
                   className="rounded border-gray-300"
                 />
