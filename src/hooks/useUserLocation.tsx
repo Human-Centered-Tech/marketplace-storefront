@@ -112,6 +112,15 @@ export function useUserLocation() {
     if (cached) {
       setLocation(cached)
       setStatus("granted")
+      // Backfill state for older cached entries written before reverse-
+      // geocode existed. Without this, premium-state banners never fire
+      // for users with pre-existing localStorage locations.
+      if (!cached.state) {
+        reverseStateCode(cached.lat, cached.lng).then((state) => {
+          if (!state) return
+          writeStorage({ ...cached, state })
+        })
+      }
     }
     setHydrated(true)
 
