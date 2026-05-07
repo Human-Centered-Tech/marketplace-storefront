@@ -13,6 +13,10 @@ export type UserLocation = {
   lat: number
   lng: number
   source: "gps" | "zip"
+  // 2-letter US state code resolved from the coords. Optional — older
+  // cached entries (pre-reverse-geocode) won't have it. Used to drive
+  // the premium-state enterprise banner on /us/directory.
+  state?: string
   ts: number
 }
 
@@ -33,6 +37,30 @@ export function readRadiusMi(): number {
 export function writeRadiusMi(mi: number) {
   if (typeof window === "undefined") return
   localStorage.setItem(RADIUS_STORAGE_KEY, String(mi))
+}
+
+// Best-effort reverse geocode → 2-letter US state code. Nominatim
+// returns ISO3166-2 like "US-CO" — we strip the prefix. Failures
+// resolve to undefined so callers can store coords without a state.
+async function reverseStateCode(
+  lat: number,
+  lng: number
+): Promise<string | undefined> {
+  try {
+    const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1&zoom=5`
+    const res = await fetch(url)
+    if (!res.ok) return undefined
+    const data = (await res.json()) as {
+      address?: { ["ISO3166-2-lvl4"]?: string; country_code?: string }
+    }
+    if (data.address?.country_code !== "us") return undefined
+    const iso = data.address?.["ISO3166-2-lvl4"]
+    if (!iso) return undefined
+    const code = iso.split("-").pop()
+    return code && code.length === 2 ? code.toUpperCase() : undefined
+  } catch {
+    return undefined
+  }
 }
 
 function readStorage(): UserLocation | null {
@@ -105,11 +133,15 @@ export function useUserLocation() {
       }
       setStatus("prompting")
       navigator.geolocation.getCurrentPosition(
-        (pos) => {
+        async (pos) => {
+          const lat = pos.coords.latitude
+          const lng = pos.coords.longitude
+          const state = await reverseStateCode(lat, lng)
           const next: UserLocation = {
-            lat: pos.coords.latitude,
-            lng: pos.coords.longitude,
+            lat,
+            lng,
             source: "gps",
+            ...(state ? { state } : {}),
             ts: Date.now(),
           }
           writeStorage(next)
@@ -132,19 +164,29 @@ export function useUserLocation() {
     try {
       const url = `https://nominatim.openstreetmap.org/search?postalcode=${encodeURIComponent(
         trimmed
-      )}&countrycodes=us&format=json&limit=1`
+      )}&countrycodes=us&format=json&addressdetails=1&limit=1`
       const res = await fetch(url)
       if (!res.ok) return null
       const data = (await res.json()) as Array<{
         lat?: string
         lon?: string
+        address?: { ["ISO3166-2-lvl4"]?: string }
       }>
       const hit = data?.[0]
       if (!hit) return null
       const lat = parseFloat(hit.lat || "")
       const lng = parseFloat(hit.lon || "")
       if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null
-      const next: UserLocation = { lat, lng, source: "zip", ts: Date.now() }
+      const isoState = hit.address?.["ISO3166-2-lvl4"]?.split("-").pop()
+      const state =
+        isoState && isoState.length === 2 ? isoState.toUpperCase() : undefined
+      const next: UserLocation = {
+        lat,
+        lng,
+        source: "zip",
+        ...(state ? { state } : {}),
+        ts: Date.now(),
+      }
       writeStorage(next)
       setLocation(next)
       setStatus("granted")

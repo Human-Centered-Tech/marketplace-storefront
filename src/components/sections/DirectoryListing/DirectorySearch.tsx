@@ -435,12 +435,70 @@ export const DirectorySearch = ({
     runSearch(nextPage, true)
   }, [runSearch, loadingMore, allListings.length, count])
 
-  // Algolia is now authoritative; keep the variable name for minimal JSX churn.
-  const filteredListings = allListings
+  // Active state for premium-banner display: explicit dropdown wins,
+  // else the user's geocoded state (from GPS or zip).
+  const activeStateForBanner =
+    stateServed || (hydrated ? userLocation?.state : undefined) || ""
+
+  // Enterprise listings whose premium_states includes activeStateForBanner.
+  // Rendered as banner cards above the search bar; suppressed in the grid
+  // below to avoid duplication.
+  const [premiumBanners, setPremiumBanners] = useState<DirectoryListing[]>([])
+  useEffect(() => {
+    if (!activeStateForBanner || !algoliaClient) {
+      setPremiumBanners([])
+      return
+    }
+    let cancelled = false
+    algoliaClient
+      .search<DirectoryHit>({
+        requests: [
+          {
+            indexName: ALGOLIA_INDEX,
+            hitsPerPage: 5,
+            facetFilters: [
+              ["subscription_tier:enterprise"],
+              [`premium_states:${activeStateForBanner}`],
+            ],
+          },
+        ],
+      })
+      .then(({ results }) => {
+        if (cancelled) return
+        const hits = (results[0] as { hits: DirectoryHit[] }).hits ?? []
+        setPremiumBanners(hits.map(hitToListing))
+      })
+      .catch(() => {
+        if (!cancelled) setPremiumBanners([])
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [activeStateForBanner, algoliaClient])
+
+  // Hide banner-shown listings from the regular grid so we don't render
+  // the same enterprise twice on the page.
+  const bannerIds = useMemo(
+    () => new Set(premiumBanners.map((l) => l.id)),
+    [premiumBanners]
+  )
+  const filteredListings = allListings.filter((l) => !bannerIds.has(l.id))
 
   return (
     <>
       <LocationPrompt className="mb-4" />
+
+      {premiumBanners.length > 0 && (
+        <div className="mb-6 grid grid-cols-1 gap-4">
+          {premiumBanners.map((listing) => (
+            <DirectoryListingCard
+              key={listing.id}
+              listing={listing}
+              featured
+            />
+          ))}
+        </div>
+      )}
 
       {/* Search Bar — floating card */}
       <div className="bg-white rounded-2xl shadow-xl p-2 flex flex-col md:flex-row items-stretch gap-2 border border-gray-100/50">
@@ -632,11 +690,10 @@ export const DirectorySearch = ({
           ) : (
             <>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-5xl">
-                {filteredListings.map((listing, i) => (
+                {filteredListings.map((listing) => (
                   <DirectoryListingCard
                     key={listing.id}
                     listing={listing}
-                    featured={i === 0}
                     showDistance={showDistance}
                   />
                 ))}
