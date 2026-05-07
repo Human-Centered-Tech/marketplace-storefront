@@ -5,6 +5,34 @@ import { getGiftGuide } from "@/lib/data/gift-guides"
 import { listProducts } from "@/lib/data/products"
 import { ProductCard } from "@/components/organisms/ProductCard/ProductCard"
 import { TrackPageView } from "@/components/sections/Analytics/TrackPageView"
+import { AddAllToCartButton } from "@/components/cells/GiftGuide/AddAllToCartButton"
+
+// Pick the cheapest in-stock variant for a product. Returns null if no
+// variant is purchasable (no price, or all variants out of stock without
+// backorder allowed).
+function pickCheapestPurchasableVariantId(product: any): string | null {
+  if (!product?.variants?.length) return null
+  const candidates = product.variants
+    .filter((v: any) => {
+      if (!v.calculated_price) return false
+      const managesInventory = v.manage_inventory !== false
+      if (!managesInventory) return true
+      if (v.allow_backorder) return true
+      return (v.inventory_quantity ?? 0) > 0
+    })
+    .sort((a: any, b: any) => {
+      const ap =
+        a.calculated_price?.calculated_amount_with_tax ??
+        a.calculated_price?.calculated_amount ??
+        0
+      const bp =
+        b.calculated_price?.calculated_amount_with_tax ??
+        b.calculated_price?.calculated_amount ??
+        0
+      return ap - bp
+    })
+  return candidates[0]?.id ?? null
+}
 
 type Props = {
   params: Promise<{ slug: string; locale: string }>
@@ -25,19 +53,35 @@ export default async function GiftGuidePage({ params }: Props) {
   const guide = getGiftGuide(slug)
   if (!guide) notFound()
 
-  // Filter marketplace products by the guide's tag set. Tags in Mercur
-  // are normalized to lowercase slugs; we pass both comma-separated
-  // forms to maximize matches.
+  // Filter marketplace products by the guide's tag set. Resolve tag
+  // values → tag IDs first; the Medusa store API filters by tag_id[],
+  // not by tag value strings.
   let products: any[] = []
   try {
-    const { response } = await listProducts({
-      countryCode: locale,
-      queryParams: {
-        limit: 60,
-        tags: guide.tags,
-      } as any,
-    })
-    products = response.products || []
+    const tagsRes = await fetch(
+      `${process.env.MEDUSA_BACKEND_URL || "http://localhost:9000"}/store/product-tags?value[]=${guide.tags
+        .map(encodeURIComponent)
+        .join("&value[]=")}&limit=50`,
+      {
+        headers: {
+          "x-publishable-api-key":
+            process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "",
+        },
+        next: { revalidate: 60 },
+      }
+    ).then((r) => (r.ok ? r.json() : { product_tags: [] }))
+    const tagIds: string[] = (tagsRes.product_tags || []).map((t: any) => t.id)
+
+    if (tagIds.length) {
+      const { response } = await listProducts({
+        countryCode: locale,
+        queryParams: {
+          limit: 60,
+          tag_id: tagIds,
+        } as any,
+      })
+      products = response.products || []
+    }
   } catch {
     products = []
   }
@@ -93,10 +137,16 @@ export default async function GiftGuidePage({ params }: Props) {
           </div>
         ) : (
           <>
-            <div className="mb-8">
+            <div className="mb-8 flex items-end justify-between gap-4 flex-wrap">
               <p className="text-[10px] font-bold text-[#BE9B32] uppercase tracking-widest">
                 {products.length} Curated Pick{products.length === 1 ? "" : "s"}
               </p>
+              <AddAllToCartButton
+                variantIds={products
+                  .map((p) => pickCheapestPurchasableVariantId(p))
+                  .filter((id): id is string => !!id)}
+                totalProducts={products.length}
+              />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {products.map((product) => (

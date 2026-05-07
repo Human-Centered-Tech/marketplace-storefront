@@ -167,6 +167,55 @@ export async function addToCart({
   }
 }
 
+export async function addManyToCart({
+  items,
+  countryCode,
+}: {
+  items: { variantId: string; quantity: number }[]
+  countryCode: string
+}) {
+  if (!items.length) return { added: 0, requested: 0 }
+
+  const cart = await getOrSetCart(countryCode)
+  if (!cart) throw new Error("Error retrieving or creating cart")
+
+  const headers = { ...(await getAuthHeaders()) }
+
+  let added = 0
+  for (const { variantId, quantity } of items) {
+    if (!variantId) continue
+    const currentItem = cart.items?.find(
+      (item) => item.variant_id === variantId
+    )
+    try {
+      if (currentItem) {
+        await sdk.store.cart.updateLineItem(
+          cart.id,
+          currentItem.id,
+          { quantity: currentItem.quantity + quantity },
+          {},
+          headers
+        )
+      } else {
+        await sdk.store.cart.createLineItem(
+          cart.id,
+          { variant_id: variantId, quantity },
+          {},
+          headers
+        )
+      }
+      added++
+    } catch {
+      // Skip individual failures so a partial result is still useful
+    }
+  }
+
+  const cartCacheTag = await getCacheTag("carts")
+  revalidateTag(cartCacheTag)
+
+  return { added, requested: items.length }
+}
+
 export async function updateLineItem({
   lineId,
   quantity,
