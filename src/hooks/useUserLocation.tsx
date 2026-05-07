@@ -19,7 +19,7 @@ export type UserLocation = {
 const STORAGE_KEY = "user_location"
 const COOKIE_KEY = "user_location"
 const RADIUS_STORAGE_KEY = "user_search_radius_mi"
-const DEFAULT_RADIUS_MI = 50
+const DEFAULT_RADIUS_MI = 100
 // Server components read this cookie to ssr location-aware results.
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 30 // 30 days
 
@@ -54,17 +54,24 @@ function readStorage(): UserLocation | null {
   }
 }
 
+// Multiple components mount their own useUserLocation instance
+// (LocationPrompt + DirectorySearch). When one writes a new location,
+// the others need to find out — same-document writes don't fire the
+// `storage` event, so we use a custom event for in-tab broadcast.
+const LOCATION_EVENT = "user-location-changed"
+
 function writeStorage(loc: UserLocation | null) {
   if (typeof window === "undefined") return
   if (!loc) {
     localStorage.removeItem(STORAGE_KEY)
     document.cookie = `${COOKIE_KEY}=; Max-Age=0; Path=/; SameSite=Lax`
-    return
+  } else {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(loc))
+    // Mirror to cookie so server components (DirectoryPreview) can read it.
+    const value = encodeURIComponent(`${loc.lat},${loc.lng}`)
+    document.cookie = `${COOKIE_KEY}=${value}; Max-Age=${COOKIE_MAX_AGE}; Path=/; SameSite=Lax`
   }
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(loc))
-  // Mirror to cookie so server components (DirectoryPreview) can read it.
-  const value = encodeURIComponent(`${loc.lat},${loc.lng}`)
-  document.cookie = `${COOKIE_KEY}=${value}; Max-Age=${COOKIE_MAX_AGE}; Path=/; SameSite=Lax`
+  window.dispatchEvent(new CustomEvent(LOCATION_EVENT, { detail: loc }))
 }
 
 export function useUserLocation() {
@@ -79,6 +86,14 @@ export function useUserLocation() {
       setStatus("granted")
     }
     setHydrated(true)
+
+    const onChange = (e: Event) => {
+      const next = (e as CustomEvent<UserLocation | null>).detail
+      setLocation(next)
+      setStatus(next ? "granted" : "idle")
+    }
+    window.addEventListener(LOCATION_EVENT, onChange)
+    return () => window.removeEventListener(LOCATION_EVENT, onChange)
   }, [])
 
   const request = useCallback((): Promise<UserLocation | null> => {

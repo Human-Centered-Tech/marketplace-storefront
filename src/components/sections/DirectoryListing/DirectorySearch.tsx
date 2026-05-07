@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback, useMemo, useRef } from "react"
-import { useSearchParams } from "next/navigation"
+import { useSearchParams, useRouter, usePathname } from "next/navigation"
 import { algoliasearch } from "algoliasearch"
 import { DirectoryListing, DirectoryCategory } from "@/types/directory"
 import { DirectoryListingCard } from "./DirectoryListingCard"
@@ -18,6 +18,45 @@ type ViewMode = "list" | "map"
 const PAGE_SIZE = 20
 const ALGOLIA_INDEX = "directory_listings"
 const KM_PER_MI = 1.60934
+const M_PER_MI = 1609.344
+
+// Default proximity origin used purely for ranking (closer-first within
+// each tier) when the user hasn't shared their location or typed a zip.
+// Denver was chosen as a US-centric centroid for our catalog.
+const DEFAULT_PROXIMITY_LAT = 39.7392
+const DEFAULT_PROXIMITY_LNG = -104.9903
+
+// US states + DC. The 2-letter codes match what's stored in
+// listing.address.serviced_states (uppercased + comma-split in
+// buildAlgoliaListingRecord on the backend).
+const US_STATES: { code: string; name: string }[] = [
+  { code: "AL", name: "Alabama" }, { code: "AK", name: "Alaska" },
+  { code: "AZ", name: "Arizona" }, { code: "AR", name: "Arkansas" },
+  { code: "CA", name: "California" }, { code: "CO", name: "Colorado" },
+  { code: "CT", name: "Connecticut" }, { code: "DE", name: "Delaware" },
+  { code: "DC", name: "District of Columbia" }, { code: "FL", name: "Florida" },
+  { code: "GA", name: "Georgia" }, { code: "HI", name: "Hawaii" },
+  { code: "ID", name: "Idaho" }, { code: "IL", name: "Illinois" },
+  { code: "IN", name: "Indiana" }, { code: "IA", name: "Iowa" },
+  { code: "KS", name: "Kansas" }, { code: "KY", name: "Kentucky" },
+  { code: "LA", name: "Louisiana" }, { code: "ME", name: "Maine" },
+  { code: "MD", name: "Maryland" }, { code: "MA", name: "Massachusetts" },
+  { code: "MI", name: "Michigan" }, { code: "MN", name: "Minnesota" },
+  { code: "MS", name: "Mississippi" }, { code: "MO", name: "Missouri" },
+  { code: "MT", name: "Montana" }, { code: "NE", name: "Nebraska" },
+  { code: "NV", name: "Nevada" }, { code: "NH", name: "New Hampshire" },
+  { code: "NJ", name: "New Jersey" }, { code: "NM", name: "New Mexico" },
+  { code: "NY", name: "New York" }, { code: "NC", name: "North Carolina" },
+  { code: "ND", name: "North Dakota" }, { code: "OH", name: "Ohio" },
+  { code: "OK", name: "Oklahoma" }, { code: "OR", name: "Oregon" },
+  { code: "PA", name: "Pennsylvania" }, { code: "RI", name: "Rhode Island" },
+  { code: "SC", name: "South Carolina" }, { code: "SD", name: "South Dakota" },
+  { code: "TN", name: "Tennessee" }, { code: "TX", name: "Texas" },
+  { code: "UT", name: "Utah" }, { code: "VT", name: "Vermont" },
+  { code: "VA", name: "Virginia" }, { code: "WA", name: "Washington" },
+  { code: "WV", name: "West Virginia" }, { code: "WI", name: "Wisconsin" },
+  { code: "WY", name: "Wyoming" },
+]
 
 type DirectorySearchProps = {
   initialListings: DirectoryListing[]
@@ -45,6 +84,9 @@ type DirectoryHit = {
   cover_image_url: string | null
   website_url: string | null
   _geoloc?: { lat: number; lng: number }
+  // Returned when getRankingInfo is enabled — geoDistance is in meters
+  // from the aroundLatLng point.
+  _rankingInfo?: { geoDistance?: number }
 }
 
 /** Map an Algolia hit to the DirectoryListing shape that DirectoryListingCard expects. */
@@ -99,6 +141,14 @@ function hitToListing(hit: DirectoryHit): DirectoryListing {
     badges: [],
     created_at: "",
     updated_at: "",
+    // Distance in miles from the aroundLatLng origin (rounded to 1
+    // decimal). Display is gated by the showDistance prop on the card,
+    // so this safely tags every hit even when origin is the silent
+    // Denver default.
+    _distance_miles:
+      typeof hit._rankingInfo?.geoDistance === "number"
+        ? Math.round((hit._rankingInfo.geoDistance / M_PER_MI) * 10) / 10
+        : undefined,
   } as unknown as DirectoryListing
 }
 
@@ -108,10 +158,13 @@ export const DirectorySearch = ({
   categories,
 }: DirectorySearchProps) => {
   const searchParams = useSearchParams()
+  const router = useRouter()
+  const pathname = usePathname()
   const urlQuery = searchParams.get("q") || ""
   const urlNearLat = parseFloat(searchParams.get("near_lat") || "")
   const urlNearLon = parseFloat(searchParams.get("near_lon") || "")
   const urlRadiusKm = parseFloat(searchParams.get("radius_km") || "")
+  const urlState = (searchParams.get("state") || "").toUpperCase()
 
   const { location: userLocation, hydrated } = useUserLocation()
 
@@ -133,6 +186,21 @@ export const DirectorySearch = ({
   const [search, setSearch] = useState(urlQuery)
   const [categoryId, setCategoryId] = useState("")
   const [location, setLocation] = useState("")
+  // Selected state-served filter (2-letter code, e.g. "CO"); empty
+  // string means "any". Initialized from ?state= in the URL so
+  // shareable links work, kept in URL on change.
+  const [stateServed, setStateServed] = useState<string>(urlState)
+  const setStateServedAndPersist = useCallback(
+    (next: string) => {
+      setStateServed(next)
+      const params = new URLSearchParams(searchParams.toString())
+      if (next) params.set("state", next)
+      else params.delete("state")
+      const qs = params.toString()
+      router.replace(`${pathname}${qs ? `?${qs}` : ""}`, { scroll: false })
+    },
+    [pathname, router, searchParams]
+  )
   const [loading, setLoading] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
   const [view, setView] = useState<ViewMode>("list")
@@ -148,7 +216,7 @@ export const DirectorySearch = ({
     }
   }, [hydrated, userLocation, nearMeTouched, useNearMe])
   const [radiusMi, setRadiusMiState] = useState(
-    Number.isFinite(urlRadiusKm) ? Math.round(urlRadiusKm / KM_PER_MI) : 50
+    Number.isFinite(urlRadiusKm) ? Math.round(urlRadiusKm / KM_PER_MI) : 100
   )
   // Rehydrate from localStorage after mount; URL still wins if present.
   useEffect(() => {
@@ -204,14 +272,47 @@ export const DirectorySearch = ({
     }
   }, [location])
 
-  // Effective proximity origin: explicit Near-me wins, then zip-derived.
-  const effectiveProximity =
-    hydrated && useNearMe && userLocation
-      ? { lat: userLocation.lat, lng: userLocation.lng, source: "user" as const }
-      : zipCoords
-        ? { lat: zipCoords.lat, lng: zipCoords.lng, source: "zip" as const }
-        : null
-  const proximityActive = effectiveProximity !== null
+  // Effective proximity origin. Always has a value — falls back to a
+  // hardcoded Denver centroid so the closer-first secondary sort works
+  // even when the user hasn't engaged with location. Memoized for
+  // identity stability (otherwise it cascades through useCallback
+  // chains and re-arms the refetch useEffect every render, which
+  // would wipe Load More state mid-flight).
+  const effectiveProximity = useMemo(() => {
+    if (hydrated && useNearMe && userLocation) {
+      return {
+        lat: userLocation.lat,
+        lng: userLocation.lng,
+        source: "user" as const,
+      }
+    }
+    if (zipCoords) {
+      return { lat: zipCoords.lat, lng: zipCoords.lng, source: "zip" as const }
+    }
+    return {
+      lat: DEFAULT_PROXIMITY_LAT,
+      lng: DEFAULT_PROXIMITY_LNG,
+      source: "default" as const,
+    }
+  }, [
+    hydrated,
+    useNearMe,
+    userLocation?.lat,
+    userLocation?.lng,
+    zipCoords?.lat,
+    zipCoords?.lng,
+  ])
+  // The radius filter only applies when the user has explicitly
+  // engaged with location — Near-me is on, OR they typed a zip.
+  // The Denver default is for ranking only, never filtering.
+  const applyRadius = effectiveProximity.source !== "default"
+  // Show "X mi away" labels only when proximity is from an explicit
+  // user-supplied origin. Showing distance from Denver to a user in
+  // Boston would be misleading.
+  const showDistance = applyRadius
+  // Kept for the JSX header / placeholder text below — true whenever
+  // the user has *opted in* to location.
+  const proximityActive = applyRadius
 
   useEffect(() => {
     if (urlQuery && urlQuery !== search) {
@@ -228,6 +329,11 @@ export const DirectorySearch = ({
     (page: number) => {
       const facetFilters: string[][] = []
       if (categoryId) facetFilters.push([`category_id:${categoryId}`])
+      // State-served filter — listings whose serviced_states array
+      // contains the selected 2-letter code. ANDs with everything else
+      // (proximity, category, query): a vendor must service the picked
+      // state to appear, even if they're physically close.
+      if (stateServed) facetFilters.push([`serviced_states:${stateServed}`])
 
       // Combine search + (location text) into a single query if both present.
       // When proximity is active we drop the freeform location text — the
@@ -240,13 +346,20 @@ export const DirectorySearch = ({
       ].filter(Boolean)
       const query = queryParts.join(" ")
 
-      const geoParams = effectiveProximity
-        ? {
-            aroundLatLng: `${effectiveProximity.lat},${effectiveProximity.lng}`,
-            // aroundRadius is in meters.
-            aroundRadius: Math.round(radiusMi * KM_PER_MI * 1000),
-          }
-        : {}
+      // When a state-served filter is on, the user's intent is "show me
+      // every business that serves this state" — proximity filtering
+      // (near-me radius, default-radius) would mask matching businesses
+      // outside that radius, so we drop geo entirely. Otherwise keep
+      // aroundLatLng for closer-first ranking and aroundRadius when the
+      // user has explicitly engaged with location.
+      const geoParams: Record<string, unknown> = {}
+      if (!stateServed) {
+        geoParams.aroundLatLng = `${effectiveProximity.lat},${effectiveProximity.lng}`
+        geoParams.getRankingInfo = true
+        if (applyRadius) {
+          geoParams.aroundRadius = Math.round(radiusMi * KM_PER_MI * 1000)
+        }
+      }
 
       return {
         indexName: ALGOLIA_INDEX,
@@ -257,7 +370,7 @@ export const DirectorySearch = ({
         ...geoParams,
       }
     },
-    [search, location, categoryId, proximityActive, effectiveProximity, radiusMi]
+    [search, location, categoryId, stateServed, proximityActive, effectiveProximity, radiusMi, applyRadius]
   )
 
   const runSearch = useCallback(
@@ -294,6 +407,7 @@ export const DirectorySearch = ({
   // don't fire a request on every char. Skip first render — server
   // already supplied initialListings.
   const isFirstRender = useRef(true)
+  const stateSelectRef = useRef<HTMLSelectElement | null>(null)
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false
@@ -350,6 +464,54 @@ export const DirectorySearch = ({
             ))}
           </select>
         </div>
+        <div
+          className="flex items-center px-3 border-r border-gray-100 shrink-0 cursor-pointer"
+          onClick={(e) => {
+            // Don't double-fire when the click already lands on the select.
+            if (e.target instanceof HTMLSelectElement) return
+            const el = stateSelectRef.current
+            if (!el) return
+            const withPicker = el as HTMLSelectElement & { showPicker?: () => void }
+            if (typeof withPicker.showPicker === "function") {
+              withPicker.showPicker()
+            } else {
+              el.focus()
+              el.click()
+            }
+          }}
+        >
+          <span className="material-symbols-outlined text-secondary mr-2">
+            map
+          </span>
+          <select
+            ref={stateSelectRef}
+            value={stateServed}
+            onChange={(e) => setStateServedAndPersist(e.target.value)}
+            className="bg-transparent border-none focus:ring-0 font-sans text-sm py-4 pr-1 appearance-none cursor-pointer"
+            title="Serves my state"
+          >
+            <option value="">State</option>
+            {US_STATES.map((s) => (
+              <option key={s.code} value={s.code}>
+                {s.code}
+              </option>
+            ))}
+          </select>
+          <svg
+            aria-hidden="true"
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="ml-1 text-secondary"
+          >
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </div>
         <div className="flex-1 flex items-center px-4">
           <span className="material-symbols-outlined text-secondary mr-3">
             location_on
@@ -374,7 +536,7 @@ export const DirectorySearch = ({
                   onChange={(e) => setRadiusMi(Number(e.target.value))}
                   className="bg-transparent border-none focus:ring-0 text-sm cursor-pointer"
                 >
-                  {[25, 50, 100].map((mi) => (
+                  {[25, 50, 100, 500].map((mi) => (
                     <option key={mi} value={mi}>
                       {mi} miles
                     </option>
@@ -418,6 +580,9 @@ export const DirectorySearch = ({
             {proximityActive
               ? "Catholic Businesses Near You"
               : "Local & Global Catholic Businesses"}
+            <span className="text-secondary font-sans text-base lg:text-lg font-normal ml-3">
+              ({count.toLocaleString()})
+            </span>
           </h2>
         </div>
         <div className="flex items-center bg-gray-100 p-1 rounded-xl border border-gray-200/50">
@@ -463,6 +628,7 @@ export const DirectorySearch = ({
                     key={listing.id}
                     listing={listing}
                     featured={i === 0}
+                    showDistance={showDistance}
                   />
                 ))}
               </div>

@@ -18,11 +18,21 @@ const tierLabels: Record<string, string> = {
 export const DirectoryListingCard = ({
   listing,
   featured = false,
+  showDistance = false,
 }: {
   listing: DirectoryListing
   featured?: boolean
+  showDistance?: boolean
 }) => {
   const isEnterprise = listing.subscription_tier === "enterprise"
+  // Distance shipped from DirectorySearch's hitToListing — only rendered
+  // when showDistance is on (i.e., proximity is from explicit user input,
+  // not the silent Denver default).
+  const distanceMi = (listing as { _distance_miles?: number })._distance_miles
+  const distanceLabel =
+    showDistance && typeof distanceMi === "number"
+      ? `${distanceMi < 0.1 ? "<0.1" : distanceMi.toFixed(1)} mi away`
+      : null
 
   // First card spans full width like the Stitch "Enterprise" card
   if (featured && isEnterprise) {
@@ -103,6 +113,11 @@ export const DirectoryListingCard = ({
                     <span className="material-symbols-outlined text-sm mr-1">
                       location_on
                     </span>
+                    {distanceLabel && (
+                      <span className="text-gold-dark font-semibold mr-2">
+                        {distanceLabel}
+                      </span>
+                    )}
                     {[listing.address.city, listing.address.state]
                       .filter(Boolean)
                       .join(", ")}
@@ -208,6 +223,11 @@ export const DirectoryListingCard = ({
               <span className="material-symbols-outlined text-sm">
                 location_on
               </span>
+              {distanceLabel && (
+                <span className="text-gold-dark font-semibold mr-1">
+                  {distanceLabel}
+                </span>
+              )}
               {[listing.address.city, listing.address.state]
                 .filter(Boolean)
                 .join(", ")}
