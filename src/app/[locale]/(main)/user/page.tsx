@@ -3,14 +3,15 @@ import { UserNavigation } from "@/components/molecules"
 import { retrieveCustomer } from "@/lib/data/customer"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 import { redirect } from "next/navigation"
+import { UnverifiedEmailBanner } from "@/components/molecules/UnverifiedEmailBanner/UnverifiedEmailBanner"
 
 type Props = {
-  searchParams: Promise<{ return_to?: string }>
+  searchParams: Promise<{ return_to?: string; email_verified?: string }>
 }
 
 export default async function UserPage({ searchParams }: Props) {
   const user = await retrieveCustomer()
-  const { return_to } = await searchParams
+  const { return_to, email_verified } = await searchParams
 
   if (!user) return <LoginForm />
 
@@ -21,11 +22,25 @@ export default async function UserPage({ searchParams }: Props) {
     redirect(return_to)
   }
 
+  const isVerified = (user as any).metadata?.email_verified === true
+  const flash =
+    email_verified === "1"
+      ? "success"
+      : email_verified === "error"
+        ? "error"
+        : null
+
   return (
     <main className="max-w-7xl mx-auto px-4 lg:px-8 py-8 lg:py-12">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 md:gap-8">
         <UserNavigation />
         <div className="md:col-span-3">
+          {(!isVerified || flash) && user.email && (
+            <UnverifiedEmailBanner
+              email={user.email}
+              flash={isVerified ? "success" : flash}
+            />
+          )}
           <p className="label-sm text-secondary tracking-[0.15em] mb-1">
             Good Morning, {user.first_name}
           </p>

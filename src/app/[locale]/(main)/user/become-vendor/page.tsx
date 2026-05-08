@@ -15,6 +15,7 @@ export default async function BecomeVendorPage() {
 
   const vendorStatus = await retrieveVendorStatus()
   const isAlreadyVendor = vendorStatus.isVendor
+  const isEmailVerified = (user as any).metadata?.email_verified === true
 
   return (
     <main className="container">
@@ -37,6 +38,23 @@ export default async function BecomeVendorPage() {
                 className="bg-navy text-white px-6 py-2 rounded-sm text-sm uppercase font-medium inline-block"
               >
                 Go to Vendor Dashboard
+              </a>
+            </div>
+          ) : !isEmailVerified ? (
+            <div className="border rounded-sm p-8 text-center bg-[rgba(190,155,50,0.06)]">
+              <h2 className="heading-md text-primary mb-2">
+                Verify Your Email First
+              </h2>
+              <p className="text-secondary mb-4">
+                Vendor applications require a verified email address. Please
+                check your inbox for a verification link or request a new one
+                from your account dashboard.
+              </p>
+              <a
+                href="/us/user"
+                className="bg-navy text-white px-6 py-2 rounded-sm text-sm uppercase font-medium inline-block"
+              >
+                Back to My Account
               </a>
             </div>
           ) : (
