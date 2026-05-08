@@ -8,8 +8,8 @@ export const metadata: Metadata = {
     "Curated Catholic gift collections for every occasion — Easter, sacraments, Christmas, and more.",
 }
 
-export default function GiftsHubPage() {
-  const guides = listActiveGiftGuides()
+export default async function GiftsHubPage() {
+  const guides = await listActiveGiftGuides()
 
   return (
     <main className="bg-catholic-lace min-h-screen">

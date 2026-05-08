@@ -1,108 +1,84 @@
 /**
- * Gift guide definitions. Per 3/31 decision these are curated,
- * lead-magnet collection views — Easter, Sacraments, Gifts for Him,
- * Gifts for Her, etc. Each guide filters the marketplace to a
- * pre-defined set of product tags + a price/category scope.
+ * Gift guide data layer. Backed by the gift-guide custom Medusa module
+ * (see marketplace-backend/src/modules/gift-guide). Admins manage guides
+ * in the Medusa admin UI; this file just fetches them.
  *
- * Editing: update this file. Adding a new guide doesn't require a
- * migration — the tags just need to exist on products in the catalog.
+ * Same exported function names + types as the previous static implementation,
+ * but they're now async — callers must `await`.
  */
 
 export type GiftGuide = {
+  id?: string
   slug: string
   title: string
   subtitle: string
   lede: string
   hero_image: string
-  // Product tag names that identify products in this guide. Any match
-  // counts. Use broad tags like "easter" rather than store-specific
-  // SKUs so vendors' auto-tagging picks up.
   tags: string[]
-  // Optional category filter handle (Medusa product_categories.handle)
   category_handle?: string
-  // Display order on the /gifts hub page (lower = sooner)
   sort_order: number
-  // Seasonal guides get surfaced on the homepage from this date forward;
-  // always_on guides don't have a start/end.
-  active_from?: string
-  active_until?: string
+  featured?: boolean
+  active_from?: string | null
+  active_until?: string | null
 }
 
-export const GIFT_GUIDES: GiftGuide[] = [
-  {
-    slug: "easter",
-    title: "Easter Gifts",
-    subtitle: "Celebrate the Resurrection",
-    lede:
-      "Rosaries, sacred art, and meaningful keepsakes to mark the high point of the liturgical year.",
-    hero_image: "/images/hero/Image.jpg",
-    tags: ["easter", "resurrection", "paschal"],
-    sort_order: 10,
-    active_from: "2026-02-15",
-    active_until: "2026-05-15",
-  },
-  {
-    slug: "sacraments",
-    title: "Sacramental Gifts",
-    subtitle: "For the moments that matter",
-    lede:
-      "Baptism, First Communion, Confirmation, Wedding, Ordination — thoughtful Catholic gifts for every sacrament.",
-    hero_image: "/images/hero/stpeters.jpg",
-    tags: [
-      "sacrament",
-      "baptism",
-      "first-communion",
-      "confirmation",
-      "wedding",
-      "ordination",
-    ],
-    sort_order: 20,
-  },
-  {
-    slug: "for-him",
-    title: "Gifts for Him",
-    subtitle: "For the Catholic men in your life",
-    lede:
-      "Handcrafted leather, classic devotionals, and gear that reflects his faith.",
-    hero_image: "/images/hero/Image.jpg",
-    tags: ["mens", "for-him", "fathers"],
-    sort_order: 30,
-  },
-  {
-    slug: "for-her",
-    title: "Gifts for Her",
-    subtitle: "For the Catholic women in your life",
-    lede:
-      "Elegant jewelry, devotional art, and gifts that speak to feminine genius.",
-    hero_image: "/images/hero/stpeters.jpg",
-    tags: ["womens", "for-her", "mothers"],
-    sort_order: 40,
-  },
-  {
-    slug: "advent",
-    title: "Advent & Christmas",
-    subtitle: "Prepare the way",
-    lede:
-      "Advent wreaths, Nativity sets, and Christmas gifts rooted in the Church's richest season.",
-    hero_image: "/images/hero/Image.jpg",
-    tags: ["advent", "christmas", "nativity"],
-    sort_order: 50,
-    active_from: "2026-11-01",
-    active_until: "2027-01-10",
-  },
-]
+const REVALIDATE_SECONDS = 60
 
-export function getGiftGuide(slug: string): GiftGuide | null {
-  return GIFT_GUIDES.find((g) => g.slug === slug) || null
+function backendUrl() {
+  return process.env.MEDUSA_BACKEND_URL || "http://localhost:9000"
 }
 
-export function listActiveGiftGuides(now: Date = new Date()): GiftGuide[] {
-  const ts = now.getTime()
-  return GIFT_GUIDES
-    .filter((g) => {
-      if (g.active_from && ts < new Date(g.active_from).getTime()) return false
-      if (g.active_until && ts > new Date(g.active_until).getTime()) return false
-      return true
+function publishableKey() {
+  return process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || ""
+}
+
+async function fetchGuides(query: Record<string, string> = {}): Promise<GiftGuide[]> {
+  const params = new URLSearchParams(query).toString()
+  const url = `${backendUrl()}/store/gift-guides${params ? `?${params}` : ""}`
+  try {
+    const res = await fetch(url, {
+      headers: { "x-publishable-api-key": publishableKey() },
+      next: { revalidate: REVALIDATE_SECONDS, tags: ["gift-guides"] },
     })
-    .sort((a, b) => a.sort_order - b.sort_order)
+    if (!res.ok) {
+      console.error(`[gift-guides] list failed: ${res.status}`)
+      return []
+    }
+    const data = await res.json()
+    return data.gift_guides || []
+  } catch (e) {
+    console.error("[gift-guides] list error:", e)
+    return []
+  }
+}
+
+export async function listActiveGiftGuides(): Promise<GiftGuide[]> {
+  return fetchGuides()
+}
+
+export async function listFeaturedGiftGuides(): Promise<GiftGuide[]> {
+  return fetchGuides({ featured: "true" })
+}
+
+export async function getGiftGuide(slug: string): Promise<GiftGuide | null> {
+  try {
+    const res = await fetch(`${backendUrl()}/store/gift-guides/${slug}`, {
+      headers: { "x-publishable-api-key": publishableKey() },
+      next: {
+        revalidate: REVALIDATE_SECONDS,
+        tags: ["gift-guides", `gift-guide:${slug}`],
+      },
+    })
+    if (!res.ok) {
+      if (res.status !== 404) {
+        console.error(`[gift-guides] retrieve "${slug}" failed: ${res.status}`)
+      }
+      return null
+    }
+    const data = await res.json()
+    return data.gift_guide || null
+  } catch (e) {
+    console.error(`[gift-guides] retrieve "${slug}" error:`, e)
+    return null
+  }
 }

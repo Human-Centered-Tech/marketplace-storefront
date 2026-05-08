@@ -1,5 +1,6 @@
 import { Navbar } from "./Navbar/Navbar"
 import { CustomCarousel as Carousel } from "./Carousel/Carousel"
+import { AutoCarousel } from "./AutoCarousel/AutoCarousel"
 import { Pagination } from "./Pagination/Pagination"
 import { ProductFilter } from "./ProductFilter/ProductFilter"
 import { BrandFilter } from "./BrandFilter/BrandFilter"
@@ -34,6 +35,7 @@ import { ProductAdditionalAttributes } from "./ProductAdditionalAttributes/Produ
 export {
   Navbar,
   Carousel,
+  AutoCarousel,
   Pagination,
   ProductFilter,
   BrandFilter,

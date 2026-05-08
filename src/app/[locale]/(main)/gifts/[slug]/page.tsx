@@ -40,7 +40,7 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
-  const guide = getGiftGuide(slug)
+  const guide = await getGiftGuide(slug)
   if (!guide) return { title: "Not Found" }
   return {
     title: `${guide.title} — Catholic Owned`,
@@ -50,7 +50,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function GiftGuidePage({ params }: Props) {
   const { slug, locale } = await params
-  const guide = getGiftGuide(slug)
+  const guide = await getGiftGuide(slug)
   if (!guide) notFound()
 
   // Filter marketplace products by the guide's tag set. Resolve tag

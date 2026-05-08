@@ -23,6 +23,8 @@ import { DirectoryPreview } from "./DirectoryPreview/DirectoryPreview"
 import { UpcomingEvents } from "./UpcomingEvents/UpcomingEvents"
 import { FoundersVision } from "./FoundersVision/FoundersVision"
 import { SellerCollectionsStrip } from "./SellerCollectionsStrip/SellerCollectionsStrip"
+import { HomeFeaturedGiftGuides } from "./HomeFeaturedGiftGuides/HomeFeaturedGiftGuides"
+import { HomeFeaturedProducts } from "./HomeFeaturedProducts/HomeFeaturedProducts"
 
 export {
   Hero,
@@ -50,4 +52,6 @@ export {
   UpcomingEvents,
   FoundersVision,
   SellerCollectionsStrip,
+  HomeFeaturedGiftGuides,
+  HomeFeaturedProducts,
 }

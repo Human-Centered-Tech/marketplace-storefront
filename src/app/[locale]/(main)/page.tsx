@@ -2,7 +2,8 @@ import {
   BannerSection,
   Hero,
   HomeCategories,
-  HomeProductSection,
+  HomeFeaturedGiftGuides,
+  HomeFeaturedProducts,
   ShopByStyleSection,
   DirectoryPreview,
   UpcomingEvents,
@@ -190,8 +191,12 @@ export default async function Home({
         ]}
       />
 
-      {/* 3. Featured Products */}
-      <HomeProductSection heading="Featured Products" locale={locale} home />
+      {/* 2. Featured Gift Guides — admin-curated via the gift-guide module */}
+      <HomeFeaturedGiftGuides />
+
+      {/* 3. Featured Products — products tagged "homepage-featured", with
+              graceful fallback to recent products if the tag isn't applied yet */}
+      <HomeFeaturedProducts locale={locale} />
 
       {/* 4. From the Directory */}
       <DirectoryPreview userLoc={userLoc} />
