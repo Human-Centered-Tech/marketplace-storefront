@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { cookies as nextCookies } from "next/headers"
+import { revalidateTag } from "next/cache"
 
 const STOREFRONT_URL =
   process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:8000"
@@ -60,6 +61,14 @@ export async function GET(req: NextRequest) {
         `${STOREFRONT_URL}/us/user?email_verified=error`
       )
     }
+
+    // Bust the customer cache so the dashboard's next render reflects
+    // the freshly-flipped metadata.email_verified flag — without this,
+    // the unverified banner sticks around because retrieveCustomer
+    // serves stale cached data.
+    const cacheId = cookies.get("_medusa_cache_id")?.value
+    if (cacheId) revalidateTag(`customers-${cacheId}`)
+
     return NextResponse.redirect(
       `${STOREFRONT_URL}/us/user?email_verified=1`
     )

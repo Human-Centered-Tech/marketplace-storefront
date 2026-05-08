@@ -36,7 +36,11 @@ export const retrieveCustomer =
       .fetch<{ customer: HttpTypes.StoreCustomer }>(`/store/customers/me`, {
         method: "GET",
         query: {
-          fields: "*orders",
+          // metadata is needed for email_verified flag (used by the
+          // unverified-email banner + become-vendor gate). Without an
+          // explicit field list, Medusa's `fields=*orders` shape strips
+          // metadata from the response.
+          fields: "*orders,*metadata",
         },
         headers,
         next,
