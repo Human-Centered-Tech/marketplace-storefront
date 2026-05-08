@@ -2,11 +2,24 @@ import { LoginForm } from "@/components/molecules"
 import { UserNavigation } from "@/components/molecules"
 import { retrieveCustomer } from "@/lib/data/customer"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
+import { redirect } from "next/navigation"
 
-export default async function UserPage() {
+type Props = {
+  searchParams: Promise<{ return_to?: string }>
+}
+
+export default async function UserPage({ searchParams }: Props) {
   const user = await retrieveCustomer()
+  const { return_to } = await searchParams
 
   if (!user) return <LoginForm />
+
+  // Already authenticated users with a return_to query (e.g. landing here
+  // after the vendor portal redirected to /us/user?return_to=/api/vendor-
+  // handoff) skip the dashboard and go straight to where they were headed.
+  if (return_to && return_to.startsWith("/")) {
+    redirect(return_to)
+  }
 
   return (
     <main className="max-w-7xl mx-auto px-4 lg:px-8 py-8 lg:py-12">
