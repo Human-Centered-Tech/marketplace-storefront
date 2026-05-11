@@ -25,6 +25,7 @@ import { FoundersVision } from "./FoundersVision/FoundersVision"
 import { SellerCollectionsStrip } from "./SellerCollectionsStrip/SellerCollectionsStrip"
 import { HomeFeaturedGiftGuides } from "./HomeFeaturedGiftGuides/HomeFeaturedGiftGuides"
 import { HomeFeaturedProducts } from "./HomeFeaturedProducts/HomeFeaturedProducts"
+import { HomeFeaturedServices } from "./HomeFeaturedServices/HomeFeaturedServices"
 
 export {
   Hero,
@@ -54,4 +55,5 @@ export {
   SellerCollectionsStrip,
   HomeFeaturedGiftGuides,
   HomeFeaturedProducts,
+  HomeFeaturedServices,
 }
