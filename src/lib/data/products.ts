@@ -129,16 +129,20 @@ export const listProducts = async ({
 }
 
 // Maps our SortOptions enum to Medusa /store/products `order` param syntax.
-// `created_at` defaults to newest-first. Price sorts use the calculated
-// price's amount field. Medusa 2.x supports prefix `-` for desc.
+// Medusa 2.x supports sorting on stored columns (created_at, title, ...)
+// but 500s on nested computed paths like variants.calculated_price.*
+// because calculated_price is region-derived, not a column. For price
+// sorts we therefore return undefined and rely on the client-side
+// sortProducts fallback below — meaning price sort is page-local only.
+// Cross-page price sort needs Algolia (which has price replicas) or a
+// dedicated backend endpoint; tracked as a follow-up.
 const sortToOrder = (sortBy: SortOptions): string | undefined => {
   switch (sortBy) {
     case "created_at":
       return "-created_at"
     case "price_asc":
-      return "variants.calculated_price.calculated_amount"
     case "price_desc":
-      return "-variants.calculated_price.calculated_amount"
+      return undefined
     default:
       return "-created_at"
   }
