@@ -1,6 +1,16 @@
 import { DirectoryCategory, DirectoryListing, Parish } from "@/types/directory"
 import { sdk } from "../config"
 
+export const listFeaturedListings = async () => {
+  return sdk.client
+    .fetch<{ featured_listings: DirectoryListing[]; count: number }>(
+      "/store/featured-listings",
+      { cache: "no-cache" }
+    )
+    .then((d) => d.featured_listings || [])
+    .catch(() => [] as DirectoryListing[])
+}
+
 export const listDirectoryListings = async (params?: {
   category_id?: string
   city?: string

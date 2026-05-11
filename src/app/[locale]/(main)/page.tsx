@@ -4,6 +4,7 @@ import {
   HomeCategories,
   HomeFeaturedGiftGuides,
   HomeFeaturedProducts,
+  HomeFeaturedServices,
   ShopByStyleSection,
   DirectoryPreview,
   UpcomingEvents,
@@ -198,7 +199,11 @@ export default async function Home({
               graceful fallback to recent products if the tag isn't applied yet */}
       <HomeFeaturedProducts locale={locale} />
 
-      {/* 4. From the Directory */}
+      {/* 4. Featured Services — admin-curated directory listings, double-row
+              carousel (2×16) showing 5 columns at a time */}
+      <HomeFeaturedServices />
+
+      {/* 5. From the Directory */}
       <DirectoryPreview userLoc={userLoc} />
 
       {/* 5. Upcoming Networking Events */}
