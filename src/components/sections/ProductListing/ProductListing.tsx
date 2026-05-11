@@ -18,6 +18,7 @@ export const ProductListing = async ({
   searchQuery,
   maxPrice,
   sortBy,
+  page = 1,
 }: {
   category_id?: string
   collection_id?: string
@@ -27,6 +28,7 @@ export const ProductListing = async ({
   searchQuery?: string
   maxPrice?: number
   sortBy?: string
+  page?: number
 }) => {
   const validSorts: SortOptions[] = ["created_at", "price_asc", "price_desc"]
   const resolvedSort: SortOptions = validSorts.includes(sortBy as SortOptions)
@@ -35,6 +37,7 @@ export const ProductListing = async ({
 
   const [{ response }, categoryData] = await Promise.all([
     listProductsWithSort({
+      page,
       seller_id,
       category_id,
       collection_id,
@@ -50,9 +53,12 @@ export const ProductListing = async ({
       : Promise.resolve({ categories: [], parentCategories: [] }),
   ])
 
-  let { products } = await response
+  let { products, count } = response
 
-  // Client-side price filter
+  // Client-side price filter is per-page only — when this filter is
+  // active the total count is no longer trustworthy for pagination,
+  // but for now we trust the listProductsWithSort total since maxPrice
+  // is the only client-only filter.
   if (maxPrice && maxPrice < 1000) {
     products = products.filter((p) => {
       const cheapest = p.variants?.reduce((min, v) => {
@@ -64,10 +70,11 @@ export const ProductListing = async ({
     })
   }
 
-  const count = products.length
-  const pages = Math.ceil(count / PRODUCT_LIMIT) || 1
+  const pages = Math.max(1, Math.ceil(count / PRODUCT_LIMIT))
 
-  // Extract unique sellers from all products
+  // Extract unique sellers from the visible page's products for the
+  // sidebar filter. (Sidebar shows only sellers represented on the
+  // current page — acceptable since this list narrows search.)
   const sellersMap = new Map<string, string>()
   products.forEach((p: any) => {
     if (p.seller?.id && p.seller?.name) {
@@ -88,7 +95,11 @@ export const ProductListing = async ({
           </div>
         )}
         <section className="flex-1 min-w-0">
-          <ProductListingHeader total={count} />
+          <ProductListingHeader
+            total={count}
+            page={page}
+            pageSize={PRODUCT_LIMIT}
+          />
           <div
             className={`grid grid-cols-1 md:grid-cols-2 ${
               showSidebar ? "lg:grid-cols-3" : "lg:grid-cols-4"

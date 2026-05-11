@@ -128,9 +128,31 @@ export const listProducts = async ({
     })
 }
 
+// Maps our SortOptions enum to Medusa /store/products `order` param syntax.
+// `created_at` defaults to newest-first. Price sorts use the calculated
+// price's amount field. Medusa 2.x supports prefix `-` for desc.
+const sortToOrder = (sortBy: SortOptions): string | undefined => {
+  switch (sortBy) {
+    case "created_at":
+      return "-created_at"
+    case "price_asc":
+      return "variants.calculated_price.calculated_amount"
+    case "price_desc":
+      return "-variants.calculated_price.calculated_amount"
+    default:
+      return "-created_at"
+  }
+}
+
 /**
- * This will fetch 100 products to the Next.js cache and sort them based on the sortBy parameter.
- * It will then return the paginated products based on the page and limit parameters.
+ * Server-paginated product listing. Pass `page` (1-indexed) and the
+ * function asks the backend for just that page's slice — no more
+ * silent 100-item cap. Returns the backend's true total `count` so
+ * pagination UIs can render the correct number of pages.
+ *
+ * Sort is applied server-side via the `order` query param. The
+ * client-side `sortProducts` fallback only runs as a safety net for
+ * the in-page slice.
  */
 export const listProductsWithSort = async ({
   page = 1,
@@ -156,15 +178,26 @@ export const listProductsWithSort = async ({
   nextPage: number | null
   queryParams?: HttpTypes.FindParams & HttpTypes.StoreProductParams
 }> => {
-  const limit = queryParams?.limit || 12
+  const limit = queryParams?.limit ?? 48
+  const offset = Math.max(0, (page - 1) * limit)
+  const order = queryParams?.order ?? sortToOrder(sortBy)
 
+  // seller_id is a client-side filter today (no backend filter on
+  // product.seller.id in Mercur's /store/products). Without true
+  // server-side filtering, total `count` for a single-seller view is
+  // approximate. Use the calling page's filter on a per-page basis;
+  // accept the limitation that filtered pagination can be off by
+  // a page near the end. SellerTabs uses seller_handle through Algolia
+  // for the accurate path.
   const {
     response: { products, count },
   } = await listProducts({
     pageParam: 0,
     queryParams: {
       ...queryParams,
-      limit: 100,
+      limit,
+      offset,
+      ...(order ? { order } : {}),
     },
     category_id,
     collection_id,
@@ -175,21 +208,24 @@ export const listProductsWithSort = async ({
     ? products.filter((product) => product.seller?.id === seller_id)
     : products
 
+  // Hide products without a calculated price for the active region.
+  // Filtering after server pagination means the page might be short
+  // (e.g. 47/48 cards if one variant lacks a price) — acceptable
+  // tradeoff vs the prior silent 100 cap.
   const pricedProducts = filteredProducts.filter((prod) =>
     prod.variants?.some((variant) => variant.calculated_price !== null)
   )
 
+  // Backend already sorted. sortProducts is a defensive client-side
+  // re-sort of the page slice so callers passing unusual sortBy don't
+  // see backend-default order leaking through.
   const sortedProducts = sortProducts(pricedProducts, sortBy)
 
-  const pageParam = (page - 1) * limit
-
-  const nextPage = count > pageParam + limit ? pageParam + limit : null
-
-  const paginatedProducts = sortedProducts.slice(pageParam, pageParam + limit)
+  const nextPage = offset + limit < count ? offset + limit : null
 
   return {
     response: {
-      products: paginatedProducts,
+      products: sortedProducts,
       count,
     },
     nextPage,

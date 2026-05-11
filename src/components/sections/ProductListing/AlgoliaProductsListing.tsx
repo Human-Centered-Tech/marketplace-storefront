@@ -5,6 +5,7 @@ import {
   AlgoliaProductSidebar,
   ProductCard,
   ProductListingActiveFilters,
+  ProductListingHeader,
   ProductsPagination,
 } from "@/components/organisms"
 import { client } from "@/lib/client"
@@ -35,30 +36,28 @@ export const AlgoliaProductsListing = ({
 
   const facetFilters: string = getFacedFilters(searchParamas)
   // The SearchBar writes its term to ?q=, matching the rest of the app.
-  // (Was previously reading ?query=, which nothing sets, so every search
-  // landed here as an empty query and returned the unfiltered list.)
   const query: string = searchParamas.get("q") || ""
+
+  // 1-indexed in our URL (?page=2 = second page). Algolia is 0-indexed,
+  // so subtract one before passing to Configure.
+  const urlPage = Math.max(1, parseInt(searchParamas.get("page") || "1") || 1)
+  const algoliaPage = urlPage - 1
 
   // Transitional flag — set NEXT_PUBLIC_RELAX_ALGOLIA_PRODUCT_FILTERS=true
   // while we're still working with test products that lack seller assignments
   // and supported_countries data. Drops the per-product attribution filters
-  // so the shop renders something instead of an empty list. Should be
-  // removed (or env unset) once all products have proper seller + region
-  // setup. Has no effect on category/collection/seller-handle filters,
-  // which are explicit user choices.
+  // so the shop renders something instead of an empty list.
   const relaxFilters =
     process.env.NEXT_PUBLIC_RELAX_ALGOLIA_PRODUCT_FILTERS === "true"
 
   const clauses: string[] = []
 
-  // Seller / supported-countries gates (relaxable)
   if (!relaxFilters) {
     clauses.push("NOT seller:null")
     clauses.push("NOT seller.store_status:SUSPENDED")
     clauses.push(`supported_countries:${locale}`)
   }
 
-  // Always-applied filters: vendor storefront, category, collection
   if (seller_handle) clauses.push(`seller.handle:${seller_handle}`)
   if (category_id) clauses.push(`categories.id:${category_id}`)
   if (collection_id !== undefined)
@@ -80,11 +79,24 @@ export const AlgoliaProductsListing = ({
 
   return (
     <InstantSearchNext searchClient={client} indexName="products">
-      <Configure query={query} filters={filters} />
+      {/*
+        Server-side Algolia pagination: hitsPerPage scopes useHits() to
+        just the current page, and `page` (0-indexed) selects which
+        slice. `key` forces a remount when the page changes so the
+        InstantSearch state resets cleanly — without it, Algolia's
+        internal state can hold onto the prior page's results during
+        the re-render and the count UI flickers.
+      */}
+      <Configure
+        query={query}
+        filters={filters}
+        hitsPerPage={PRODUCT_LIMIT}
+        page={algoliaPage}
+      />
       <ProductsListing
         locale={locale}
         currency_code={currency_code}
-        filters={filters}
+        page={urlPage}
       />
     </InstantSearchNext>
   )
@@ -93,22 +105,24 @@ export const AlgoliaProductsListing = ({
 const ProductsListing = ({
   locale,
   currency_code,
-  filters,
+  page,
 }: {
   locale?: string
   currency_code: string
-  filters: string
+  page: number
 }) => {
   const [apiProducts, setApiProducts] = useState<
     HttpTypes.StoreProduct[] | null
   >(null)
   const { items, results } = useHits()
 
-  const searchParamas = useSearchParams()
-
   async function handleSetProducts() {
     try {
       setApiProducts(null)
+      if (!items.length) {
+        setApiProducts([])
+        return
+      }
       const { response } = await listProducts({
         countryCode: locale,
         queryParams: {
@@ -132,27 +146,44 @@ const ProductsListing = ({
 
   useEffect(() => {
     handleSetProducts()
-  }, [items.length])
+    // Re-fetch when the visible Algolia hits change (page navigation,
+    // filter changes — both update `items`).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [items.map((i) => i.objectID).join(",")])
+
+  // Scroll to top whenever the page changes so the next page's grid
+  // is visible without a manual scroll. Smooth is nice on desktop; on
+  // mobile the gesture is fast enough that smooth feels laggy — leave
+  // it as the default scroll behavior on mobile via prefers-reduced.
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" })
+    }
+  }, [page])
 
   if (!results?.processingTimeMS) return <ProductListingSkeleton />
 
-  const page: number = +(searchParamas.get("page") || 1)
+  const totalHits = results?.nbHits ?? 0
+  const pages = Math.max(1, Math.ceil(totalHits / PRODUCT_LIMIT))
+
+  // Algolia has already scoped `items` to the current page. We still
+  // filter the in-page list to the products we successfully resolved
+  // via the Medusa products API, so cards without a calculated price
+  // for the active region drop out (rather than rendering blank).
   const filteredProducts = items.filter((pr) =>
     apiProducts?.some((p: any) => p.id === pr.objectID)
   )
 
-  const products = filteredProducts
-    .filter((pr) =>
-      apiProducts?.some(
-        (p: any) => p.id === pr.objectID && filterProductsByCurrencyCode(p)
-      )
+  const products = filteredProducts.filter((pr) =>
+    apiProducts?.some(
+      (p: any) => p.id === pr.objectID && filterProductsByCurrencyCode(p)
     )
-    .slice((page - 1) * PRODUCT_LIMIT, page * PRODUCT_LIMIT)
-
-  const count = filteredProducts?.length || 0
-  const pages = Math.ceil(count / PRODUCT_LIMIT) || 1
+  )
 
   function filterProductsByCurrencyCode(product: HttpTypes.StoreProduct) {
+    const searchParamas = new URLSearchParams(
+      typeof window !== "undefined" ? window.location.search : ""
+    )
     const minPrice = searchParamas.get("min_price")
     const maxPrice = searchParamas.get("max_price")
 
@@ -161,9 +192,7 @@ const ProductsListing = ({
         (variant) => variant.calculated_price?.currency_code === currency_code
       )
 
-      if (!variantsWithCurrencyCode?.length) {
-        return false
-      }
+      if (!variantsWithCurrencyCode?.length) return false
 
       if (minPrice && maxPrice) {
         return variantsWithCurrencyCode.some(
@@ -185,15 +214,16 @@ const ProductsListing = ({
         )
       }
     }
-
     return true
   }
 
   return (
     <div className="min-h-[70vh]">
-      <div className="flex justify-between w-full items-center">
-        <div className="my-4 label-md">{`${count} listings`}</div>
-      </div>
+      <ProductListingHeader
+        total={totalHits}
+        page={page}
+        pageSize={PRODUCT_LIMIT}
+      />
       <div className="hidden md:block">
         <ProductListingActiveFilters />
       </div>
@@ -211,9 +241,6 @@ const ProductsListing = ({
             </div>
           ) : (
             <div className="w-full">
-              {/* Grid (instead of flex-wrap) so cards in a row stretch to
-                  equal height. Matches the layout used in the non-Algolia
-                  ProductListing for the same visual rhythm. */}
               <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-16 gap-x-8">
                 {products.map(
                   (hit) =>

@@ -74,10 +74,12 @@ async function AllCategories({
   searchParams,
 }: {
   params: Promise<{ locale: string }>
-  searchParams: Promise<{ q?: string; category_id?: string; max_price?: string; sort?: string; seller_id?: string }>
+  searchParams: Promise<{ q?: string; category_id?: string; max_price?: string; sort?: string; seller_id?: string; page?: string }>
 }) {
   const { locale } = await params
-  const { q, category_id, max_price, sort, seller_id } = await searchParams
+  const { q, category_id, max_price, sort, seller_id, page: pageParam } =
+    await searchParams
+  const page = Math.max(1, parseInt(pageParam || "1") || 1)
 
   const ua = (await headers()).get("user-agent") || ""
   const bot = isBot(ua)
@@ -163,6 +165,7 @@ async function AllCategories({
                 maxPrice={max_price ? parseInt(max_price) : undefined}
                 sortBy={sort}
                 seller_id={seller_id}
+                page={page}
               />
             ) : (
               <AlgoliaProductsListing
