@@ -9,6 +9,62 @@ const TIER_DETAILS: Record<
   string,
   { name: string; price: string; annual: string; features: string[] }
 > = {
+  // Canva "Sales Page Logic" tier set (2026-05).
+  local: {
+    name: "Catholic Owned Local",
+    price: "$99",
+    annual: "$99/year",
+    features: [
+      "Edit your listing",
+      "Verified badge",
+      "Higher search ranking than unclaimed listings",
+      "Eligible for promotions and gift guides",
+      "Community networking access",
+    ],
+  },
+  tier2_nonprofit: {
+    name: "Tier 2 — Non-profit",
+    price: "$349",
+    annual: "$349/year",
+    features: [
+      "Tier 2 benefits at non-profit pricing",
+      "Local Boost upsell available ($150/mo)",
+      "Catholic Owned-funded ad placement",
+    ],
+  },
+  tier2_business: {
+    name: "Tier 2",
+    price: "$699",
+    annual: "$699/year",
+    features: [
+      "Featured directory placement",
+      "Catholic Owned-funded ad placement on your listing",
+      "Local Boost upsell available ($150/mo)",
+    ],
+  },
+  tier3: {
+    name: "Tier 3",
+    price: "$2,999",
+    annual: "$2,999/year",
+    features: [
+      "Premium directory placement",
+      "Catholic Owned-funded ad placement on your listing",
+      "Local Boost upsell available ($150/mo)",
+      "Sales-team consultation included",
+    ],
+  },
+  tier4: {
+    name: "Tier 4",
+    price: "$10,000",
+    annual: "$10,000/year",
+    features: [
+      "Top-tier directory placement",
+      "Dedicated account manager",
+      "Custom partnership opportunities",
+    ],
+  },
+
+  // Legacy tiers (kept for in-flight subscriptions until customer migration).
   verified: {
     name: "Verified",
     price: "$50",

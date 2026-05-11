@@ -5,6 +5,13 @@ import { DirectoryListing } from "@/types/directory"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 
 const tierLabels: Record<string, string> = {
+  // Canva tier set
+  local: "Local Member",
+  tier2_nonprofit: "Tier 2 — Non-profit",
+  tier2_business: "Tier 2",
+  tier3: "Tier 3",
+  tier4: "Tier 4",
+  // Legacy
   enterprise: "Enterprise Tier",
   featured: "Premium Tier",
   verified: "Verified Business",
@@ -48,6 +55,8 @@ export const DirectoryDetail = ({
         .filter(Boolean)
         .join(", ")
     : null
+
+  const isUnclaimed = !listing.owner_id
 
   return (
     <div>
@@ -101,10 +110,16 @@ export const DirectoryDetail = ({
           {/* Business name + badges */}
           <div className="flex-grow text-center md:text-left">
             <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-2">
-              <span className="bg-[#F2CD69] text-navy-dark px-3 py-1 rounded-full label-sm text-[10px] font-bold tracking-widest">
-                {tierLabels[listing.subscription_tier] || "Verified"}
-              </span>
-              {listing.verification_status === "approved" && (
+              {isUnclaimed ? (
+                <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full label-sm text-[10px] font-bold tracking-widest border border-gray-300">
+                  UNCLAIMED LISTING
+                </span>
+              ) : (
+                <span className="bg-[#F2CD69] text-navy-dark px-3 py-1 rounded-full label-sm text-[10px] font-bold tracking-widest">
+                  {tierLabels[listing.subscription_tier] || "Verified"}
+                </span>
+              )}
+              {!isUnclaimed && listing.verification_status === "approved" && (
                 <div className="flex items-center text-navy-dark gap-1">
                   <span
                     className="material-symbols-outlined text-lg"
@@ -183,6 +198,30 @@ export const DirectoryDetail = ({
           </div>
         </div>
       </section>
+
+      {/* Unclaimed banner — only when listing has no owner */}
+      {isUnclaimed && (
+        <section className="max-w-7xl mx-auto px-6 mt-6">
+          <div className="bg-[#F2CD69]/15 border border-[#F2CD69] rounded-xl p-6 flex flex-col md:flex-row items-start md:items-center gap-4">
+            <div className="flex-1">
+              <p className="font-serif text-lg text-navy-dark font-bold mb-1">
+                This is an unclaimed listing.
+              </p>
+              <p className="text-secondary text-sm">
+                Are you the owner? Claim this listing to make edits, earn a
+                Verified badge, and move up in search results. Reaching out as a
+                customer? Tell them you found them on Catholic Owned!
+              </p>
+            </div>
+            <LocalizedClientLink
+              href={`/directory/${listing.id}/claim`}
+              className="bg-navy-dark text-white px-6 py-3 rounded-xl label-sm text-[10px] font-bold tracking-widest hover:bg-navy transition-colors whitespace-nowrap"
+            >
+              Claim This Listing
+            </LocalizedClientLink>
+          </div>
+        </section>
+      )}
 
       {/* Main Content */}
       <section className="max-w-7xl mx-auto px-6 py-16">
@@ -400,8 +439,32 @@ export const DirectoryDetail = ({
 
           {/* Right Column / Sidebar */}
           <div className="lg:col-span-4 space-y-8">
-            {/* CTA Card — conditional per 4/1 */}
-            {(() => {
+            {/* Claim CTA — only when unclaimed */}
+            {isUnclaimed && (
+              <div className="bg-[#F2CD69] p-8 rounded-xl text-center shadow-2xl">
+                <span
+                  className="material-symbols-outlined text-navy-dark text-3xl mb-2 block"
+                  style={{ fontVariationSettings: "'FILL' 1" }}
+                >
+                  flag
+                </span>
+                <h3 className="font-serif text-xl font-bold text-navy-dark mb-2">
+                  Is this your business?
+                </h3>
+                <p className="text-navy-dark/70 text-sm mb-4">
+                  Claim it to manage your profile and reach Catholic shoppers.
+                </p>
+                <LocalizedClientLink
+                  href={`/directory/${listing.id}/claim`}
+                  className="block w-full bg-navy-dark text-white py-4 rounded-xl label-sm text-[10px] font-bold tracking-widest hover:bg-navy transition-colors"
+                >
+                  Claim This Listing
+                </LocalizedClientLink>
+              </div>
+            )}
+
+            {/* CTA Card — conditional per 4/1; suppressed when unclaimed */}
+            {!isUnclaimed && (() => {
               const ctaType = listing.cta_type || "visit_shop"
               const hasShop = Boolean(listing.vendor_id)
               let href: string | null = null

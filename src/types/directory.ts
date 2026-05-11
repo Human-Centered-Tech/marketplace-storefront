@@ -47,14 +47,22 @@ export type DirectoryListing = {
   description: string | null
   category_id: string | null
   category?: DirectoryCategory
-  subscription_tier: "verified" | "featured" | "enterprise"
+  subscription_tier:
+    | "verified"
+    | "featured"
+    | "enterprise"
+    | "local"
+    | "tier2_nonprofit"
+    | "tier2_business"
+    | "tier3"
+    | "tier4"
   subscription_status: "active" | "expired" | "cancelled" | "pending"
   stripe_subscription_id: string | null
   subscription_expires_at: string | null
   verification_status: "pending" | "approved" | "rejected"
   verified_by: string | null
   verified_at: string | null
-  owner_id: string
+  owner_id: string | null
   vendor_id: string | null
   contact_email: string | null
   contact_phone: string | null

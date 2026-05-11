@@ -4,12 +4,26 @@ import { DirectoryListing } from "@/types/directory"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 
 const tierBadgeStyles: Record<string, string> = {
+  // Canva tier set — visual hierarchy: local < tier2 < tier3 < tier4
+  local: "bg-white text-navy-dark border border-navy-dark",
+  tier2_nonprofit: "bg-navy-dark text-white",
+  tier2_business: "bg-navy-dark text-white",
+  tier3: "bg-gold text-navy-dark",
+  tier4: "bg-gold text-navy-dark",
+  // Legacy
   enterprise: "bg-gold text-navy-dark",
   featured: "bg-navy-dark text-white",
   verified: "bg-white text-navy-dark border border-navy-dark",
 }
 
 const tierLabels: Record<string, string> = {
+  // Canva tier set
+  local: "Local",
+  tier2_nonprofit: "Tier 2",
+  tier2_business: "Tier 2",
+  tier3: "Tier 3",
+  tier4: "Tier 4",
+  // Legacy
   enterprise: "Enterprise",
   featured: "Featured",
   verified: "Verified",
@@ -24,7 +38,12 @@ export const DirectoryListingCard = ({
   featured?: boolean
   showDistance?: boolean
 }) => {
-  const isEnterprise = listing.subscription_tier === "enterprise"
+  const isUnclaimed = !listing.owner_id
+  const isEnterprise =
+    !isUnclaimed &&
+    (listing.subscription_tier === "enterprise" ||
+      listing.subscription_tier === "tier3" ||
+      listing.subscription_tier === "tier4")
   // Distance shipped from DirectorySearch's hitToListing — only rendered
   // when showDistance is on (i.e., proximity is from explicit user input,
   // not the silent Denver default).
@@ -141,7 +160,9 @@ export const DirectoryListingCard = ({
   return (
     <LocalizedClientLink
       href={`/directory/${listing.id}`}
-      className="bg-white rounded-2xl overflow-hidden shadow-sm group hover:shadow-md transition-all border border-gray-100/50 block"
+      className={`bg-white rounded-2xl overflow-hidden shadow-sm group hover:shadow-md transition-all border block ${
+        isUnclaimed ? "border-gray-200 opacity-80" : "border-gray-100/50"
+      }`}
     >
       {listing.cover_image_url ? (
         // Cover-photo variant: hero image with optional logo badge
@@ -183,14 +204,20 @@ export const DirectoryListingCard = ({
             {listing.category?.name || "Business"}
           </span>
           <div className="flex items-center gap-1 flex-wrap justify-end">
-            <span
-              className={`text-[9px] font-bold px-2 py-0.5 rounded uppercase ${
-                tierBadgeStyles[listing.subscription_tier] ||
-                tierBadgeStyles.verified
-              }`}
-            >
-              {tierLabels[listing.subscription_tier] || "Verified"}
-            </span>
+            {isUnclaimed ? (
+              <span className="text-[9px] font-bold px-2 py-0.5 rounded uppercase bg-gray-100 text-gray-700 border border-gray-300">
+                Unclaimed
+              </span>
+            ) : (
+              <span
+                className={`text-[9px] font-bold px-2 py-0.5 rounded uppercase ${
+                  tierBadgeStyles[listing.subscription_tier] ||
+                  tierBadgeStyles.verified
+                }`}
+              >
+                {tierLabels[listing.subscription_tier] || "Verified"}
+              </span>
+            )}
             {listing.badges
               ?.map((lb) => lb.badge)
               .filter(Boolean)

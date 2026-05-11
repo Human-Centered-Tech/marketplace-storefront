@@ -6,49 +6,50 @@ const damaskPattern = `url("data:image/svg+xml,%3Csvg width='60' height='60' vie
 
 const tiers = [
   {
-    id: "verified",
-    name: "Verified",
+    id: "local",
+    name: "Local",
     label: "Starter",
-    price: "$50",
+    price: "$99",
     period: "/ yr",
     highlight: false,
     features: [
-      { text: "Parish affiliation badge", icon: "check_circle", bold: false },
-      { text: "Standard search visibility", icon: "check_circle", bold: false },
-      { text: "Up to 10 products listed", icon: "check_circle", bold: false },
+      { text: "Edit your listing", icon: "check_circle", bold: false },
+      { text: "Verified Business badge", icon: "check_circle", bold: false },
+      { text: "Higher rank in search", icon: "check_circle", bold: false },
+      { text: "Local Boost ad upsell available", icon: "check_circle", bold: false },
     ],
     btnClass: "bg-[#17294A] text-white hover:bg-[#17294A]/90",
   },
   {
-    id: "featured",
-    name: "Featured",
-    label: "Advanced",
-    price: "$400",
+    id: "tier2_business",
+    name: "Tier 2",
+    label: "Most Popular",
+    price: "$699",
     period: "/ yr",
     highlight: true,
     features: [
-      { text: "Featured vendor badge", icon: "stars", bold: true },
-      { text: "High search priority", icon: "check_circle", bold: false },
-      { text: "Up to 100 products listed", icon: "check_circle", bold: false },
-      { text: "Event promotion access", icon: "check_circle", bold: false },
+      { text: "Featured directory placement", icon: "stars", bold: true },
+      { text: "Catholic Owned-funded ad placement", icon: "check_circle", bold: false },
+      { text: "Local Boost upsell available", icon: "check_circle", bold: false },
+      { text: "Non-profit pricing: $349/yr", icon: "check_circle", bold: false },
     ],
     btnClass:
       "bg-[#BE9B32] text-[#17294A] hover:bg-[#DECF8F] shadow-lg shadow-[#BE9B32]/20",
   },
   {
-    id: "enterprise",
-    name: "Enterprise",
-    label: "Elite",
-    price: "$2,000",
+    id: "tier3",
+    name: "Tier 3",
+    label: "Established",
+    price: "$2,999",
     period: "/ yr",
     highlight: false,
     enterprise: true,
     features: [
-      { text: "Premium gold tier badge", icon: "shield_with_heart", bold: true },
-      { text: "Top-tier search placement", icon: "check_circle", bold: false },
-      { text: "Unlimited products", icon: "check_circle", bold: false },
-      { text: "Dedicated account manager", icon: "check_circle", bold: false },
-      { text: "Homepage placement rotation", icon: "check_circle", bold: false },
+      { text: "Premium directory placement", icon: "shield_with_heart", bold: true },
+      { text: "Catholic Owned-funded ad placement", icon: "check_circle", bold: false },
+      { text: "Sales-team consultation included", icon: "check_circle", bold: false },
+      { text: "Tier 4 ($10K) available on call", icon: "check_circle", bold: false },
+      { text: "Local Boost upsell available", icon: "check_circle", bold: false },
     ],
     btnClass: "bg-[#17294A] text-white hover:bg-[#17294A]/90",
   },
@@ -76,11 +77,12 @@ const testimonials = [
 ]
 
 const comparisonRows = [
-  { feature: "Search Visibility", verified: "Standard", featured: "High Priority", enterprise: "Top Placement" },
-  { feature: "Product Limit", verified: "10", featured: "100", enterprise: "Unlimited" },
-  { feature: "Trust Badge", verified: "Parish Badge", featured: "Featured Sigil", enterprise: "Gold Tier Seal" },
-  { feature: "Event Promotion", verified: "\u2014", featured: "Included", enterprise: "Priority Boost" },
-  { feature: "Account Support", verified: "Email", featured: "Priority Email", enterprise: "Dedicated Manager" },
+  { feature: "Search Visibility", local: "Higher than unclaimed", tier2: "Featured placement", tier3: "Premium placement" },
+  { feature: "Funded ad placement", local: "\u2014", tier2: "Included", tier3: "Included (premium)" },
+  { feature: "Local Boost upsell", local: "Available", tier2: "Available", tier3: "Available" },
+  { feature: "Non-profit pricing", local: "\u2014", tier2: "$349/yr", tier3: "\u2014" },
+  { feature: "Sales consultation", local: "\u2014", tier2: "\u2014", tier3: "Included" },
+  { feature: "Top tier upsell", local: "\u2014", tier2: "\u2014", tier3: "Tier 4 ($10K) on call" },
 ]
 
 const faqs = [
@@ -88,8 +90,8 @@ const faqs = [
     group: "Membership & Plans",
     items: [
       {
-        q: "What\u2019s included in the Verified tier?",
-        a: "The Verified tier includes a parish affiliation badge on your listing, standard search visibility in our directory, and the ability to list up to 10 products in the marketplace. It is the minimum requirement for all marketplace sellers.",
+        q: "What\u2019s included in the Local tier?",
+        a: "The $99/year Local tier lets you edit your listing, earn a Verified Business badge, rank above unclaimed listings, and become eligible for promotions and community networking. It\u2019s the right starting point for solo practitioners and small businesses.",
       },
       {
         q: "Can I upgrade my plan later?",
@@ -106,7 +108,7 @@ const faqs = [
     items: [
       {
         q: "Do I need a directory listing to sell in the marketplace?",
-        a: "Yes, a minimum of a Verified listing ($50/year) is required to sell products within the Catholic Owned marketplace. This ensures all our sellers are vetted members of the community.",
+        a: "Yes — a directory subscription is required to sell products within the Catholic Owned marketplace. The Local tier ($99/year) is the minimum and ensures all our sellers are vetted members of the community.",
       },
       {
         q: "What payment methods do you accept?",
@@ -188,8 +190,8 @@ export const BusinessPricingSection = ({
                 className="text-xs font-bold uppercase tracking-widest text-[#17294A]"
                 style={{ fontFamily: "Poppins, sans-serif" }}
               >
-                All marketplace sellers require a Verified listing ($50/year) to
-                sell on Catholic Owned.
+                Not sure which plan? Take our 60-second business quiz to get a
+                tailored recommendation.
               </p>
             </div>
           </div>
@@ -404,19 +406,19 @@ export const BusinessPricingSection = ({
                     className="p-6 text-lg text-[#17294A] border-b border-[#c5c6cf]/30 text-center"
                     style={{ fontFamily: "Cinzel, serif" }}
                   >
-                    Verified
+                    Local
                   </th>
                   <th
                     className="p-6 text-lg text-[#17294A] border-b border-[#c5c6cf]/30 text-center bg-[#e3e2df]/50"
                     style={{ fontFamily: "Cinzel, serif" }}
                   >
-                    Featured
+                    Tier 2
                   </th>
                   <th
                     className="p-6 text-lg text-[#17294A] border-b border-[#c5c6cf]/30 text-center"
                     style={{ fontFamily: "Cinzel, serif" }}
                   >
-                    Enterprise
+                    Tier 3
                   </th>
                 </tr>
               </thead>
@@ -430,13 +432,13 @@ export const BusinessPricingSection = ({
                       {row.feature}
                     </td>
                     <td className="p-6 border-b border-[#c5c6cf]/20 text-center">
-                      {row.verified}
+                      {row.local}
                     </td>
                     <td className="p-6 border-b border-[#c5c6cf]/20 text-center bg-[#e3e2df]/50">
-                      {row.featured}
+                      {row.tier2}
                     </td>
                     <td className="p-6 border-b border-[#c5c6cf]/20 text-center">
-                      {row.enterprise}
+                      {row.tier3}
                     </td>
                   </tr>
                 ))}
@@ -522,15 +524,15 @@ export const BusinessPricingSection = ({
             className="text-[#FAF9F5]/80 mb-8 text-lg"
             style={{ fontFamily: "EB Garamond, serif" }}
           >
-            Plans start at just $50/year. Join 550+ Catholic-owned businesses
+            Plans start at just $99/year. Join 550+ Catholic-owned businesses
             already on the platform.
           </p>
           <LocalizedClientLink
-            href={getTierHref("verified")}
+            href="/sell/onboarding"
             className="inline-block bg-[#BE9B32] text-[#17294A] py-4 px-10 rounded-lg font-bold text-sm uppercase tracking-widest hover:bg-[#DECF8F] transition-colors shadow-lg shadow-[#BE9B32]/20"
             style={{ fontFamily: "Poppins, sans-serif" }}
           >
-            Get Started
+            Take the Quiz
           </LocalizedClientLink>
         </div>
       </footer>

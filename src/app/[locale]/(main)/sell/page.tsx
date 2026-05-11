@@ -128,7 +128,7 @@ export default function SellPage() {
             </p>
             <div className="flex flex-wrap gap-4">
               <LocalizedClientLink
-                href="/user/register?vendor=true"
+                href="/sell/onboarding"
                 className="inline-flex items-center px-8 py-4 text-[13px] font-semibold uppercase tracking-[0.1em] rounded-xs bg-[#BE9B32] text-[#001435] hover:bg-[#d4af4c] shadow-lg transition-colors"
               >
                 Start Selling
@@ -346,7 +346,7 @@ export default function SellPage() {
             contracts. Just a community that wants to support your business.
           </p>
           <LocalizedClientLink
-            href="/user/register?vendor=true"
+            href="/sell/onboarding"
             className="inline-flex items-center px-10 py-4 text-[13px] font-semibold uppercase tracking-[0.1em] rounded-xs bg-[#001435] text-white hover:bg-[#17294a] shadow-lg transition-colors"
           >
             Create Your Vendor Account
