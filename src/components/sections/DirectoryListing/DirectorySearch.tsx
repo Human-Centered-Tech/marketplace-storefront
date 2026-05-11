@@ -77,7 +77,20 @@ type DirectoryHit = {
   description: string | null
   category_name: string
   category_id: string | null
-  subscription_tier: "verified" | "featured" | "enterprise"
+  subscription_tier:
+    | "verified"
+    | "featured"
+    | "enterprise"
+    | "local"
+    | "tier2_nonprofit"
+    | "tier2_business"
+    | "tier3"
+    | "tier4"
+  // Canva claim flow — true for paid claimants, false for unclaimed
+  // prefill stubs. The card uses this (via owner_id) to render the
+  // Unclaimed treatment.
+  is_claimed?: boolean
+  owner_id?: string | null
   city: string
   state: string
   logo_url: string | null
@@ -106,14 +119,22 @@ function hitToListing(hit: DirectoryHit): DirectoryListing {
       : undefined,
     subscription_tier: hit.subscription_tier,
     // Filled with defaults — Algolia is the source of truth for "what's
-    // searchable", and we already filter the index to approved+active.
-    subscription_status: "active",
+    // searchable". Unclaimed stubs index too, distinguished by
+    // is_claimed; that flag drives the card's Unclaimed badge via the
+    // resolved owner_id below.
+    //
+    // Backward compatibility: legacy records pre-dating the Canva
+    // rollout don't carry is_claimed at all. Treat missing as claimed
+    // (the legacy index only contained approved+active rows). Only an
+    // explicit `false` flips the card into the Unclaimed treatment.
+    subscription_status: hit.is_claimed === false ? "pending" : "active",
     stripe_subscription_id: null,
     subscription_expires_at: null,
-    verification_status: "approved",
+    verification_status: hit.is_claimed === false ? "pending" : "approved",
     verified_by: null,
     verified_at: null,
-    owner_id: "",
+    owner_id:
+      hit.is_claimed === false ? null : hit.owner_id ?? "claimed",
     vendor_id: null,
     contact_email: null,
     contact_phone: null,
