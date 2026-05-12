@@ -188,7 +188,7 @@ export default async function Home({
         buttons={[
           { label: "Shop Marketplace", path: "/categories" },
           { label: "Gift Guides", path: "/gifts" },
-          { label: "Join Directory", path: "/directory" },
+          { label: "Browse Directory", path: "/directory" },
         ]}
       />
 

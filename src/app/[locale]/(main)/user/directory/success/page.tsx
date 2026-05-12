@@ -81,14 +81,14 @@ export default function DirectorySuccessPage() {
                   Add Your First Product
                 </h3>
                 <p className="text-sm text-secondary mb-3">
-                  Head to your vendor dashboard to add products, set pricing, and
+                  Head to your merchant dashboard to add products, set pricing, and
                   configure shipping.
                 </p>
                 <a
                   href="/api/vendor-handoff"
                   className="inline-flex items-center gap-1 text-sm font-semibold text-gold-dark hover:text-navy-dark transition-colors"
                 >
-                  Open Vendor Dashboard
+                  Open Merchant Dashboard
                   <span className="material-symbols-outlined text-base">
                     arrow_forward
                   </span>

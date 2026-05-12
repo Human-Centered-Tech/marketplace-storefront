@@ -14,7 +14,7 @@ const fallbackListings = [
     subscription_tier: "featured" as const,
     verification_status: "approved" as const,
     cover_image_url: "/images/directory/st-joseph-financial.jpg",
-    badge: "Preferred Vendor",
+    badge: "Preferred Merchant",
     badgeColor: "navy",
   },
   {
@@ -36,7 +36,7 @@ const fallbackListings = [
     subscription_tier: "featured" as const,
     verification_status: "approved" as const,
     cover_image_url: "/images/directory/regina-caeli.jpg",
-    badge: "Preferred Vendor",
+    badge: "Preferred Merchant",
     badgeColor: "navy",
   },
 ]
@@ -45,7 +45,7 @@ function getBadge(listing: DirectoryListing) {
   if (listing.subscription_tier === "enterprise")
     return { text: "Pillar Founding Member", color: "gold" }
   if (listing.subscription_tier === "featured")
-    return { text: "Featured Vendor", color: "navy" }
+    return { text: "Featured Merchant", color: "navy" }
   if (listing.verification_status === "approved")
     return { text: "Verified", color: "navy" }
   return null

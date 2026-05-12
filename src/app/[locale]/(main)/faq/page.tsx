@@ -15,7 +15,7 @@ const SECTIONS: { heading: string; items: FAQ[] }[] = [
     items: [
       {
         q: "Who sells on Catholic Owned?",
-        a: "Every vendor on Catholic Owned is a verified Catholic-owned or Catholic-aligned business. We check each business before they go live, and display a Verified Business badge on every approved listing.",
+        a: "Every merchant on Catholic Owned is a verified Catholic-owned or Catholic-aligned business. We check each business before they go live, and display a Verified Business badge on every approved listing.",
       },
       {
         q: "Do I need an account to shop?",
@@ -23,7 +23,7 @@ const SECTIONS: { heading: string; items: FAQ[] }[] = [
       },
       {
         q: "How do shipping and returns work?",
-        a: "Shipping is set by each vendor and included in the prices you see at checkout — there's no separate shipping-method selection for most orders. Returns are handled on a per-vendor basis; you can find each shop's return policy on their storefront.",
+        a: "Shipping is set by each merchant and included in the prices you see at checkout — there's no separate shipping-method selection for most orders. Returns are handled on a per-merchant basis; you can find each shop's return policy on their storefront.",
       },
       {
         q: "How are payments processed?",
@@ -45,7 +45,7 @@ const SECTIONS: { heading: string; items: FAQ[] }[] = [
             >
               Sell on Catholic Owned
             </LocalizedClientLink>{" "}
-            and create a vendor account. Choose a subscription plan, complete
+            and create a merchant account. Choose a subscription plan, complete
             your business profile, and you'll be ready to list products within
             minutes. New listings are reviewed briefly by our team before going
             live.
@@ -58,7 +58,7 @@ const SECTIONS: { heading: string; items: FAQ[] }[] = [
       },
       {
         q: "Do you take a commission?",
-        a: "Yes. A modest commission on each sale keeps the platform running and funds the work of verifying new vendors, improving the product, and bringing more shoppers in. You'll see the exact commission percentage during vendor onboarding.",
+        a: "Yes. A modest commission on each sale keeps the platform running and funds the work of verifying new merchants, improving the product, and bringing more shoppers in. You'll see the exact commission percentage during merchant onboarding.",
       },
       {
         q: "Can I sell services, not just products?",
@@ -87,11 +87,11 @@ const SECTIONS: { heading: string; items: FAQ[] }[] = [
     heading: "Account & Support",
     items: [
       {
-        q: "Can I have both a shopping account and a vendor account?",
-        a: "Yes — they're one account. Once you've signed up, you can become a vendor from your account settings. Use the same login to shop, sell, or manage your directory listing.",
+        q: "Can I have both a shopping account and a merchant account?",
+        a: "Yes — they're one account. Once you've signed up, you can become a merchant from your account settings. Use the same login to shop, sell, or manage your directory listing.",
       },
       {
-        q: "How do I contact another user or vendor?",
+        q: "How do I contact another user or merchant?",
         a: "Every product page and directory listing has a contact option that opens a conversation in our built-in messaging system. Your messages stay inside Catholic Owned — no email addresses are exposed.",
       },
       {

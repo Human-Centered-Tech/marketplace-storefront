@@ -1,8 +1,12 @@
 const links = {
   marketplace: [
     { label: "Our Story", path: "#" },
-    { label: "Vendor Portal", path: "#" },
+    { label: "Merchant Portal", path: "#" },
     { label: "Marketplace", path: "/categories" },
+  ],
+  forBusinesses: [
+    { label: "Sell on the Marketplace", path: "/sell" },
+    { label: "Service-Based Business", path: "/for-business" },
   ],
   discover: [
     { label: "Shop", path: "/categories" },

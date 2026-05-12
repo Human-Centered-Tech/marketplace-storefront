@@ -54,7 +54,7 @@ const BENEFITS = [
     ),
     title: "Simple Fulfillment",
     description:
-      "Manage orders, shipping, and inventory from one clean vendor dashboard. We handle the marketplace, you handle your craft.",
+      "Manage orders, shipping, and inventory from one clean merchant dashboard. We handle the marketplace, you handle your craft.",
   },
   {
     icon: (
@@ -75,7 +75,7 @@ const BENEFITS = [
     ),
     title: "Values-Aligned",
     description:
-      "Every vendor is part of a marketplace built on Catholic principles. Your business belongs here.",
+      "Every merchant is part of a marketplace built on Catholic principles. Your business belongs here.",
   },
 ]
 
@@ -289,7 +289,7 @@ export default function SellPage() {
         <div className="max-w-5xl mx-auto px-6 lg:px-16">
           <div className="text-center mb-14">
             <p className="text-[#BE9B32] text-[12px] font-semibold uppercase tracking-[0.2em] mb-3">
-              From Our Vendors
+              From Our Merchants
             </p>
             <h2 className="font-serif text-3xl lg:text-4xl font-bold text-white uppercase">
               Trusted by Catholic Businesses
@@ -349,7 +349,7 @@ export default function SellPage() {
             href="/sell/onboarding"
             className="inline-flex items-center px-10 py-4 text-[13px] font-semibold uppercase tracking-[0.1em] rounded-xs bg-[#001435] text-white hover:bg-[#17294a] shadow-lg transition-colors"
           >
-            Create Your Vendor Account
+            Create Your Merchant Account
           </LocalizedClientLink>
         </div>
       </section>

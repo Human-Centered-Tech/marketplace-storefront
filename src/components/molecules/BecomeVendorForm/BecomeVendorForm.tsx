@@ -34,18 +34,20 @@ export const BecomeVendorForm = ({ email }: { email: string }) => {
     return (
       <div className="border rounded-sm p-8 text-center">
         <h2 className="heading-md text-primary mb-2">
-          Thank You for Registering!
+          You&apos;re a Merchant!
         </h2>
         <p className="text-secondary mb-4">
-          Your vendor account is pending admin authorization. You&apos;ll
-          receive a confirmation email shortly.
+          Your merchant account is ready. Next, head to your dashboard to
+          complete Stripe Connect onboarding — once Stripe approves and
+          you&apos;ve paid your annual fee, your shop publishes
+          automatically.
         </p>
-        <button
-          onClick={() => router.push("/user")}
-          className="bg-navy text-white px-6 py-2 rounded-sm text-sm uppercase font-medium"
+        <a
+          href="/api/vendor-handoff"
+          className="bg-navy text-white px-6 py-2 rounded-sm text-sm uppercase font-medium inline-block"
         >
-          Back to Account
-        </button>
+          Go to Merchant Dashboard
+        </a>
       </div>
     )
   }
@@ -70,7 +72,7 @@ export const BecomeVendorForm = ({ email }: { email: string }) => {
             className="w-full px-3 py-2 border rounded-sm bg-gray-50 text-secondary"
           />
           <p className="text-xs text-secondary mt-1">
-            Your vendor account will use this email address.
+            Your merchant account will use this email address.
           </p>
         </div>
         <LabeledInput
@@ -88,7 +90,7 @@ export const BecomeVendorForm = ({ email }: { email: string }) => {
           className="w-full bg-navy text-white hover:bg-navy-dark py-3 uppercase tracking-[0.1em] text-[13px] font-semibold"
           disabled={isSubmitting}
         >
-          {isSubmitting ? "Submitting..." : "Become a Vendor"}
+          {isSubmitting ? "Submitting..." : "Become a Merchant"}
         </Button>
       </form>
     </div>

@@ -22,7 +22,7 @@ const VALUES = [
   },
   {
     title: "Stewardship",
-    body: "We take seriously our obligation to vendors, to buyers, and to the broader Church. A modest commission lets us keep the lights on and grow, without extracting from the people who make this marketplace real.",
+    body: "We take seriously our obligation to merchants, to buyers, and to the broader Church. A modest commission lets us keep the lights on and grow, without extracting from the people who make this marketplace real.",
   },
 ]
 
@@ -71,11 +71,11 @@ export default function AboutPage() {
               have been scattered across the internet with no way to find each
               other — and no way for faithful shoppers to find <em>them</em>.
               Catholic Owned is the gathering place. A single marketplace where
-              every vendor has been verified, every business has a home, and
+              every merchant has been verified, every business has a home, and
               every dollar you spend keeps the Catholic economy strong.
             </p>
             <p>
-              We&rsquo;re building this together — with vendors who want to
+              We&rsquo;re building this together — with merchants who want to
               serve a community that shares their faith, with shoppers who want
               to live out their values at checkout, and with parishes who see
               in this platform a way to strengthen the bonds of their
@@ -128,12 +128,12 @@ export default function AboutPage() {
               Catholic Owned began with a simple observation: Catholic business
               owners were struggling to reach the very people who&rsquo;d most
               want to support them. Meanwhile, faithful shoppers had no
-              reliable way to find vendors who shared their values.
+              reliable way to find merchants who shared their values.
             </p>
             <p>
               Today Catholic Owned brings together hundreds of verified
               Catholic businesses in one place — from sacred art and liturgical
-              goods to everyday services and consumer products. Each vendor is
+              goods to everyday services and consumer products. Each merchant is
               part of a community; each purchase strengthens the whole.
             </p>
             <p className="italic text-[#17294A]">
@@ -151,7 +151,7 @@ export default function AboutPage() {
             Join the Economy
           </h2>
           <p className="text-[#FAF9F5]/80 mb-10 text-[16px] leading-relaxed max-w-xl mx-auto">
-            Shop with vendors who share your values, or list your business and
+            Shop with merchants who share your values, or list your business and
             reach thousands of faithful Catholic customers.
           </p>
           <div className="flex flex-wrap gap-4 justify-center">

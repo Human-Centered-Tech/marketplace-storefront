@@ -57,26 +57,26 @@ export default function TermsPage() {
         <Section title="4. Using the Marketplace (Buyers)">
           <p>
             When you buy products or services on Catholic Owned, you enter
-            into a contract directly with the selling vendor. Catholic Owned
+            into a contract directly with the selling merchant. Catholic Owned
             facilitates the transaction but is not party to it. Questions
-            about products, delivery, or returns should go to the vendor
+            about products, delivery, or returns should go to the merchant
             first; we&rsquo;re happy to help mediate if needed.
           </p>
           <p>
             You agree not to use the Service to: purchase items for resale
-            fraud, dispute legitimate charges without cause, harass vendors,
+            fraud, dispute legitimate charges without cause, harass merchants,
             or violate any applicable law.
           </p>
         </Section>
 
-        <Section title="5. Selling on Catholic Owned (Vendors)">
+        <Section title="5. Selling on Catholic Owned (Merchants)">
           <p>
             Selling on the marketplace requires an active Business Directory
             subscription (Verified, Featured, or Enterprise tier) and
             verification of your business as Catholic-owned or
             Catholic-aligned.
           </p>
-          <p>As a vendor, you agree to:</p>
+          <p>As a merchant, you agree to:</p>
           <ul>
             <li>List only products or services you have the legal right to sell</li>
             <li>Accurately describe your products, including condition, materials, and origin</li>
@@ -87,7 +87,7 @@ export default function TermsPage() {
           </ul>
           <p>
             We reserve the right to remove listings, suspend accounts, or
-            terminate vendors who fail to meet these standards.
+            terminate merchants who fail to meet these standards.
           </p>
         </Section>
 
@@ -97,7 +97,7 @@ export default function TermsPage() {
             auto-renew unless cancelled before the renewal date. Marketplace
             commissions are deducted from each sale; the net payout is
             transferred to your Stripe Connect account per the schedule
-            disclosed during vendor onboarding.
+            disclosed during merchant onboarding.
           </p>
           <p>
             All prices are in U.S. dollars unless otherwise noted. We may

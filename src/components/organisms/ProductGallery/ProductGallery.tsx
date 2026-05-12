@@ -60,7 +60,7 @@ export const ProductGallery = ({
             />
           </svg>
           <span className="font-sans text-[10px] font-bold uppercase tracking-[0.15em] text-[#755b00]">
-            Vetted Vendor
+            Vetted Merchant
           </span>
         </div>
       </div>

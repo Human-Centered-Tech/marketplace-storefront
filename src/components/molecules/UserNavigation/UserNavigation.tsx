@@ -88,14 +88,14 @@ export const UserNavigation = () => {
           href="/api/vendor-handoff"
           className="label-md uppercase px-4 py-3 my-3 md:my-0 flex items-center justify-between"
         >
-          Vendor Dashboard
+          Merchant Dashboard
         </a>
       ) : (
         <NavigationItem
           href="/user/become-vendor"
           active={path === "/user/become-vendor"}
         >
-          Become a Vendor
+          Become a Merchant
         </NavigationItem>
       )}
       <LogoutButton className="w-full text-left" />

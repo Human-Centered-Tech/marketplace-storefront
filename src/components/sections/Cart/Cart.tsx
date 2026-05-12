@@ -40,7 +40,7 @@ export const Cart = async () => {
               </Button>
             </LocalizedClientLink>
             <p className="text-center text-[11px] text-secondary mt-3">
-              ✝ Secure Catholic Checkout
+              ✝ Secure Checkout
             </p>
           </div>
         </div>

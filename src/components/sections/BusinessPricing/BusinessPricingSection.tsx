@@ -70,7 +70,7 @@ const testimonials = [
   },
   {
     quote:
-      "Finding vendors who share our values was always a challenge. Catholic Owned has built a true ecosystem for the domestic church.",
+      "Finding merchants who share our values was always a challenge. Catholic Owned has built a true ecosystem for the domestic church.",
     name: "Therese Martin",
     business: "Little Flower Apothecary",
   },
@@ -99,7 +99,7 @@ const faqs = [
       },
       {
         q: "How do I cancel my subscription?",
-        a: "You can cancel your subscription from your vendor dashboard settings. Your listing will remain active until the end of your current billing cycle.",
+        a: "You can cancel your subscription from your merchant dashboard settings. Your listing will remain active until the end of your current billing cycle.",
       },
     ],
   },

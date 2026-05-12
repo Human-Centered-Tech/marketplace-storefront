@@ -3,13 +3,13 @@ const steps = [
     number: 1,
     title: "Sign Up",
     description:
-      "Create your profile as a customer or vendor to join the ecosystem.",
+      "Create your profile as a customer or merchant to join the ecosystem.",
   },
   {
     number: 2,
     title: "Find Businesses",
     description:
-      "Browse verified vendors who share your faith and values.",
+      "Browse verified merchants who share your faith and values.",
   },
   {
     number: 3,

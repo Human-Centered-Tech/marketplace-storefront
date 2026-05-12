@@ -40,7 +40,7 @@ type DirectoryFormData = {
 }
 
 const CTA_OPTIONS = [
-  { value: "visit_shop", label: "Visit Our Shop (auto if vendor has shop)" },
+  { value: "visit_shop", label: "Visit Our Shop (auto if merchant has shop)" },
   { value: "book_now", label: "Book Now" },
   { value: "shop_now", label: "Shop Now" },
   { value: "learn_more", label: "Learn More" },

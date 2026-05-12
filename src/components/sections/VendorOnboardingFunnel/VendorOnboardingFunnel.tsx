@@ -49,7 +49,7 @@ export const VendorOnboardingFunnel = () => {
       <div className="max-w-3xl mx-auto">
         <div className="mb-8 flex items-center justify-between">
           <p className="text-[#BE9B32] text-[12px] font-semibold uppercase tracking-[0.2em]">
-            Vendor Onboarding
+            Merchant Onboarding
           </p>
           {state.step !== "service_area" && (
             <button

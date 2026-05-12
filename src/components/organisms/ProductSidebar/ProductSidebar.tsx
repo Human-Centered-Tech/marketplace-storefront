@@ -128,7 +128,7 @@ export const ProductSidebar = ({
       {sellers && sellers.length > 0 && (
         <div>
           <h3 className="font-sans uppercase tracking-widest text-[11px] font-bold text-[#001435] mb-6">
-            Vendor
+            Merchant
           </h3>
           <div className="space-y-3 text-sm">
             {sellers.map((seller) => (

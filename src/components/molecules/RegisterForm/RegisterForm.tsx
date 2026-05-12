@@ -176,7 +176,7 @@ const Form = ({ vendorFlow }: { vendorFlow: boolean }) => {
               disabled={isSubmitting}
               loading={isSubmitting}
             >
-              {vendorFlow ? "Create Vendor Account ✝" : "Create Account ✝"}
+              {vendorFlow ? "Create Merchant Account ✝" : "Create Account ✝"}
             </Button>
           </form>
 

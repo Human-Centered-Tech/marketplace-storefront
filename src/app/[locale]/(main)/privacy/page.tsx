@@ -64,7 +64,7 @@ export default function PrivacyPage() {
             <li>To process orders, payments, and subscriptions</li>
             <li>To deliver transactional emails (receipts, shipping updates, payment notices)</li>
             <li>To send marketing emails (only if you&rsquo;ve opted in)</li>
-            <li>To enable messaging between buyers, vendors, and directory listings</li>
+            <li>To enable messaging between buyers, merchants, and directory listings</li>
             <li>To verify Catholic-owned business status</li>
             <li>To improve the platform and detect fraud or abuse</li>
             <li>To comply with legal obligations</li>
@@ -73,8 +73,8 @@ export default function PrivacyPage() {
 
         <Section title="4. How We Share Your Information">
           <p>
-            <strong>With vendors:</strong> When you place an order, we share
-            the information the vendor needs to fulfill it (name, shipping
+            <strong>With merchants:</strong> When you place an order, we share
+            the information the merchant needs to fulfill it (name, shipping
             address, order contents).
           </p>
           <p>

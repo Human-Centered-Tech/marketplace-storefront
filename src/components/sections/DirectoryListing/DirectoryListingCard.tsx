@@ -110,7 +110,7 @@ export const DirectoryListingCard = ({
           <div className="p-8 flex-1 flex flex-col justify-center">
             <div className="flex items-center gap-2 mb-3">
               <span className="bg-green-50 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded border border-green-100 uppercase">
-                Verified Vendor
+                Verified Merchant
               </span>
               <span className="text-secondary text-xs">
                 &bull; {listing.category?.name || "Business"}

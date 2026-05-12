@@ -67,11 +67,11 @@ export const UserDropdown = ({
                 href="/api/vendor-handoff"
                 className="label-md uppercase px-4 py-3 my-3 md:my-0 flex items-center justify-between"
               >
-                Vendor Dashboard
+                Merchant Dashboard
               </a>
             ) : (
               <NavigationItem href="/user/become-vendor">
-                Become a Vendor
+                Become a Merchant
               </NavigationItem>
             )}
             <Divider />

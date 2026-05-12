@@ -81,10 +81,10 @@ export const Header = async () => {
           <UserDropdown user={user} isVendor={isVendor} />
           {!user && (
             <LocalizedClientLink
-              href="/user/register"
+              href="/for-business"
               className="hidden lg:inline-flex items-center px-5 py-2.5 bg-navy text-white text-[12px] font-semibold uppercase tracking-[0.1em] rounded-xs hover:bg-navy-dark transition-colors"
             >
-              Join the Economy
+              For Businesses
             </LocalizedClientLink>
           )}
         </div>
