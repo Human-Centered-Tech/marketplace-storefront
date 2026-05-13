@@ -9,7 +9,7 @@ export function Footer() {
           {/* Brand Column */}
           <div className="lg:col-span-2">
             <h2 className="font-serif text-xl font-semibold mb-3">
-              Catholic Owned&reg;
+              Catholic Owned<span className="text-[0.7em] align-top ml-[1px]">&reg;</span>
             </h2>
             <p className="text-[14px] leading-relaxed text-white/70 max-w-sm">
               Promoting holiness through commerce by connecting faithful vendors
@@ -75,7 +75,7 @@ export function Footer() {
         {/* Bottom bar */}
         <div className="mt-12 pt-6 border-t border-white/10">
           <p className="text-[13px] text-white/40 text-center">
-            &copy; {new Date().getFullYear()} Catholic Owned&reg;. All Rights Reserved.
+            &copy; {new Date().getFullYear()} Catholic Owned<span className="text-[0.7em] align-top ml-[1px]">&reg;</span>. All Rights Reserved.
           </p>
         </div>
       </div>
