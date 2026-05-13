@@ -44,7 +44,11 @@ export const retrieveCustomer =
         },
         headers,
         next,
-        cache: "force-cache",
+        // Auth-sensitive flags (email_verified, vendor status) must always
+        // reflect latest backend state. The verify-email route bumps the
+        // cache tag via revalidateTag, but skipping the cache outright is
+        // the bulletproof guard — backend cost is negligible per user.
+        cache: "no-store",
       })
       .then(({ customer }) => customer)
       .catch(() => null)
