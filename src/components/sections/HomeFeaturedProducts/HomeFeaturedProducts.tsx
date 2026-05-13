@@ -1,24 +1,62 @@
 import { AutoCarousel } from "@/components/cells"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
-import { listProducts } from "@/lib/data/products"
+import { getRegion } from "@/lib/data/regions"
 import { getProductPrice } from "@/lib/helpers/get-product-price"
 import { HttpTypes } from "@medusajs/types"
 
 type FeaturedRow = { product_id: string; sort_order: number }
 
+const PRODUCT_FIELDS =
+  "*variants.calculated_price,+variants.inventory_quantity,*seller,*variants,*attribute_values,*attribute_values.attribute"
+
+function backendUrl() {
+  return process.env.MEDUSA_BACKEND_URL || "http://localhost:9000"
+}
+
+function publishableKey() {
+  return process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || ""
+}
+
 async function fetchFeaturedProductIds(): Promise<FeaturedRow[]> {
-  const backend = process.env.MEDUSA_BACKEND_URL || "http://localhost:9000"
   try {
-    const res = await fetch(`${backend}/store/featured-products?featured=true`, {
-      headers: {
-        "x-publishable-api-key":
-          process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "",
-      },
+    const res = await fetch(`${backendUrl()}/store/featured-products?featured=true`, {
+      headers: { "x-publishable-api-key": publishableKey() },
       next: { revalidate: 60, tags: ["featured-products"] },
     })
     if (!res.ok) return []
     const data = await res.json()
     return (data.featured_products || []) as FeaturedRow[]
+  } catch {
+    return []
+  }
+}
+
+// Fetch products by an explicit id list. We can't go through the SDK's
+// listProducts here because @medusajs/js-sdk serializes array query params as
+// `id=p1,p2,...` (CSV), and /store/products only accepts repeated `id[]=p1&
+// id[]=p2`. Building the query manually keeps a single round-trip while
+// preserving the field expansion the carousel needs for price + thumbnail.
+async function fetchProductsByIds(
+  ids: string[],
+  regionId: string,
+  countryCode: string
+): Promise<HttpTypes.StoreProduct[]> {
+  if (!ids.length) return []
+  const params = new URLSearchParams()
+  params.set("country_code", countryCode)
+  params.set("region_id", regionId)
+  params.set("limit", String(ids.length))
+  params.set("fields", PRODUCT_FIELDS)
+  for (const id of ids) params.append("id[]", id)
+
+  try {
+    const res = await fetch(`${backendUrl()}/store/products?${params.toString()}`, {
+      headers: { "x-publishable-api-key": publishableKey() },
+      next: { revalidate: 60, tags: ["featured-products"] },
+    })
+    if (!res.ok) return []
+    const data = await res.json()
+    return (data.products || []) as HttpTypes.StoreProduct[]
   } catch {
     return []
   }
@@ -79,25 +117,19 @@ export const HomeFeaturedProducts = async ({
   const curated = await fetchFeaturedProductIds()
   if (!curated.length) return null
 
-  let products: HttpTypes.StoreProduct[] = []
-  try {
-    const { response } = await listProducts({
-      countryCode: locale,
-      queryParams: {
-        limit: curated.length,
-        id: curated.map((c) => c.product_id),
-      } as any,
-    })
-    // Preserve admin-defined sort order (listProducts doesn't honor it).
-    const order = new Map(curated.map((c, i) => [c.product_id, i]))
-    products = (response.products || []).slice().sort((a, b) => {
-      const ai = order.get(a.id) ?? Number.MAX_SAFE_INTEGER
-      const bi = order.get(b.id) ?? Number.MAX_SAFE_INTEGER
-      return ai - bi
-    })
-  } catch {
-    products = []
-  }
+  const region = await getRegion(locale)
+  if (!region) return null
+
+  const ids = curated.map((c) => c.product_id)
+  const fetched = await fetchProductsByIds(ids, region.id, locale)
+
+  // Preserve admin-defined sort order — /store/products doesn't honor the id-list order.
+  const order = new Map(curated.map((c, i) => [c.product_id, i]))
+  const products = fetched.slice().sort((a, b) => {
+    const ai = order.get(a.id) ?? Number.MAX_SAFE_INTEGER
+    const bi = order.get(b.id) ?? Number.MAX_SAFE_INTEGER
+    return ai - bi
+  })
 
   if (!products.length) return null
 
