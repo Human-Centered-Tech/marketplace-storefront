@@ -6,6 +6,7 @@ import { algoliasearch } from "algoliasearch"
 import { DirectoryListing, DirectoryCategory } from "@/types/directory"
 import { DirectoryListingCard } from "./DirectoryListingCard"
 import { DirectoryMapView } from "./DirectoryMap"
+import type { MapBbox } from "./LeafletMap"
 import {
   useUserLocation,
   readRadiusMi,
@@ -233,6 +234,13 @@ export const DirectorySearch = ({
   const [loading, setLoading] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
   const [view, setView] = useState<ViewMode>("list")
+  // Map-driven viewport search. When set, the Algolia query swaps
+  // aroundLatLng/aroundRadius for insideBoundingBox so we scope to the
+  // visible map area. Cleared whenever the user leaves map view.
+  const [bbox, setBbox] = useState<MapBbox | null>(null)
+  useEffect(() => {
+    if (view !== "map" && bbox) setBbox(null)
+  }, [view, bbox])
   const [useNearMe, setUseNearMe] = useState(
     Number.isFinite(urlNearLat) && Number.isFinite(urlNearLon)
   )
@@ -387,8 +395,19 @@ export const DirectorySearch = ({
       // outside that radius, so we drop geo entirely. Otherwise keep
       // aroundLatLng for closer-first ranking and aroundRadius when the
       // user has explicitly engaged with location.
+      //
+      // Map-driven viewport search (bbox) takes priority over both —
+      // when the user pans the map and clicks "Search this area", we
+      // want exactly the visible rectangle, not a radius from somewhere
+      // else.
       const geoParams: Record<string, unknown> = {}
-      if (!stateServed) {
+      if (bbox) {
+        // Algolia insideBoundingBox: [[p1Lat, p1Lng, p2Lat, p2Lng]],
+        // two diagonally opposite corners. NW + SE works.
+        geoParams.insideBoundingBox = [
+          [bbox.north, bbox.west, bbox.south, bbox.east],
+        ]
+      } else if (!stateServed) {
         geoParams.aroundLatLng = `${effectiveProximity.lat},${effectiveProximity.lng}`
         geoParams.getRankingInfo = true
         if (applyRadius) {
@@ -414,7 +433,7 @@ export const DirectorySearch = ({
         ...geoParams,
       }
     },
-    [search, location, categoryId, stateServed, proximityActive, effectiveProximity, radiusMi, applyRadius]
+    [search, location, categoryId, stateServed, proximityActive, effectiveProximity, radiusMi, applyRadius, bbox]
   )
 
   const runSearch = useCallback(
@@ -760,7 +779,12 @@ export const DirectorySearch = ({
 
       {/* Map View */}
       {view === "map" && (
-        <DirectoryMapView listings={filteredListings} />
+        <DirectoryMapView
+          listings={filteredListings}
+          onSearchArea={setBbox}
+          bboxActive={bbox !== null}
+          isSearching={loading}
+        />
       )}
     </>
   )

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { DirectoryListing } from "@/types/directory"
 import dynamic from "next/dynamic"
+import type { MapBbox } from "./LeafletMap"
 
 type MarkerData = {
   id: string
@@ -13,17 +14,39 @@ type MarkerData = {
   city: string
 }
 
+// Below this zoom level the visible area is so large (continental
+// scale) that running an Algolia bbox query would return almost
+// everything — gate the "Search this area" CTA so we don't waste a
+// request on it.
+const MIN_SEARCH_ZOOM = 5
+
 // Lazy-load the actual map to avoid SSR issues with Leaflet
 const LeafletMap = dynamic(() => import("./LeafletMap"), { ssr: false })
 
 export function DirectoryMapView({
   listings,
+  onSearchArea,
+  bboxActive = false,
+  isSearching = false,
 }: {
   listings: DirectoryListing[]
+  // Fires when the user clicks "Search this area" — bbox is the map's
+  // visible bounds at click time.
+  onSearchArea?: (bbox: MapBbox) => void
+  // True when the parent is currently scoping results to a bbox. Used
+  // to suppress the map's auto-fitBounds so it doesn't fight the user's
+  // panning after each viewport-driven search.
+  bboxActive?: boolean
+  isSearching?: boolean
 }) {
   const [markers, setMarkers] = useState<MarkerData[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [pendingBbox, setPendingBbox] = useState<MapBbox | null>(null)
+  const [pendingZoom, setPendingZoom] = useState<number>(0)
+  // Whether the user has moved the map since the last bbox search. The
+  // "Search this area" CTA appears only while this is true.
+  const [movedSinceSearch, setMovedSinceSearch] = useState(false)
 
   useEffect(() => {
     setLoading(true)
@@ -126,7 +149,40 @@ export function DirectoryMapView({
             markers={markers}
             selectedId={selectedId}
             onSelectMarker={setSelectedId}
+            autoFit={!bboxActive}
+            onBoundsChanged={(bbox, zoom) => {
+              setPendingBbox(bbox)
+              setPendingZoom(zoom)
+              setMovedSinceSearch(true)
+            }}
           />
+        )}
+
+        {/* "Search this area" CTA — sits at the top-center of the map
+            once the user has panned/zoomed. Disabled at extreme
+            zoom-outs where the bbox would be too broad to matter. */}
+        {onSearchArea && movedSinceSearch && (
+          <button
+            type="button"
+            disabled={
+              isSearching || pendingZoom < MIN_SEARCH_ZOOM || !pendingBbox
+            }
+            onClick={() => {
+              if (!pendingBbox) return
+              onSearchArea(pendingBbox)
+              setMovedSinceSearch(false)
+            }}
+            className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] bg-white hover:bg-gray-50 disabled:opacity-60 disabled:cursor-not-allowed text-navy-dark font-semibold text-[12px] tracking-[0.1em] uppercase px-5 py-2.5 rounded-full shadow-xl border border-gray-200 flex items-center gap-2 transition-colors"
+          >
+            <span className="material-symbols-outlined text-base">
+              {isSearching ? "hourglass_empty" : "search"}
+            </span>
+            {isSearching
+              ? "Searching..."
+              : pendingZoom < MIN_SEARCH_ZOOM
+                ? "Zoom in to search this area"
+                : "Search this area"}
+          </button>
         )}
 
         {/* Selected listing popup */}

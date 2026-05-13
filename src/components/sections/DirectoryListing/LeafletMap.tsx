@@ -16,6 +16,13 @@ type MarkerData = {
   city: string
 }
 
+export type MapBbox = {
+  north: number
+  south: number
+  east: number
+  west: number
+}
+
 // Custom navy/gold marker icon
 const createIcon = (selected: boolean) =>
   L.divIcon({
@@ -37,15 +44,30 @@ export default function LeafletMap({
   markers,
   selectedId,
   onSelectMarker,
+  onBoundsChanged,
+  autoFit = true,
 }: {
   markers: MarkerData[]
   selectedId: string | null
   onSelectMarker: (id: string | null) => void
+  onBoundsChanged?: (bbox: MapBbox, zoom: number) => void
+  autoFit?: boolean
 }) {
   const mapRef = useRef<L.Map | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const markersRef = useRef<Map<string, L.Marker>>(new Map())
   const clusterRef = useRef<L.MarkerClusterGroup | null>(null)
+  // Keep the callback in a ref so the init effect doesn't have to re-run
+  // when the parent re-renders with a new closure each time.
+  const onBoundsChangedRef = useRef(onBoundsChanged)
+  useEffect(() => {
+    onBoundsChangedRef.current = onBoundsChanged
+  }, [onBoundsChanged])
+  // moveend fires for both user gestures AND programmatic moves
+  // (setView, fitBounds, panTo). We only want to surface the "Search
+  // this area" CTA on user gestures, so we flip this flag before each
+  // programmatic move and skip the next moveend.
+  const suppressMoveEndRef = useRef(false)
 
   // Initialize map
   useEffect(() => {
@@ -63,6 +85,7 @@ export default function LeafletMap({
     map.attributionControl.remove()
 
     // Default view: US
+    suppressMoveEndRef.current = true
     map.setView([39.8, -98.5], 4)
 
     const cluster = L.markerClusterGroup({
@@ -74,6 +97,25 @@ export default function LeafletMap({
       maxClusterRadius: 40,
     })
     map.addLayer(cluster)
+
+    map.on("moveend", () => {
+      if (suppressMoveEndRef.current) {
+        suppressMoveEndRef.current = false
+        return
+      }
+      const cb = onBoundsChangedRef.current
+      if (!cb) return
+      const b = map.getBounds()
+      cb(
+        {
+          north: b.getNorth(),
+          south: b.getSouth(),
+          east: b.getEast(),
+          west: b.getWest(),
+        },
+        map.getZoom()
+      )
+    })
 
     mapRef.current = map
     clusterRef.current = cluster
@@ -111,11 +153,14 @@ export default function LeafletMap({
       markersRef.current.set(m.id, marker)
     })
 
-    const bounds = cluster.getBounds()
-    if (bounds.isValid()) {
-      map.fitBounds(bounds.pad(0.3))
+    if (autoFit) {
+      const bounds = cluster.getBounds()
+      if (bounds.isValid()) {
+        suppressMoveEndRef.current = true
+        map.fitBounds(bounds.pad(0.3))
+      }
     }
-  }, [markers, onSelectMarker])
+  }, [markers, onSelectMarker, autoFit])
 
   // Update selected marker icon
   useEffect(() => {
@@ -129,6 +174,7 @@ export default function LeafletMap({
       const marker = markersRef.current.get(selectedId)
       const cluster = clusterRef.current
       if (m && mapRef.current) {
+        suppressMoveEndRef.current = true
         mapRef.current.panTo([m.lat, m.lon], { animate: true })
         if (marker && cluster) {
           cluster.zoomToShowLayer(marker, () => {
