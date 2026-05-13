@@ -17,7 +17,7 @@ export const Hero = ({ image, heading, paragraph, buttons }: HeroProps) => {
           src={decodeURIComponent(image)}
           fill
           alt={`Hero banner - ${heading}`}
-          className="object-cover" style={{ objectPosition: "center 35%" }}
+          className="object-cover" style={{ objectPosition: "center 11%" }}
           priority
           fetchPriority="high"
           quality={80}

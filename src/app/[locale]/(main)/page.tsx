@@ -147,8 +147,8 @@ export default async function Home({
       <link
         rel="preload"
         as="image"
-        href="/images/hero/stpeters-square.webp"
-        imageSrcSet="/images/hero/stpeters-square.webp 1500w"
+        href="/images/hero/stpeters-v2.webp"
+        imageSrcSet="/images/hero/stpeters-v2.webp 1672w"
         imageSizes="(min-width: 1024px) 50vw, 100vw"
       />
       {/* Organization JSON-LD */}
@@ -182,7 +182,7 @@ export default async function Home({
 
       {/* 1. Hero Section */}
       <Hero
-        image="/images/hero/stpeters-square.webp"
+        image="/images/hero/stpeters-v2.webp"
         heading="Building the New Catholic Economy"
         paragraph="Discover and support faithful Catholic businesses. Shop artisan goods, browse the professional directory, or connect at networking events."
         buttons={[
