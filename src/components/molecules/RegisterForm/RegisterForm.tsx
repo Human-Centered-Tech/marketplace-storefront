@@ -82,6 +82,10 @@ const Form = ({ vendorFlow }: { vendorFlow: boolean }) => {
         return
       }
     }
+
+    // Customer was created successfully — leave the form before any
+    // transient post-signup state can render a stale/inaccurate error.
+    if (res?.id) router.push("/user")
   }
 
   return (
