@@ -37,10 +37,11 @@ export const retrieveCustomer =
         method: "GET",
         query: {
           // metadata is needed for email_verified flag (used by the
-          // unverified-email banner + become-vendor gate). Without an
-          // explicit field list, Medusa's `fields=*orders` shape strips
-          // metadata from the response.
-          fields: "*orders,*metadata",
+          // unverified-email banner + become-vendor gate). The `*` prefix
+          // means "expand relation" in Medusa — that works for orders but
+          // SILENTLY DROPS metadata (a JSONB column, not a relation). Use
+          // no prefix to include it as a scalar field.
+          fields: "*orders,metadata",
         },
         headers,
         next,
