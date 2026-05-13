@@ -53,11 +53,11 @@ export function SearchBar({
       <form
         ref={formRef}
         onSubmit={handleSearch}
-        className="relative flex items-center w-[500px]"
+        className="relative flex items-center w-[500px] xl:w-[800px] 2xl:w-[1000px]"
       >
         <input
           ref={inputRef}
-          className="w-full bg-[#f4f4f0] border-none rounded-full py-3 pl-5 pr-12 text-sm focus:ring-2 focus:ring-[#755b00] transition-all placeholder:text-[#75777f]"
+          className="w-full bg-[#f4f4f0] border-none rounded-full py-6 pl-8 pr-16 text-lg focus:ring-2 focus:ring-[#755b00] transition-all placeholder:text-[#75777f]"
           placeholder={placeholder || defaultPlaceholder}
           type="text"
           value={query}
@@ -66,11 +66,11 @@ export function SearchBar({
         />
         <button
           type="submit"
-          className="absolute right-4 top-1/2 -translate-y-1/2 text-[#75777f] hover:text-[#755b00] transition-colors"
+          className="absolute right-6 top-1/2 -translate-y-1/2 text-[#75777f] hover:text-[#755b00] transition-colors"
         >
           <svg
-            width="18"
-            height="18"
+            width="26"
+            height="26"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
