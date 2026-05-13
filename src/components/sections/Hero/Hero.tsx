@@ -34,7 +34,7 @@ export const Hero = ({ image, heading, paragraph, buttons }: HeroProps) => {
             <h1 className="font-serif text-4xl md:text-5xl lg:text-7xl font-bold text-white uppercase leading-[1.05] drop-shadow-lg mb-6">
               Building the New<br />
               <span className="italic">Catholic Economy</span>
-              <sup className="text-white text-[0.2em] relative top-[-1.2em] ml-[2px]">&reg;</sup>
+              <sup className="text-white text-[0.2em] relative top-[-1.5em] ml-[4px]">&reg;</sup>
             </h1>
             <p className="font-serif text-base lg:text-lg italic text-white/75 mb-10 max-w-xl drop-shadow leading-relaxed">
               {paragraph}
