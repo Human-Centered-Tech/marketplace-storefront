@@ -25,8 +25,12 @@ export async function retrieveVendorStatus(): Promise<VendorStatus> {
 
   const headers = await getAuthHeaders()
   if (!headers || !("authorization" in headers)) {
-    // Have a vendor token but no customer token — treat as vendor
-    return { isVendor: true }
+    // We have a vendor cookie but no customer auth header to verify it
+    // with. Cookie presence alone is not trustworthy — stale cookies
+    // persist after seller-record cleanup. Safer default: false. The
+    // user can still log into the vendor app via SSO; this only gates
+    // UI affordances on the storefront.
+    return { isVendor: false }
   }
 
   try {
@@ -54,11 +58,14 @@ export async function retrieveVendorStatus(): Promise<VendorStatus> {
       }
     }
   } catch {
-    // Fall back to cookie-based check
+    // Fall through to false. Stale-cookie fallback was harming UX
+    // (vendor menu items showing for accounts whose seller record has
+    // since been deleted).
   }
 
-  // Backend call failed — fall back to cookie presence
-  return { isVendor: true }
+  // Backend call failed / non-OK — don't leak cookie state as a
+  // positive signal. UI gates default to "not a vendor".
+  return { isVendor: false }
 }
 
 export async function becomeVendor(formData: FormData) {

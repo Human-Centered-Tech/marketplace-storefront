@@ -11,9 +11,31 @@ import { usePathname } from "next/navigation"
 import { useEffect, useState } from "react"
 
 function useIsVendor(): boolean {
+  // Start with the cookie hint for an instant initial render (avoids
+  // flashing "Become a Merchant" for one frame for real vendors), then
+  // confirm against the backend on mount. The cookie can be stale —
+  // it persists after a seller record is deleted — so the backend
+  // check is what actually gates the link.
   const [isVendor, setIsVendor] = useState(false)
   useEffect(() => {
-    setIsVendor(document.cookie.includes("_is_vendor=true"))
+    let cancelled = false
+    if (typeof document !== "undefined") {
+      setIsVendor(document.cookie.includes("_is_vendor=true"))
+    }
+    fetch("/api/vendor-status", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (cancelled) return
+        if (data && typeof data.is_vendor === "boolean") {
+          setIsVendor(data.is_vendor)
+        }
+      })
+      .catch(() => {
+        // Leave the cookie-based initial value in place on network err.
+      })
+    return () => {
+      cancelled = true
+    }
   }, [])
   return isVendor
 }
