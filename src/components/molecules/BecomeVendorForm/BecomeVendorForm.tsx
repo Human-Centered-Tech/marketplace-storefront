@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/atoms"
 import { LabeledInput } from "@/components/cells"
+import { PasswordInput } from "@/components/cells/PasswordInput/PasswordInput"
 import { becomeVendor } from "@/lib/data/vendor"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
@@ -69,16 +70,19 @@ export const BecomeVendorForm = ({ email }: { email: string }) => {
             type="email"
             value={email}
             disabled
-            className="w-full px-3 py-2 border rounded-sm bg-gray-50 text-secondary"
+            readOnly
+            // text-primary (not text-secondary) so the prepopulated email
+            // reads clearly even though the field is locked — vendors
+            // need to see which email they're signing up with.
+            className="w-full px-3 py-2 border rounded-sm bg-gray-50 text-primary font-medium cursor-not-allowed"
           />
           <p className="text-xs text-secondary mt-1">
             Your merchant account will use this email address.
           </p>
         </div>
-        <LabeledInput
+        <PasswordInput
           label="Password"
           name="password"
-          type="password"
           placeholder="Confirm your account password"
           required
         />

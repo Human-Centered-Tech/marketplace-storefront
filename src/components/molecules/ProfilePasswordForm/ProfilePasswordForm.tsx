@@ -18,6 +18,7 @@ import { updateCustomerPassword } from "@/lib/data/customer"
 import { Heading, toast } from "@medusajs/ui"
 import LocalizedClientLink from "../LocalizedLink/LocalizedLink"
 import { PasswordValidator } from "@/components/cells/PasswordValidator/PasswordValidator"
+import { PasswordInput } from "@/components/cells/PasswordInput/PasswordInput"
 
 export const ProfilePasswordForm = ({ token }: { token?: string }) => {
   const form = useForm<ProfilePasswordFormData>({
@@ -114,15 +115,13 @@ const Form = ({
       className="flex flex-col gap-4 px-4"
       onSubmit={handleSubmit(updatePassword)}
     >
-      <LabeledInput
+      <PasswordInput
         label="Current password"
-        type="password"
         error={errors.currentPassword as FieldError}
         {...register("currentPassword")}
       />
-      <LabeledInput
+      <PasswordInput
         label="New password"
-        type="password"
         error={errors.newPassword as FieldError}
         {...register("newPassword")}
       />
@@ -130,9 +129,8 @@ const Form = ({
         password={form.watch("newPassword")}
         setError={setNewPasswordError}
       />
-      <LabeledInput
+      <PasswordInput
         label="Confirm new password"
-        type="password"
         error={confirmPasswordError as FieldError}
         {...register("confirmPassword")}
       />
