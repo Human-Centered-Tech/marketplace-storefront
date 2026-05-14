@@ -14,23 +14,29 @@ export const listNetworkingEvents = async (params?: {
   limit?: number
   offset?: number
 }) => {
+  const authHeaders = await getAuthHeaders()
   return sdk.client
     .fetch<{
       events: NetworkingEvent[]
       count: number
     }>("/store/networking/events", {
       query: params as Record<string, string | number>,
+      headers: authHeaders as Record<string, string>,
       cache: "no-cache",
     })
     .catch(() => ({ events: [], count: 0 }))
 }
 
 export const getNetworkingEvent = async (id: string) => {
+  const authHeaders = await getAuthHeaders()
   // Single-event endpoint may not exist; fall back to listing and filtering
   try {
     const { event } = await sdk.client.fetch<{ event: NetworkingEvent }>(
       `/store/networking/events/${id}`,
-      { cache: "no-cache" }
+      {
+        headers: authHeaders as Record<string, string>,
+        cache: "no-cache",
+      }
     )
     return event
   } catch {
