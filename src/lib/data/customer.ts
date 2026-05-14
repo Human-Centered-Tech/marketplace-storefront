@@ -36,12 +36,17 @@ export const retrieveCustomer =
       .fetch<{ customer: HttpTypes.StoreCustomer }>(`/store/customers/me`, {
         method: "GET",
         query: {
-          // metadata is needed for email_verified flag (used by the
-          // unverified-email banner + become-vendor gate). The `*` prefix
-          // means "expand relation" in Medusa — that works for orders but
-          // SILENTLY DROPS metadata (a JSONB column, not a relation). Use
-          // no prefix to include it as a scalar field.
-          fields: "*orders,metadata",
+          // Medusa v2's `fields=` is a SELECTION list — anything not
+          // mentioned is excluded. A previous fix landed
+          // `*orders,metadata` which silently dropped email /
+          // first_name / last_name / etc., breaking become-vendor in
+          // prod (form submitted with email=undefined → backend
+          // rejects "Invalid email"). The bare leading `*` brings back
+          // all scalar fields; `*orders` keeps the orders relation
+          // expanded; `metadata` explicitly opts the JSONB column back
+          // in (it isn't covered by `*` in the customer module in this
+          // Medusa version).
+          fields: "*,*orders,metadata",
         },
         headers,
         next,
