@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { cookies as nextCookies } from "next/headers"
 import { revalidateTag } from "next/cache"
+import { retrieveVendorStatus } from "@/lib/data/vendor"
 
 const STOREFRONT_URL =
   process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:8000"
@@ -68,6 +69,19 @@ export async function GET(req: NextRequest) {
     // serves stale cached data.
     const cacheId = cookies.get("_medusa_cache_id")?.value
     if (cacheId) revalidateTag(`customers-${cacheId}`)
+
+    // If this customer is also an active vendor (i.e., they completed
+    // Become a Merchant before verifying email), bounce them into the
+    // vendor dashboard via SSO handoff rather than dropping them on the
+    // generic /user page. retrieveVendorStatus only returns true on an
+    // affirmative backend response — stale vendor cookies don't trigger
+    // this branch (see PR #56).
+    const vendorStatus = await retrieveVendorStatus()
+    if (vendorStatus.isVendor) {
+      return NextResponse.redirect(
+        `${STOREFRONT_URL}/api/vendor-handoff`
+      )
+    }
 
     return NextResponse.redirect(
       `${STOREFRONT_URL}/us/user?email_verified=1`
