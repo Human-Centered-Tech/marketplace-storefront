@@ -37,16 +37,21 @@ export const retrieveCustomer =
         method: "GET",
         query: {
           // Medusa v2's `fields=` is a SELECTION list — anything not
-          // mentioned is excluded. A previous fix landed
-          // `*orders,metadata` which silently dropped email /
-          // first_name / last_name / etc., breaking become-vendor in
-          // prod (form submitted with email=undefined → backend
-          // rejects "Invalid email"). The bare leading `*` brings back
-          // all scalar fields; `*orders` keeps the orders relation
-          // expanded; `metadata` explicitly opts the JSONB column back
-          // in (it isn't covered by `*` in the customer module in this
-          // Medusa version).
-          fields: "*,*orders,metadata",
+          // mentioned is excluded. History on this line:
+          //   "*orders,metadata"   silently dropped email/first_name/
+          //                        etc., breaking become-vendor in
+          //                        prod ("Invalid email" from backend)
+          //   "*,*orders,metadata" backend rejects with 400
+          //                        "Requested fields [] are not valid"
+          //                        — bare `*` isn't allowed on
+          //                        customer module; retrieveCustomer
+          //                        catches and returns null, so users
+          //                        appear logged out everywhere
+          // Explicit list is the working pattern: name every scalar
+          // we depend on across the storefront, plus the orders
+          // relation and metadata JSONB.
+          fields:
+            "id,email,first_name,last_name,phone,company_name,has_account,created_at,updated_at,metadata,*orders",
         },
         headers,
         next,
