@@ -149,7 +149,67 @@ export async function becomeVendor(formData: FormData) {
     const sellerData = await createRes.json()
     const sellerId = sellerData?.seller?.id
 
-    // Step 3: Store vendor token and flag
+    // Step 2b: Re-issue the seller token so it carries a populated
+    // actor_id.
+    //
+    // The token from /auth/seller/emailpass/register was issued BEFORE
+    // any seller/member existed, so its JWT payload has actor_id="" and
+    // empty app_metadata. It's good enough to call /vendor/sellers
+    // (Mercur allows unregistered actors there) but every other vendor
+    // route 401s on it — which sends the vendor app into a /dashboard
+    // ↔ /login#handoff= reload loop once we hand it off.
+    //
+    // The seller-request-auto-approve subscriber runs asynchronously on
+    // the requests.seller.created event, so we poll a re-login until
+    // the JWT comes back with a real actor_id, or give up after a few
+    // seconds and surface a retry-friendly error.
+    const REISSUE_MAX_TRIES = 12
+    const REISSUE_DELAY_MS = 350
+    const decodeActor = (jwt: string): string => {
+      try {
+        const body = jwt.split(".")[1]
+        const padded = body + "=".repeat((4 - (body.length % 4)) % 4)
+        const json = JSON.parse(
+          Buffer.from(padded.replace(/-/g, "+").replace(/_/g, "/"), "base64").toString()
+        )
+        return json?.actor_id ?? ""
+      } catch {
+        return ""
+      }
+    }
+
+    let reissuedToken: string | null = null
+    for (let attempt = 0; attempt < REISSUE_MAX_TRIES; attempt++) {
+      if (attempt > 0) {
+        await new Promise((r) => setTimeout(r, REISSUE_DELAY_MS))
+      }
+      const loginRes = await fetch(
+        `${process.env.MEDUSA_BACKEND_URL}/auth/seller/emailpass`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        }
+      )
+      if (!loginRes.ok) continue
+      const newToken = (await loginRes.json())?.token
+      if (typeof newToken !== "string") continue
+      if (decodeActor(newToken)) {
+        reissuedToken = newToken
+        break
+      }
+    }
+
+    if (!reissuedToken) {
+      return {
+        success: false,
+        error:
+          "Your merchant account was created but is still finalizing. Try again in a few seconds.",
+      }
+    }
+    vendorToken = reissuedToken
+
+    // Step 3: Store the *re-issued* vendor token and the vendor flag.
     await setVendorToken(vendorToken)
     await setVendorFlag(true)
 
