@@ -14,6 +14,7 @@ import { Wishlist } from "@/types/wishlist"
 import { Badge } from "@/components/atoms"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 import { MessageButton } from "@/components/molecules/MessageButton/MessageButton"
+import { ForBusinessLink } from "@/components/atoms/ForBusinessLink/ForBusinessLink"
 
 export const Header = async () => {
   const user = await retrieveCustomer()
@@ -79,14 +80,7 @@ export const Header = async () => {
           )}
           {user && <MessageButton />}
           <UserDropdown user={user} isVendor={isVendor} />
-          {!user && (
-            <LocalizedClientLink
-              href="/for-business"
-              className="hidden lg:inline-flex items-center px-5 py-2.5 bg-navy text-white text-[12px] font-semibold uppercase tracking-[0.1em] rounded-xs hover:bg-navy-dark transition-colors"
-            >
-              For Businesses
-            </LocalizedClientLink>
-          )}
+          {!user && <ForBusinessLink />}
         </div>
       </div>
 
