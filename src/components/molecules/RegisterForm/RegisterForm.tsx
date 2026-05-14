@@ -70,6 +70,7 @@ const Form = ({ vendorFlow }: { vendorFlow: boolean }) => {
       return
     }
 
+    let vendorReady = false
     if (res?.id && vendorFlow && data.businessName) {
       const vendorFormData = new FormData()
       vendorFormData.append("name", data.businessName)
@@ -81,10 +82,18 @@ const Form = ({ vendorFlow }: { vendorFlow: boolean }) => {
         setError(vendorRes.error as any)
         return
       }
+      vendorReady = true
     }
 
-    // Customer was created successfully — leave the form before any
-    // transient post-signup state can render a stale/inaccurate error.
+    // Drop the new vendor straight into the vendor portal so they see the
+    // draft-mode banner and the Go Live page — saves a "now what?" moment
+    // on /user. Full-page navigation (not router.push) because the handoff
+    // route returns an HTML doc that hops to the vendor app with a
+    // fragment-encoded token. Non-vendor signups continue to /user.
+    if (vendorReady) {
+      window.location.assign("/api/vendor-handoff")
+      return
+    }
     if (res?.id) router.push("/user")
   }
 

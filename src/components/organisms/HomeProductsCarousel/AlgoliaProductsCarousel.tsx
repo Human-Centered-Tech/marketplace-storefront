@@ -19,11 +19,13 @@ export const AlgoliaProductsCarousel = ({
   seller_handle?: string
   currency_code: string
 }) => {
+  // Only ACTIVE stores show. INACTIVE = vendor still in draft (no payment
+  // / not gone live yet); SUSPENDED = admin-blocked.
   const filters = `${
     seller_handle
       ? `NOT seller:null AND seller.handle:${seller_handle} AND `
       : "NOT seller:null AND "
-  }NOT seller.store_status:SUSPENDED AND supported_countries:${locale} AND variants.prices.currency_code:${currency_code}`
+  }seller.store_status:ACTIVE AND supported_countries:${locale} AND variants.prices.currency_code:${currency_code}`
 
   return (
     <InstantSearchNext searchClient={client} indexName="products">

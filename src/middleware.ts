@@ -117,8 +117,13 @@ export async function middleware(request: NextRequest) {
   const regionMap = await getRegionMap(cacheId)
   const countryCode = regionMap && (await getCountryCode(request, regionMap))
 
+  // Strict equality — using .includes() here used to false-positive on
+  // any first-segment that contained the locale as a substring. With
+  // DEFAULT_REGION=us that meant /user/* matched ("user".includes("us"))
+  // and the middleware skipped the locale redirect, causing 404s on
+  // /user/register and friends.
   const urlHasCountryCode =
-    countryCode && request.nextUrl.pathname.split("/")[1].includes(countryCode)
+    countryCode && request.nextUrl.pathname.split("/")[1] === countryCode
 
   // If no country code in URL but we can resolve one, redirect to locale-prefixed path
   if (!urlHasCountryCode && countryCode) {

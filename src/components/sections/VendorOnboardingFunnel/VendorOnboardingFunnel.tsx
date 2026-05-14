@@ -493,9 +493,11 @@ const RecommendedTierStep: React.FC<{
   const tier = getTierInfo(tierKey)
   const upsell = tier.upsellTier ? getTierInfo(tier.upsellTier) : undefined
 
-  const checkoutHref = `/user/register?vendor=true&recommended_tier=${tier.key}&return_to=${encodeURIComponent(
-    `/user/directory/checkout?tier=${tier.key}`
-  )}`
+  // Send service sellers through the same draft-mode signup as product
+  // sellers. The price shown here is informational ("you'll pay this
+  // when you go live") — actual payment is collected at the /go-live
+  // step in the vendor portal, after they've set up their store.
+  const signupHref = `/user/register?vendor=true&recommended_tier=${tier.key}`
 
   return (
     <Card>
@@ -514,6 +516,10 @@ const RecommendedTierStep: React.FC<{
           </span>
           <span className="text-[#44474e]">{tier.period}</span>
         </div>
+        <p className="text-[13px] text-[#44474e] leading-relaxed mb-2">
+          You won't be charged until you publish your listing and go live —
+          take your time setting things up first.
+        </p>
         {tier.localBoostUpsell && (
           <p className="text-[13px] text-[#44474e] leading-relaxed mb-2">
             <span className="font-semibold text-[#001435]">Local Boost</span>{" "}
@@ -529,10 +535,10 @@ const RecommendedTierStep: React.FC<{
       </div>
       <div className="flex flex-col sm:flex-row gap-4">
         <LocalizedClientLink
-          href={checkoutHref}
+          href={signupHref}
           className="flex-1 inline-flex items-center justify-center px-8 py-4 text-[13px] font-semibold uppercase tracking-[0.1em] rounded-xl bg-[#BE9B32] text-[#001435] hover:bg-[#d4af4c] shadow-lg transition-colors"
         >
-          Continue to checkout
+          Create my merchant account
         </LocalizedClientLink>
         {tier.bookCallOption && (
           <a

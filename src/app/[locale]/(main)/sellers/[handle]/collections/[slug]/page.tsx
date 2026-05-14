@@ -32,7 +32,14 @@ export default async function SellerCollectionPage({
   const seller = (await getSellerByHandle(handle)) as SellerProps
   const detail = await getSellerCollection(handle, slug, { limit: 48 })
 
-  if (!detail) {
+  // Non-ACTIVE stores aren't browsable — see /sellers/[handle]/page.tsx
+  // for the same gate.
+  if (
+    !seller ||
+    Array.isArray(seller) ||
+    seller.store_status !== "ACTIVE" ||
+    !detail
+  ) {
     notFound()
   }
 

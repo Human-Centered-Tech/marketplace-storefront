@@ -4,6 +4,7 @@ import { retrieveCustomer } from "@/lib/data/customer"
 import { getRegion } from "@/lib/data/regions"
 import { getSellerByHandle } from "@/lib/data/seller"
 import { SellerProps } from "@/types/seller"
+import { notFound } from "next/navigation"
 
 export default async function SellerReviewsPage({
   params,
@@ -18,6 +19,12 @@ export default async function SellerReviewsPage({
   const user = await retrieveCustomer()
 
   const tab = "reviews"
+
+  // Non-ACTIVE stores aren't browsable — see /sellers/[handle]/page.tsx
+  // for the same gate.
+  if (!seller || Array.isArray(seller) || seller.store_status !== "ACTIVE") {
+    notFound()
+  }
 
   return (
     <main className="flex flex-col items-center text-[#1b1c1a]">

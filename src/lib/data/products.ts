@@ -16,6 +16,10 @@ export const listProducts = async ({
   category_id,
   collection_id,
   forceCache = false,
+  // When true, keeps products whose seller is INACTIVE/SUSPENDED in the
+  // returned list. Callers must verify ownership before passing this —
+  // it's intended for "preview my draft store" flows, not general use.
+  ownerPreview = false,
 }: {
   pageParam?: number
   queryParams?: HttpTypes.FindParams &
@@ -27,6 +31,7 @@ export const listProducts = async ({
   countryCode?: string
   regionId?: string
   forceCache?: boolean
+  ownerPreview?: boolean
 }): Promise<{
   response: {
     products: (HttpTypes.StoreProduct & { seller?: SellerProps })[]
@@ -87,9 +92,15 @@ export const listProducts = async ({
       cache: useCached ? "force-cache" : "no-cache",
     })
     .then(({ products: productsRaw, count }) => {
-      const products = productsRaw.filter(
-        (product) => product.seller?.store_status !== "SUSPENDED"
-      )
+      // Only ACTIVE stores are visible to shoppers. INACTIVE = draft mode
+      // (vendor hasn't paid / hit Go Live yet); SUSPENDED = admin-blocked.
+      // ownerPreview is set by the seller-preview path after the page has
+      // verified the requester is the seller themselves.
+      const products = ownerPreview
+        ? productsRaw
+        : productsRaw.filter(
+            (product) => product.seller?.store_status === "ACTIVE"
+          )
 
       const nextPage = count > offset + limit ? pageParam + 1 : null
 

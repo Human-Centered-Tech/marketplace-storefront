@@ -13,12 +13,18 @@ export const SellerTabs = ({
   seller_id,
   locale,
   currency_code,
+  owner_preview,
 }: {
   tab: string
   seller_handle: string
   seller_id: string
   locale: string
   currency_code: string
+  // True when the requesting customer is the seller behind this handle
+  // viewing their own draft store via ?preview=1. Drops the
+  // store_status:ACTIVE Algolia filter so unpublished/inactive stores
+  // are previewable. Always already verified server-side.
+  owner_preview?: boolean
 }) => {
   const tabsList = [
     { label: "products", link: `/sellers/${seller_handle}/` },
@@ -44,6 +50,7 @@ export const SellerTabs = ({
               locale={locale}
               seller_handle={seller_handle}
               currency_code={currency_code}
+              owner_preview={owner_preview}
             />
           )}
         </Suspense>

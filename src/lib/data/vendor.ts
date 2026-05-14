@@ -11,7 +11,9 @@ import {
 
 export type VendorStatus = {
   isVendor: boolean
+  sellerId?: string | null
   sellerName?: string | null
+  sellerHandle?: string | null
   storeStatus?: string | null
 }
 
@@ -45,7 +47,9 @@ export async function retrieveVendorStatus(): Promise<VendorStatus> {
       const data = await res.json()
       return {
         isVendor: data.is_vendor,
+        sellerId: data.seller_id,
         sellerName: data.seller_name,
+        sellerHandle: data.seller_handle,
         storeStatus: data.store_status,
       }
     }

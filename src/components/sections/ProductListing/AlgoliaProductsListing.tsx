@@ -25,12 +25,16 @@ export const AlgoliaProductsListing = ({
   seller_handle,
   locale = process.env.NEXT_PUBLIC_DEFAULT_REGION,
   currency_code,
+  owner_preview,
 }: {
   category_id?: string
   collection_id?: string
   locale?: string
   seller_handle?: string
   currency_code: string
+  // Seller previewing their own draft store. Server has already verified
+  // ownership; this just drops the store_status filter for that one query.
+  owner_preview?: boolean
 }) => {
   const searchParamas = useSearchParams()
 
@@ -54,7 +58,14 @@ export const AlgoliaProductsListing = ({
 
   if (!relaxFilters) {
     clauses.push("NOT seller:null")
-    clauses.push("NOT seller.store_status:SUSPENDED")
+    // Only ACTIVE stores show. INACTIVE = vendor still in draft (no
+    // payment / not gone live yet); SUSPENDED = admin-blocked. The
+    // store_status clause is dropped in owner-preview mode so a vendor
+    // can see their own draft — the seller_handle scope below keeps it
+    // narrowed to just their products.
+    if (!owner_preview) {
+      clauses.push("seller.store_status:ACTIVE")
+    }
     clauses.push(`supported_countries:${locale}`)
   }
 

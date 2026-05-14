@@ -1,6 +1,7 @@
 import { ProductDetails, ProductGallery } from "@/components/organisms"
 import { listProducts } from "@/lib/data/products"
 import { listProductVendorTags } from "@/lib/data/vendor-tags"
+import { retrieveVendorStatus } from "@/lib/data/vendor"
 import NotFound from "@/app/not-found"
 import { ProductDetailsTabs } from "./ProductDetailsTabs"
 import { ProductTagsRow } from "./ProductTagsRow"
@@ -10,15 +11,46 @@ import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedL
 export const ProductDetailsPage = async ({
   handle,
   locale,
+  previewRequested = false,
 }: {
   handle: string
   locale: string
+  // ?preview=1 was set on the URL. We still verify ownership server-side
+  // before treating the product as previewable.
+  previewRequested?: boolean
 }) => {
-  const prod = await listProducts({
+  // First pass: with the public filter, to see if this product is publicly
+  // visible. If not and preview was requested, do an owner-verified second
+  // pass that skips the store_status filter.
+  let prod = await listProducts({
     countryCode: locale,
     queryParams: { handle: [handle], limit: 1 },
     forceCache: false,
   }).then(({ response }) => response.products[0])
+
+  let isOwnerPreview = false
+  if (!prod && previewRequested) {
+    const ownerProd = await listProducts({
+      countryCode: locale,
+      queryParams: { handle: [handle], limit: 1 },
+      forceCache: false,
+      ownerPreview: true,
+    }).then(({ response }) => response.products[0])
+
+    if (ownerProd) {
+      const vendor = await retrieveVendorStatus()
+      const sellerHandle = (ownerProd as any).seller?.handle
+      if (
+        vendor.isVendor &&
+        vendor.sellerHandle &&
+        sellerHandle &&
+        vendor.sellerHandle === sellerHandle
+      ) {
+        prod = ownerProd
+        isOwnerPreview = true
+      }
+    }
+  }
 
   const vendorTags = prod ? await listProductVendorTags(prod.id) : []
 
@@ -31,7 +63,11 @@ export const ProductDetailsPage = async ({
     )
   }
 
-  if (prod.seller?.store_status === "SUSPENDED") {
+  // Only ACTIVE stores are visible. INACTIVE = vendor still in draft (no
+  // payment / not gone live yet); SUSPENDED = admin-blocked. Either way,
+  // the product's PDP shouldn't be reachable — unless this is the owning
+  // seller previewing their own draft (verified above).
+  if (prod.seller?.store_status !== "ACTIVE" && !isOwnerPreview) {
     return NotFound()
   }
 
@@ -39,6 +75,11 @@ export const ProductDetailsPage = async ({
 
   return (
     <>
+      {isOwnerPreview && (
+        <div className="mb-6 -mx-4 lg:-mx-8 bg-amber-50 border-y border-amber-300 text-amber-900 px-4 py-2 text-center text-sm">
+          🚧 Previewing your draft product. Shoppers don't see this view.
+        </div>
+      )}
       {/* Breadcrumbs */}
       <nav className="mb-8">
         <ol className="flex items-center gap-2 font-sans text-[10px] uppercase tracking-widest text-[#75777f]">

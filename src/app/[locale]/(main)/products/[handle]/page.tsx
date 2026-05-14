@@ -28,15 +28,22 @@ export async function generateMetadata({
 
 export default async function ProductPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ handle: string; locale: string }>
+  searchParams: Promise<{ preview?: string }>
 }) {
   const { handle, locale } = await params
+  const { preview } = await searchParams
 
   return (
     <main className="max-w-7xl mx-auto px-4 lg:px-8 py-8">
       <TrackPageView entity_type="product" entity_id={handle} />
-      <ProductDetailsPage handle={handle} locale={locale} />
+      <ProductDetailsPage
+        handle={handle}
+        locale={locale}
+        previewRequested={preview === "1"}
+      />
     </main>
   )
 }
