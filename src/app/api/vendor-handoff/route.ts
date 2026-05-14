@@ -1,15 +1,29 @@
 import { NextResponse } from "next/server"
-import { getVendorToken } from "@/lib/data/cookies"
+import { getVendorToken, removeVendorToken } from "@/lib/data/cookies"
+import { isVendorTokenStale } from "@/lib/data/vendor"
 
 const VENDOR_URL =
   process.env.NEXT_PUBLIC_VENDOR_URL || "http://localhost:5173"
+const STOREFRONT_URL =
+  process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:8000"
 
 export async function GET() {
   const token = await getVendorToken()
 
   if (!token) {
+    return NextResponse.redirect(new URL("/user", STOREFRONT_URL))
+  }
+
+  // Detect the pre-PR-#58 stale-token state: JWT with an empty
+  // actor_id. Handing this off would land the vendor app in a
+  // /dashboard ↔ /login#handoff= reload loop because every authenticated
+  // /vendor/* call 401s. Clear the cookie and bounce to a
+  // password-prompt page that re-mints a token with a populated
+  // actor_id.
+  if (await isVendorTokenStale(token)) {
+    await removeVendorToken()
     return NextResponse.redirect(
-      new URL("/user", process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:8000")
+      new URL("/us/user/become-vendor?session_refresh=1", STOREFRONT_URL)
     )
   }
 
