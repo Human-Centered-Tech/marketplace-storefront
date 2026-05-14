@@ -62,8 +62,20 @@ export async function becomeVendor(formData: FormData) {
   const email = formData.get("email") as string
   const password = formData.get("password") as string
 
-  if (!name || !email || !password) {
-    return { success: false, error: "All fields are required" }
+  // Guard against the email coming through as undefined or as the
+  // literal string "undefined" (which is what FormData.set() does when
+  // handed `undefined`). Without this check, the request reaches the
+  // backend with member.email="undefined" and the Mercur validator
+  // bubbles up an opaque "Invalid request: Invalid email" message —
+  // hard to diagnose because the form *looks* like it submitted fine.
+  if (!name || !email || email === "undefined" || !password) {
+    return {
+      success: false,
+      error:
+        !email || email === "undefined"
+          ? "Could not detect your account email. Try refreshing the page; if it persists, sign out and back in."
+          : "All fields are required",
+    }
   }
 
   try {
