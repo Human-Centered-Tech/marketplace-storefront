@@ -22,6 +22,18 @@ const TIER_DETAILS: Record<
       "Community networking access",
     ],
   },
+  merchant: {
+    name: "Marketplace Merchant Membership",
+    price: "$99",
+    annual: "$99/year + 11% per sale",
+    features: [
+      "Sell products through the Catholic Owned Marketplace",
+      "Vendor storefront with product catalog",
+      "Stripe Connect payouts",
+      "Directory listing included",
+      "11% commission per sale",
+    ],
+  },
   tier2_nonprofit: {
     name: "Tier 2 — Non-profit",
     price: "$349",

@@ -44,6 +44,14 @@ const TIER_INFO: Record<RecommendedTierKey, TierInfo> = {
     bookCallOption: false,
     localBoostUpsell: true,
   },
+  merchant: {
+    key: "merchant",
+    name: "Marketplace Merchant Membership",
+    price: "$99",
+    period: "/ yr + 11% per sale",
+    bookCallOption: false,
+    localBoostUpsell: true,
+  },
   tier2_nonprofit: {
     key: "tier2_nonprofit",
     name: "Tier 2 — Non-profit",

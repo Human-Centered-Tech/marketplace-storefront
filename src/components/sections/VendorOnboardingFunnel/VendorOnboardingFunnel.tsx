@@ -85,7 +85,13 @@ export const VendorOnboardingFunnel = () => {
             onSelect={(choice) => {
               if (choice === "product") {
                 setState({ step: "product_or_service", productOrService: "product" })
-                window.location.href = "/user/register?vendor=true"
+                // Product sellers skip the sizing quiz and go straight to
+                // signup. The chart maps them to the Marketplace Merchant
+                // Membership tier ($99/yr + 11%) — pass it through so the
+                // recommended_tier persistence pipeline catches it the
+                // same way service-provider tiers are captured.
+                window.location.href =
+                  "/user/register?vendor=true&recommended_tier=merchant"
                 return
               }
               setState({
