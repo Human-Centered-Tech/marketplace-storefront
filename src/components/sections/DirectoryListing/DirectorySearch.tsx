@@ -83,6 +83,7 @@ type DirectoryHit = {
     | "featured"
     | "enterprise"
     | "local"
+    | "merchant"
     | "tier2_nonprofit"
     | "tier2_business"
     | "tier3"

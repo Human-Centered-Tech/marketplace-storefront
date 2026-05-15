@@ -8,6 +8,7 @@ import { DirectoryListing } from "@/types/directory"
 const VALID_TIERS = new Set([
   "local",
   "local_boost",
+  "merchant",
   "tier2_nonprofit",
   "tier2_business",
   "tier3",

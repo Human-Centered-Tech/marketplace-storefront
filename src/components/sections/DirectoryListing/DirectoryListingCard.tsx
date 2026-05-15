@@ -4,8 +4,9 @@ import { DirectoryListing } from "@/types/directory"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 
 const tierBadgeStyles: Record<string, string> = {
-  // Canva tier set — visual hierarchy: local < tier2 < tier3 < tier4
+  // Canva tier set — visual hierarchy: local/merchant < tier2 < tier3 < tier4
   local: "bg-white text-navy-dark border border-navy-dark",
+  merchant: "bg-white text-navy-dark border border-navy-dark",
   tier2_nonprofit: "bg-navy-dark text-white",
   tier2_business: "bg-navy-dark text-white",
   tier3: "bg-gold text-navy-dark",
@@ -19,6 +20,7 @@ const tierBadgeStyles: Record<string, string> = {
 const tierLabels: Record<string, string> = {
   // Canva tier set
   local: "Local",
+  merchant: "Merchant",
   tier2_nonprofit: "Tier 2",
   tier2_business: "Tier 2",
   tier3: "Tier 3",

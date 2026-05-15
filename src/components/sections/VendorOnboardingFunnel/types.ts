@@ -36,6 +36,7 @@ export type SizingAnswers = {
 
 export type RecommendedTierKey =
   | "local"
+  | "merchant"
   | "tier2_nonprofit"
   | "tier2_business"
   | "tier3"
