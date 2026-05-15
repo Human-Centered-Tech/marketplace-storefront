@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { DirectoryListingForm } from "@/components/sections/DirectoryManagement/DirectoryListingForm"
 import { DirectoryCategory } from "@/types/directory"
+import { createDirectoryListing } from "@/lib/data/directory-actions"
 
 export default function CreateDirectoryListingPage() {
   const router = useRouter()
@@ -24,22 +25,9 @@ export default function CreateDirectoryListingPage() {
   }, [])
 
   const handleSubmit = async (data: Record<string, unknown>) => {
-    const backendUrl =
-      process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9000"
-    const res = await fetch(`${backendUrl}/store/directory/listings`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-publishable-api-key":
-          process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "",
-      },
-      credentials: "include",
-      body: JSON.stringify(data),
-    })
-
+    const res = await createDirectoryListing(data)
     if (!res.ok) {
-      const err = await res.json()
-      throw new Error(err.message || "Failed to create listing")
+      throw new Error(res.error || "Failed to create listing")
     }
 
     router.push("/user/directory")

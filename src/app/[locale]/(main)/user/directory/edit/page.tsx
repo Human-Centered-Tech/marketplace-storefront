@@ -4,6 +4,10 @@ import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { DirectoryListingForm } from "@/components/sections/DirectoryManagement/DirectoryListingForm"
 import { DirectoryCategory, DirectoryListing } from "@/types/directory"
+import {
+  getMyDirectoryListing,
+  updateDirectoryListing,
+} from "@/lib/data/directory-actions"
 
 export default function EditDirectoryListingPage() {
   const router = useRouter()
@@ -23,19 +27,17 @@ export default function EditDirectoryListingPage() {
     }
 
     Promise.all([
-      fetch(`${backendUrl}/store/directory/categories`, { headers }).then((r) =>
-        r.json()
-      ),
-      fetch(`${backendUrl}/store/directory/listings?limit=1`, {
-        headers,
-        credentials: "include",
-      }).then((r) => r.json()),
+      // Categories are public — fine to fetch unauthenticated.
+      fetch(`${backendUrl}/store/directory/categories`, { headers })
+        .then((r) => r.json()),
+      // Listing requires the customer's auth token, which lives in an
+      // httpOnly cookie not readable from this client component. Use
+      // the server-action helper which reads the cookie via next/headers.
+      getMyDirectoryListing(),
     ])
       .then(([catData, listingData]) => {
         setCategories(catData.categories || [])
-        if (listingData.listings?.length) {
-          setListing(listingData.listings[0])
-        }
+        if (listingData) setListing(listingData)
       })
       .catch(() => {})
       .finally(() => setLoading(false))
@@ -44,23 +46,9 @@ export default function EditDirectoryListingPage() {
   const handleSubmit = async (data: Record<string, unknown>) => {
     if (!listing) return
 
-    const res = await fetch(
-      `${backendUrl}/store/directory/listings/${listing.id}`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "x-publishable-api-key":
-            process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "",
-        },
-        credentials: "include",
-        body: JSON.stringify(data),
-      }
-    )
-
+    const res = await updateDirectoryListing(listing.id, data)
     if (!res.ok) {
-      const err = await res.json()
-      throw new Error(err.message || "Failed to update listing")
+      throw new Error(res.error || "Failed to update listing")
     }
 
     router.push("/user/directory")
