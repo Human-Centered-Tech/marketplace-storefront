@@ -1,9 +1,13 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useSearchParams, useRouter } from "next/navigation"
+import { useSearchParams } from "next/navigation"
 import { DirectoryListing } from "@/types/directory"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
+import {
+  createDirectorySubscriptionCheckout,
+  getMyDirectoryListing,
+} from "@/lib/data/directory-actions"
 
 const TIER_DETAILS: Record<
   string,
@@ -118,7 +122,6 @@ const TIER_DETAILS: Record<
 
 export default function DirectoryCheckoutPage() {
   const searchParams = useSearchParams()
-  const router = useRouter()
   const tier = searchParams.get("tier") || "verified"
   const tierInfo = TIER_DETAILS[tier] || TIER_DETAILS.verified
 
@@ -127,28 +130,17 @@ export default function DirectoryCheckoutPage() {
   const [purchasing, setPurchasing] = useState(false)
   const [error, setError] = useState("")
 
-  const backendUrl =
-    typeof window !== "undefined"
-      ? process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9000"
-      : "http://localhost:9000"
-
   useEffect(() => {
-    fetch(`${backendUrl}/store/directory/listings?limit=1`, {
-      headers: {
-        "x-publishable-api-key":
-          process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "",
-      },
-      credentials: "include",
-    })
-      .then((r) => r.json())
+    // Listing lookup requires the customer's auth token, which lives
+    // in an httpOnly cookie not readable from this client component.
+    // Route through the server-action helper.
+    getMyDirectoryListing()
       .then((data) => {
-        if (data.listings?.length) {
-          setListing(data.listings[0])
-        }
+        if (data) setListing(data)
       })
       .catch(() => {})
       .finally(() => setLoading(false))
-  }, [backendUrl])
+  }, [])
 
   const handlePurchase = async () => {
     if (!listing) return
@@ -159,27 +151,17 @@ export default function DirectoryCheckoutPage() {
       const successUrl = `${window.location.origin}/user/directory/success?tier=${tier}`
       const cancelUrl = `${window.location.origin}/user/directory/checkout?tier=${tier}`
 
-      const res = await fetch(`${backendUrl}/store/directory/subscriptions`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-publishable-api-key":
-            process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "",
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          listing_id: listing.id,
-          tier,
-          success_url: successUrl,
-          cancel_url: cancelUrl,
-        }),
+      const res = await createDirectorySubscriptionCheckout({
+        listing_id: listing.id,
+        tier,
+        success_url: successUrl,
+        cancel_url: cancelUrl,
       })
 
-      const data = await res.json()
-      if (data.checkout_url) {
-        window.location.href = data.checkout_url
+      if (res.ok && res.checkout_url) {
+        window.location.href = res.checkout_url
       } else {
-        setError(data.message || "Could not start checkout")
+        setError(res.ok ? "Could not start checkout" : res.error)
       }
     } catch {
       setError("Something went wrong. Please try again.")
