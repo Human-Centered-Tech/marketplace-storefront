@@ -539,7 +539,21 @@ export const DirectoryListingForm = ({
       <button
         type="submit"
         disabled={submitting || !form.business_name}
-        className="bg-primary text-white px-6 py-2 rounded-sm text-sm uppercase font-medium disabled:opacity-50"
+        // Inline styles instead of Tailwind theme classes. The previous
+        // `bg-primary text-white` resolved to transparent-on-gray because
+        // the storefront's `--bg-primary` CSS variable isn't reliably
+        // scoped through Next.js's CSS chunking for this client component
+        // (and `text-white` falls back to the page's cascading `--outline`
+        // color of #75777f). Inline-style this so it works regardless of
+        // which CSS chunk landed in the bundle for this route.
+        style={{
+          backgroundColor: "#17294A",
+          color: "#ffffff",
+          opacity: submitting || !form.business_name ? 0.5 : 1,
+          cursor:
+            submitting || !form.business_name ? "not-allowed" : "pointer",
+        }}
+        className="px-6 py-2 rounded-sm text-sm uppercase font-medium"
       >
         {submitting ? "Saving..." : submitLabel}
       </button>
