@@ -1,36 +1,23 @@
 "use client"
 
+// Single-tier picker until the rest of the 2026-05 Canva tier ladder
+// (local_boost, tier2_*, tier3, tier4) has live Stripe products + price
+// IDs wired through STRIPE_PRICE_DIRECTORY_* env vars. The legacy
+// verified/featured/enterprise options were retired with the new ladder
+// but the UI still listed them — surfacing those caused vendors to
+// pick a tier we no longer want to sell, and our $99 product was
+// unreachable. Add the rest back here once the corresponding Stripe
+// products + env vars exist in prod.
 const tiers = [
   {
-    id: "verified",
-    name: "Verified",
-    price: "$50/year",
+    id: "local",
+    name: "Merchant Membership",
+    price: "$99/year",
     parishes: 1,
-    features: ["Basic listing", "1 parish affiliation", "Search visibility"],
-  },
-  {
-    id: "featured",
-    name: "Featured",
-    price: "$400/year",
-    parishes: 3,
     features: [
-      "Featured placement",
-      "3 parish affiliations",
-      "Priority search ranking",
-      "Analytics dashboard",
-    ],
-  },
-  {
-    id: "enterprise",
-    name: "Enterprise",
-    price: "$2,000/year",
-    parishes: 10,
-    features: [
-      "Top placement",
-      "10 parish affiliations",
-      "Highest search priority",
-      "Full analytics suite",
-      "Dedicated support",
+      "Public directory listing",
+      "Sell products through the marketplace",
+      "Owner interview + parish affiliation",
     ],
   },
 ]
@@ -50,7 +37,13 @@ export const DirectorySubscriptionCard = ({
 }: DirectorySubscriptionCardProps) => {
   return (
     <div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div
+        className={
+          tiers.length === 1
+            ? "max-w-md mx-auto"
+            : "grid grid-cols-1 md:grid-cols-3 gap-4"
+        }
+      >
         {tiers.map((tier) => {
           const isCurrent = tier.id === currentTier
           return (
