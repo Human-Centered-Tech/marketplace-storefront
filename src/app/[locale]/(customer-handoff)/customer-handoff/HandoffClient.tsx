@@ -9,23 +9,32 @@ export function HandoffClient() {
   const [error, setError] = useState(false)
 
   useEffect(() => {
-    const hash = window.location.hash
-    if (!hash.startsWith("#handoff=")) {
+    const hash = window.location.hash.replace(/^#/, "")
+    if (!hash) {
       setError(true)
       return
     }
 
-    const token = decodeURIComponent(hash.slice("#handoff=".length))
+    const params = new URLSearchParams(hash)
+    const token = params.get("handoff")
     if (!token) {
       setError(true)
       return
     }
 
+    // Same-origin path only — never an absolute URL — so callers can't
+    // weaponize the handoff into an open-redirect.
+    const rawReturnTo = params.get("return_to")
+    const returnTo =
+      rawReturnTo && rawReturnTo.startsWith("/") && !rawReturnTo.startsWith("//")
+        ? rawReturnTo
+        : "/"
+
     window.history.replaceState(null, "", window.location.pathname)
 
     acceptCustomerHandoff(token)
       .then(() => {
-        router.replace("/")
+        router.replace(returnTo)
       })
       .catch(() => {
         setError(true)
