@@ -85,16 +85,24 @@ export const updateCustomer = async (body: HttpTypes.StoreUpdateCustomer) => {
 
 export async function signup(formData: FormData) {
   const password = formData.get("password") as string
-  const customerForm = {
+  // Tier from the /sell/onboarding sizing quiz, threaded through the
+  // register URL as ?recommended_tier=. Stored on customer.metadata so
+  // /vendor/store/go-live can read it later and build subscribe_url
+  // for the right tier without re-asking the quiz questions.
+  const recommendedTier = formData.get("recommended_tier") as string | null
+  const customerForm: Record<string, unknown> = {
     email: formData.get("email") as string,
     first_name: formData.get("first_name") as string,
     last_name: formData.get("last_name") as string,
     phone: formData.get("phone") as string,
   }
+  if (recommendedTier) {
+    customerForm.metadata = { recommended_tier: recommendedTier }
+  }
 
   try {
     const token = await sdk.auth.register("customer", "emailpass", {
-      email: customerForm.email,
+      email: customerForm.email as string,
       password: password,
     })
 
@@ -105,7 +113,7 @@ export async function signup(formData: FormData) {
     }
 
     const { customer: createdCustomer } = await sdk.store.customer.create(
-      customerForm,
+      customerForm as any,
       {},
       headers
     )

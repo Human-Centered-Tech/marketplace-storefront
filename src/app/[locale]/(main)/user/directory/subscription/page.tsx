@@ -1,14 +1,27 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { DirectorySubscriptionCard } from "@/components/sections/DirectoryManagement/DirectorySubscriptionCard"
 import { DirectoryListing } from "@/types/directory"
+
+const VALID_TIERS = new Set([
+  "local",
+  "local_boost",
+  "tier2_nonprofit",
+  "tier2_business",
+  "tier3",
+  "tier4",
+  "verified",
+  "featured",
+  "enterprise",
+])
 
 export default function DirectorySubscriptionPage() {
   const [listing, setListing] = useState<DirectoryListing | null>(null)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
+  const searchParams = useSearchParams()
 
   const backendUrl =
     typeof window !== "undefined"
@@ -16,6 +29,15 @@ export default function DirectorySubscriptionPage() {
       : "http://localhost:9000"
 
   useEffect(() => {
+    // The chart-recommended tier — set on customer.metadata at register
+    // and threaded through go-live's subscribe_url. Skip the picker
+    // entirely when present and send them straight to Checkout.
+    const tier = searchParams.get("tier")
+    if (tier && VALID_TIERS.has(tier)) {
+      router.replace(`/user/directory/checkout?tier=${tier}`)
+      return
+    }
+
     fetch(`${backendUrl}/store/directory/listings?limit=1`, {
       headers: {
         "x-publishable-api-key":
@@ -31,7 +53,7 @@ export default function DirectorySubscriptionPage() {
       })
       .catch(() => {})
       .finally(() => setLoading(false))
-  }, [backendUrl])
+  }, [backendUrl, router, searchParams])
 
   const handleSelectTier = (tier: string) => {
     router.push(`/user/directory/checkout?tier=${tier}`)
