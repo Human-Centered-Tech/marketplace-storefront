@@ -18,7 +18,13 @@ import Link from "next/link"
 import { PasswordValidator } from "@/components/cells/PasswordValidator/PasswordValidator"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 
-export const RegisterForm = ({ vendorFlow = false }: { vendorFlow?: boolean }) => {
+export const RegisterForm = ({
+  vendorFlow = false,
+  recommendedTier,
+}: {
+  vendorFlow?: boolean
+  recommendedTier?: string
+}) => {
   const methods = useForm<RegisterFormData>({
     resolver: zodResolver(vendorFlow ? vendorRegisterFormSchema : registerFormSchema),
     defaultValues: {
@@ -33,12 +39,18 @@ export const RegisterForm = ({ vendorFlow = false }: { vendorFlow?: boolean }) =
 
   return (
     <FormProvider {...methods}>
-      <Form vendorFlow={vendorFlow} />
+      <Form vendorFlow={vendorFlow} recommendedTier={recommendedTier} />
     </FormProvider>
   )
 }
 
-const Form = ({ vendorFlow }: { vendorFlow: boolean }) => {
+const Form = ({
+  vendorFlow,
+  recommendedTier,
+}: {
+  vendorFlow: boolean
+  recommendedTier?: string
+}) => {
   const router = useRouter()
   const [passwordError, setPasswordError] = useState({
     isValid: false,
@@ -62,6 +74,9 @@ const Form = ({ vendorFlow }: { vendorFlow: boolean }) => {
     formData.append("first_name", data.firstName)
     formData.append("last_name", data.lastName)
     formData.append("phone", data.phone)
+    if (recommendedTier) {
+      formData.append("recommended_tier", recommendedTier)
+    }
 
     const res = passwordError.isValid && (await signup(formData))
 

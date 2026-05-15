@@ -5,10 +5,14 @@ import { redirect } from "next/navigation"
 export default async function Page({
   searchParams,
 }: {
-  searchParams: Promise<{ vendor?: string; return_to?: string }>
+  searchParams: Promise<{
+    vendor?: string
+    return_to?: string
+    recommended_tier?: string
+  }>
 }) {
   const user = await retrieveCustomer()
-  const { vendor, return_to } = await searchParams
+  const { vendor, return_to, recommended_tier } = await searchParams
 
   if (user) {
     if (vendor === "true") {
@@ -17,5 +21,10 @@ export default async function Page({
     redirect(return_to && return_to.startsWith("/") ? return_to : "/user")
   }
 
-  return <RegisterForm vendorFlow={vendor === "true"} />
+  return (
+    <RegisterForm
+      vendorFlow={vendor === "true"}
+      recommendedTier={recommended_tier}
+    />
+  )
 }
