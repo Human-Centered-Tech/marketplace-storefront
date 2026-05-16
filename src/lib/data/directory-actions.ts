@@ -86,11 +86,16 @@ export async function updateDirectoryListing(
 }
 
 export async function getMyDirectoryListing(): Promise<DirectoryListing | null> {
-  const res = await authedBackendFetch<{ listings: DirectoryListing[] }>(
-    "/store/directory/listings?limit=1"
+  // /store/directory/listings/me returns the authed customer's own listing
+  // regardless of verification/subscription status. The plain
+  // /store/directory/listings endpoint hides not-yet-active listings for
+  // public-visibility reasons, which is the wrong filter when the vendor
+  // is loading their OWN listing during checkout.
+  const res = await authedBackendFetch<{ listing: DirectoryListing | null }>(
+    "/store/directory/listings/me"
   )
   if (!res.ok) return null
-  return res.data.listings?.[0] ?? null
+  return res.data.listing ?? null
 }
 
 export async function createDirectorySubscriptionCheckout(payload: {
