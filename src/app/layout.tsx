@@ -75,6 +75,16 @@ export default async function RootLayout({
           crossOrigin="anonymous"
         />
         <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+        {/* Material Symbols icon font — used by directory/checkout,
+            directory/success, barter, and other pages that render
+            inline icons via <span class="material-symbols-outlined">.
+            Loaded once globally instead of per-page so the icons
+            don't fall back to literal text on routes that forgot to
+            include the <link>. */}
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        />
         <link
           rel="preconnect"
           href="https://i.imgur.com"
