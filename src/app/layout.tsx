@@ -2,7 +2,6 @@ import type { Metadata } from "next"
 import { Cormorant_Garamond, Inter } from "next/font/google"
 import "./globals.css"
 import { Toaster } from "@medusajs/ui"
-import Head from "next/head"
 import { retrieveCart } from "@/lib/data/cart"
 import { Providers } from "./providers"
 
@@ -62,7 +61,11 @@ export default async function RootLayout({
 
   return (
     <html lang={htmlLang} className="">
-      <Head>
+      {/* App Router uses a native <head>; the previous `<Head>` from
+          next/head is the Pages Router pattern and was silently a no-op,
+          which is why preconnects (and the Material Symbols stylesheet)
+          weren't actually being emitted to the rendered HTML. */}
+      <head>
         <link
           rel="preconnect"
           href="https://fonts.gstatic.com"
@@ -78,9 +81,8 @@ export default async function RootLayout({
         {/* Material Symbols icon font — used by directory/checkout,
             directory/success, barter, and other pages that render
             inline icons via <span class="material-symbols-outlined">.
-            Loaded once globally instead of per-page so the icons
-            don't fall back to literal text on routes that forgot to
-            include the <link>. */}
+            Loaded once globally so the icons don't fall back to literal
+            text on routes that forgot to include the <link>. */}
         <link
           rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
@@ -138,7 +140,7 @@ export default async function RootLayout({
           crossOrigin="anonymous"
         />
         <link rel="dns-prefetch" href="https://api.mercurjs.com" />
-      </Head>
+      </head>
       <body
         className={`${inter.variable} ${cormorant.variable} font-sans antialiased bg-primary text-secondary relative`}
       >
