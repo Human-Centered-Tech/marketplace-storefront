@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { DirectoryCategory, Parish } from "@/types/directory"
 
 type DirectoryFormData = {
@@ -101,6 +101,15 @@ export const DirectoryListingForm = ({
   })
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState("")
+  const errorRef = useRef<HTMLDivElement | null>(null)
+
+  // The form is long enough that submitting from the bottom and getting
+  // a top-of-form error banner is easy to miss. Scroll it into view.
+  useEffect(() => {
+    if (error && errorRef.current) {
+      errorRef.current.scrollIntoView({ behavior: "smooth", block: "center" })
+    }
+  }, [error])
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -183,7 +192,12 @@ export const DirectoryListingForm = ({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 p-3 rounded-sm text-sm">
+        <div
+          ref={errorRef}
+          role="alert"
+          aria-live="polite"
+          className="bg-red-50 border border-red-200 text-red-700 p-3 rounded-sm text-sm"
+        >
           {error}
         </div>
       )}
@@ -215,12 +229,13 @@ export const DirectoryListingForm = ({
           </div>
           <div className="md:col-span-2">
             <label className="label-sm text-secondary block mb-1">
-              Category
+              Category *
             </label>
             <select
               name="category_id"
               value={form.category_id}
               onChange={handleChange}
+              required
               className="w-full border rounded-sm px-3 py-2 text-sm"
             >
               <option value="">Select a category</option>
