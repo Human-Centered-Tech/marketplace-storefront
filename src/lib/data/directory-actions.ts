@@ -1,6 +1,6 @@
 "use server"
 
-import { DirectoryListing } from "@/types/directory"
+import { DirectoryListing, DirectoryParishAffiliation } from "@/types/directory"
 import { getAuthHeaders } from "./cookies"
 
 /**
@@ -96,6 +96,49 @@ export async function getMyDirectoryListing(): Promise<DirectoryListing | null> 
   )
   if (!res.ok) return null
   return res.data.listing ?? null
+}
+
+export async function addParishAffiliation(
+  listingId: string,
+  parishId: string
+): Promise<
+  | { ok: true; affiliation: DirectoryParishAffiliation }
+  | { ok: false; error: string; code?: "tier_limit" | "duplicate" }
+> {
+  const res = await authedBackendFetch<{
+    affiliation: DirectoryParishAffiliation
+  }>(`/store/directory/listings/${listingId}/affiliations`, {
+    method: "POST",
+    body: JSON.stringify({ parish_id: parishId }),
+  })
+  if (!res.ok) {
+    // The backend's 422 message starts with "Your <tier> tier allows" and
+    // 409 with "Already affiliated"; pass a discriminator up so the form
+    // can decide whether to show it inline vs as a generic error.
+    const e = res.error
+    const code = e.startsWith("Your ") && e.includes("tier allows")
+      ? "tier_limit"
+      : e.toLowerCase().startsWith("already affiliated")
+        ? "duplicate"
+        : undefined
+    return { ok: false, error: e, code }
+  }
+  return { ok: true, affiliation: res.data.affiliation }
+}
+
+export async function removeParishAffiliation(
+  listingId: string,
+  affiliationId: string
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const res = await authedBackendFetch<{ id: string; deleted: boolean }>(
+    `/store/directory/listings/${listingId}/affiliations`,
+    {
+      method: "DELETE",
+      body: JSON.stringify({ affiliation_id: affiliationId }),
+    }
+  )
+  if (!res.ok) return res
+  return { ok: true }
 }
 
 export async function createDirectorySubscriptionCheckout(payload: {
