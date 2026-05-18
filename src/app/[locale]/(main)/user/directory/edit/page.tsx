@@ -81,6 +81,9 @@ export default function EditDirectoryListingPage() {
       <h1 className="heading-xl uppercase mb-6">Edit Directory Listing</h1>
       <div className="max-w-3xl">
         <DirectoryListingForm
+          listingId={listing.id}
+          subscriptionTier={listing.subscription_tier}
+          initialAffiliations={listing.affiliations ?? []}
           initialData={{
             business_name: listing.business_name,
             slug: listing.slug,

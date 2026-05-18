@@ -1,7 +1,12 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { DirectoryCategory, Parish } from "@/types/directory"
+import {
+  DirectoryCategory,
+  DirectoryParishAffiliation,
+  Parish,
+} from "@/types/directory"
+import { ParishAffiliationsSection } from "./ParishAffiliationsSection"
 
 type DirectoryFormData = {
   business_name: string
@@ -52,6 +57,12 @@ type DirectoryListingFormProps = {
   categories: DirectoryCategory[]
   onSubmit: (data: Record<string, unknown>) => Promise<void>
   submitLabel: string
+  // Only present in edit mode — in create mode there's no listing to
+  // attach affiliations to yet, so the parish section is hidden until
+  // the listing is saved.
+  listingId?: string
+  subscriptionTier?: string
+  initialAffiliations?: DirectoryParishAffiliation[]
 }
 
 function slugify(text: string): string {
@@ -66,6 +77,9 @@ export const DirectoryListingForm = ({
   categories,
   onSubmit,
   submitLabel,
+  listingId,
+  subscriptionTier,
+  initialAffiliations,
 }: DirectoryListingFormProps) => {
   const [form, setForm] = useState<DirectoryFormData>({
     business_name: initialData?.business_name || "",
@@ -449,6 +463,15 @@ export const DirectoryListingForm = ({
           ))}
         </div>
       </div>
+
+      {/* Parish Affiliations — edit mode only (needs a saved listing id) */}
+      {listingId && subscriptionTier && (
+        <ParishAffiliationsSection
+          listingId={listingId}
+          tier={subscriptionTier}
+          initialAffiliations={initialAffiliations ?? []}
+        />
+      )}
 
       {/* Devotional */}
       <div>
