@@ -84,8 +84,11 @@ export const Header = async () => {
         </div>
       </div>
 
-      {/* Bottom row — Navigation */}
-      <nav className="hidden lg:flex items-center justify-center gap-8 -mt-4 pb-1 lg:px-8">
+      {/* Bottom row — Navigation. The header's top row uses py-3 (12px),
+          which gives the menu items 12px of breathing room above them
+          from the search bar. Match that with pb-3 below so the spacing
+          around the menu is symmetric. */}
+      <nav className="hidden lg:flex items-center justify-center gap-8 pb-3 lg:px-8">
         <LocalizedClientLink
           href="/categories"
           className="text-[13px] font-medium uppercase tracking-[0.1em] text-primary hover:text-action transition-colors"
