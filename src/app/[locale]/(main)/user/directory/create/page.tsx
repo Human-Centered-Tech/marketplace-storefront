@@ -1,13 +1,11 @@
 "use client"
 
-import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { DirectoryListingForm } from "@/components/sections/DirectoryManagement/DirectoryListingForm"
 import { DirectoryCategory } from "@/types/directory"
 import { createDirectoryListing } from "@/lib/data/directory-actions"
 
 export default function CreateDirectoryListingPage() {
-  const router = useRouter()
   const [categories, setCategories] = useState<DirectoryCategory[]>([])
 
   useEffect(() => {
@@ -30,8 +28,13 @@ export default function CreateDirectoryListingPage() {
       throw new Error(res.error || "Failed to create listing")
     }
 
-    router.push("/user/directory")
-    router.refresh()
+    // Vendors arrive here via the setup-checklist storefront handoff from
+    // the vendor dashboard. After creating, send them back to the dashboard
+    // so the catholic_owned checklist rows reflect the new listing.
+    // Cross-origin nav, so use window.location instead of next/navigation.
+    const vendorUrl =
+      process.env.NEXT_PUBLIC_VENDOR_URL || "http://localhost:5173"
+    window.location.assign(`${vendorUrl}/dashboard`)
   }
 
   return (
