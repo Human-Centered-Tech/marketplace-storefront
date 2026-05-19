@@ -282,11 +282,26 @@ export default function DirectoryCheckoutPage() {
           </div>
         )}
 
+        {/* Temporary kill-switch while Terms of Service are being finalized.
+            Backend route returns 503 even if someone bypasses this guard;
+            this just makes the UX honest. Flip NEXT_PUBLIC_PAYMENTS_DISABLED
+            in Railway when payments reopen. */}
+        {process.env.NEXT_PUBLIC_PAYMENTS_DISABLED === "true" && (
+          <div className="bg-[rgba(190,155,50,0.1)] border border-[rgba(190,155,50,0.5)] text-primary px-4 py-3 rounded-sm mb-4 text-[14px]">
+            Payments are temporarily disabled while we finalize our Terms of
+            Service. You can keep setting up your store — we&apos;ll notify you
+            when payment is available.
+          </div>
+        )}
+
         {/* CTA */}
         <button
           onClick={handlePurchase}
-          disabled={purchasing}
-          className="w-full bg-navy text-white py-4 rounded-xl text-[13px] font-bold uppercase tracking-[0.15em] hover:bg-navy-dark transition-colors disabled:opacity-50"
+          disabled={
+            purchasing ||
+            process.env.NEXT_PUBLIC_PAYMENTS_DISABLED === "true"
+          }
+          className="w-full bg-navy text-white py-4 rounded-xl text-[13px] font-bold uppercase tracking-[0.15em] hover:bg-navy-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {purchasing ? "Redirecting to payment..." : "Proceed to Payment"}
         </button>
