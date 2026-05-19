@@ -26,7 +26,11 @@ const formatParish = (p: Parish) => {
 
 type Props = {
   listingId: string
-  tier: string
+  // Optional: a listing without a subscription_tier falls back to the
+  // 1-affiliation default (matches the backend's `|| 1` and the verified
+  // tier limit). Letting tier be optional lets us render the section
+  // unconditionally in edit mode regardless of subscription state.
+  tier?: string
   initialAffiliations: DirectoryParishAffiliation[]
 }
 
@@ -35,7 +39,7 @@ export const ParishAffiliationsSection = ({
   tier,
   initialAffiliations,
 }: Props) => {
-  const limit = TIER_PARISH_LIMITS[tier] || 1
+  const limit = (tier && TIER_PARISH_LIMITS[tier]) || 1
   const [affiliations, setAffiliations] =
     useState<DirectoryParishAffiliation[]>(initialAffiliations)
   const [query, setQuery] = useState("")
