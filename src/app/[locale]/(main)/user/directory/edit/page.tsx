@@ -1,6 +1,5 @@
 "use client"
 
-import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { DirectoryListingForm } from "@/components/sections/DirectoryManagement/DirectoryListingForm"
 import { DirectoryCategory, DirectoryListing } from "@/types/directory"
@@ -10,7 +9,6 @@ import {
 } from "@/lib/data/directory-actions"
 
 export default function EditDirectoryListingPage() {
-  const router = useRouter()
   const [categories, setCategories] = useState<DirectoryCategory[]>([])
   const [listing, setListing] = useState<DirectoryListing | null>(null)
   const [loading, setLoading] = useState(true)
@@ -51,8 +49,13 @@ export default function EditDirectoryListingPage() {
       throw new Error(res.error || "Failed to update listing")
     }
 
-    router.push("/user/directory")
-    router.refresh()
+    // Vendors arrive here via the setup-checklist storefront handoff from
+    // the vendor dashboard. After saving, send them straight back to the
+    // dashboard so the catholic_owned checklist rows reflect the edit.
+    // Cross-origin nav, so use window.location instead of next/navigation.
+    const vendorUrl =
+      process.env.NEXT_PUBLIC_VENDOR_URL || "http://localhost:5173"
+    window.location.assign(`${vendorUrl}/dashboard`)
   }
 
   if (loading) {
