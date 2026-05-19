@@ -35,10 +35,12 @@ const ShippingAddress = ({
     email: cart?.email || "",
   })
 
-  // check if customer has saved addresses that are in the current region
+  // check if customer has saved addresses that are in the current region.
+  // Optional-chain `addresses` too — Medusa doesn't always eagerly load
+  // it, and the downstream usages already handle undefined.
   const addressesInRegion = useMemo(
     () =>
-      customer?.addresses.filter(
+      customer?.addresses?.filter(
         (a) => a.country_code && a.country_code === locale
       ),
     [customer?.addresses]
