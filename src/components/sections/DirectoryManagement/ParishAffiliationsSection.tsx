@@ -100,31 +100,51 @@ export const ParishAffiliationsSection = ({
   const handleAdd = async (parish: Parish) => {
     setError(null)
     setBusyParishId(parish.id)
-    const res = await addParishAffiliation(listingId, parish.id)
-    setBusyParishId(null)
-    if (!res.ok) {
-      setError(res.error)
-      return
+    // Invalidate any in-flight typeahead fetch so a stale response can't
+    // repopulate `results` after we clear it below.
+    reqIdRef.current++
+    try {
+      const res = await addParishAffiliation(listingId, parish.id)
+      if (!res.ok) {
+        setError(
+          /not signed in/i.test(res.error)
+            ? "Your session expired. Refresh the page and try again."
+            : res.error
+        )
+        return
+      }
+      // The backend returns the bare affiliation without the parish
+      // relation eagerly loaded; attach it locally so the UI can render
+      // city/diocese without a refetch.
+      setAffiliations((prev) => [
+        ...prev,
+        { ...res.affiliation, parish },
+      ])
+      setQuery("")
+      setResults([])
+    } finally {
+      // try/finally guarantees the spinner clears even on an unexpected
+      // throw — otherwise the row would stay disabled and feel frozen.
+      setBusyParishId(null)
     }
-    // The backend returns the bare affiliation without the parish
-    // relation eagerly loaded; attach it locally so the UI can render
-    // city/diocese without a refetch.
-    setAffiliations((prev) => [
-      ...prev,
-      { ...res.affiliation, parish },
-    ])
-    setQuery("")
-    setResults([])
   }
 
   const handleRemove = async (affiliationId: string) => {
     setError(null)
-    const res = await removeParishAffiliation(listingId, affiliationId)
-    if (!res.ok) {
-      setError(res.error)
-      return
+    try {
+      const res = await removeParishAffiliation(listingId, affiliationId)
+      if (!res.ok) {
+        setError(
+          /not signed in/i.test(res.error)
+            ? "Your session expired. Refresh the page and try again."
+            : res.error
+        )
+        return
+      }
+      setAffiliations((prev) => prev.filter((a) => a.id !== affiliationId))
+    } catch (err: any) {
+      setError(err?.message || "Failed to remove parish affiliation.")
     }
-    setAffiliations((prev) => prev.filter((a) => a.id !== affiliationId))
   }
 
   return (
