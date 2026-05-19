@@ -464,8 +464,12 @@ export const DirectoryListingForm = ({
         </div>
       </div>
 
-      {/* Parish Affiliations — edit mode only (needs a saved listing id) */}
-      {listingId && subscriptionTier && (
+      {/* Parish Affiliations — edit mode only (needs a saved listing id).
+          Renders regardless of subscription_tier so the section is
+          consistently visible no matter which checklist CTA the vendor
+          arrived from. ParishAffiliationsSection falls back to a
+          1-affiliation limit when tier is missing. */}
+      {listingId && (
         <ParishAffiliationsSection
           listingId={listingId}
           tier={subscriptionTier}
