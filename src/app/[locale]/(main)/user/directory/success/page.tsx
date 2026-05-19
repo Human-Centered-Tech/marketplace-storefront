@@ -15,7 +15,7 @@ export default function DirectorySuccessPage() {
   const tierName = TIER_NAMES[tier] || "Verified"
 
   return (
-    <main className="container py-16">
+    <main className="container pt-24 pb-16">
       <div className="max-w-2xl mx-auto text-center">
         {/* Success Icon */}
         <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6">
