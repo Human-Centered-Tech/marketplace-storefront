@@ -56,7 +56,17 @@ export const listProducts = async ({
     region = await retrieveRegion(regionId!)
   }
 
+  // TEMP DEBUG (revert): trace empty-categories root cause on staging.
+  if (process.env.DEBUG_LIST_PRODUCTS === "true") {
+    console.error(
+      `[listProducts.debug] countryCode=${countryCode} regionId=${regionId} region=${region?.id ?? "<null>"} handles=${JSON.stringify(queryParams?.handle ?? null)} limit=${limit}`
+    )
+  }
+
   if (!region) {
+    if (process.env.DEBUG_LIST_PRODUCTS === "true") {
+      console.error(`[listProducts.debug] BAIL: region undefined for countryCode=${countryCode}`)
+    }
     return {
       response: { products: [], count: 0 },
       nextPage: null,
@@ -92,6 +102,11 @@ export const listProducts = async ({
       cache: useCached ? "force-cache" : "no-cache",
     })
     .then(({ products: productsRaw, count }) => {
+      if (process.env.DEBUG_LIST_PRODUCTS === "true") {
+        console.error(
+          `[listProducts.debug] medusa returned raw=${productsRaw.length} count=${count}: ${JSON.stringify(productsRaw.map((p: any) => ({ handle: p.handle, sellerStatus: p.seller?.store_status ?? null })))}`
+        )
+      }
       // Only ACTIVE stores are visible to shoppers. INACTIVE = draft mode
       // (vendor hasn't paid / hit Go Live yet); SUSPENDED = admin-blocked.
       // ownerPreview is set by the seller-preview path after the page has
@@ -101,6 +116,9 @@ export const listProducts = async ({
         : productsRaw.filter(
             (product) => product.seller?.store_status === "ACTIVE"
           )
+      if (process.env.DEBUG_LIST_PRODUCTS === "true") {
+        console.error(`[listProducts.debug] after ACTIVE filter: ${products.length}`)
+      }
 
       const nextPage = count > offset + limit ? pageParam + 1 : null
 
@@ -127,7 +145,10 @@ export const listProducts = async ({
         queryParams,
       }
     })
-    .catch(() => {
+    .catch((err) => {
+      if (process.env.DEBUG_LIST_PRODUCTS === "true") {
+        console.error(`[listProducts.debug] CAUGHT ERROR: ${err?.message ?? err}`, err)
+      }
       return {
         response: {
           products: [],
