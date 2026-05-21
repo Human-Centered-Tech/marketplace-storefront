@@ -137,8 +137,12 @@ const ProductsListing = ({
       const { response } = await listProducts({
         countryCode: locale,
         queryParams: {
+          // *seller is required: without it, listProducts' ACTIVE-status
+          // post-filter sees seller.store_status as null on every product
+          // and drops the entire page. *seller.reviews alone expands the
+          // reviews relation but does not populate the seller's own columns.
           fields:
-            "*variants.calculated_price,*seller.reviews,-thumbnail,-images,-type,-tags,-variants.options,-options,-collection,-collection_id",
+            "*variants.calculated_price,*seller,*seller.reviews,-thumbnail,-images,-type,-tags,-variants.options,-options,-collection,-collection_id",
           handle: items.map((item) => item.handle),
           limit: items.length,
         },
