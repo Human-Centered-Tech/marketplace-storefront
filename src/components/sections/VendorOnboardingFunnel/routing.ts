@@ -52,6 +52,14 @@ const TIER_INFO: Record<RecommendedTierKey, TierInfo> = {
     bookCallOption: false,
     localBoostUpsell: true,
   },
+  tier2_startup: {
+    key: "tier2_startup",
+    name: "Tier 2 — Startup",
+    price: "$349",
+    period: "onboarding",
+    bookCallOption: true,
+    localBoostUpsell: true,
+  },
   tier2_nonprofit: {
     key: "tier2_nonprofit",
     name: "Tier 2 — Non-profit",
@@ -107,6 +115,24 @@ export function recommendTier(answers: SizingAnswers): RecommendedTierKey {
     if (isHighRevenue || isLargeInvoice) return "tier3"
     return "tier2_nonprofit"
   }
+
+  // For-profit branch.
+  //
+  // The $349 Tier 2 Startup discount mirrors Tier 2 Nonprofit — same
+  // price, same benefits, different audience. Per the Canva "Sales Page
+  // Logic" chart's Possible Combinations #1 (paired with combo #2 above
+  // for the nonprofit case), the qualifying for-profit profile is:
+  //   - 0-3 years in business
+  //   - annual revenue <$50,000
+  //   - 1 employee
+  // All three required; same posture as isSmallNonProfit. Must fire
+  // before the Tier 3 / Tier 2 Business split below or those will
+  // catch the same vendor at a higher price.
+  const isEarlyStageForProfit =
+    answers.years === "0-3" &&
+    answers.revenueOrBudget === "<$50,000" &&
+    answers.employees === "1"
+  if (isEarlyStageForProfit) return "tier2_startup"
 
   if (isLargeInvoice || isHighRevenue) return "tier3"
   return "tier2_business"

@@ -53,6 +53,7 @@ export type DirectoryListing = {
     | "enterprise"
     | "local"
     | "merchant"
+    | "tier2_startup"
     | "tier2_nonprofit"
     | "tier2_business"
     | "tier3"

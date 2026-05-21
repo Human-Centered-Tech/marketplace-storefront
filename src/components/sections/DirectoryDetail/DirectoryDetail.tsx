@@ -8,6 +8,7 @@ const tierLabels: Record<string, string> = {
   // Canva tier set
   local: "Local Member",
   merchant: "Marketplace Merchant",
+  tier2_startup: "Tier 2 — Startup",
   tier2_nonprofit: "Tier 2 — Non-profit",
   tier2_business: "Tier 2",
   tier3: "Tier 3",

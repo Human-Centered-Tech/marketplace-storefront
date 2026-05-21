@@ -31,7 +31,7 @@ const tiers = [
       { text: "Featured directory placement", icon: "stars", bold: true },
       { text: "Catholic Owned-funded ad placement", icon: "check_circle", bold: false },
       { text: "Local Boost upsell available", icon: "check_circle", bold: false },
-      { text: "Non-profit pricing: $349/yr", icon: "check_circle", bold: false },
+      { text: "Non-profit & early-stage pricing: $349/yr", icon: "check_circle", bold: false },
     ],
     btnClass:
       "bg-[#BE9B32] text-[#17294A] hover:bg-[#DECF8F] shadow-lg shadow-[#BE9B32]/20",

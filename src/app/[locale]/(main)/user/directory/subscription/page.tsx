@@ -9,6 +9,7 @@ const VALID_TIERS = new Set([
   "local",
   "local_boost",
   "merchant",
+  "tier2_startup",
   "tier2_nonprofit",
   "tier2_business",
   "tier3",
