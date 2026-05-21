@@ -38,6 +38,16 @@ const TIER_DETAILS: Record<
       "11% commission per sale",
     ],
   },
+  tier2_startup: {
+    name: "Tier 2 — Startup",
+    price: "$349",
+    annual: "$349/year",
+    features: [
+      "Tier 2 benefits at early-stage pricing",
+      "Local Boost upsell available ($150/mo)",
+      "Catholic Owned-funded ad placement",
+    ],
+  },
   tier2_nonprofit: {
     name: "Tier 2 — Non-profit",
     price: "$349",
