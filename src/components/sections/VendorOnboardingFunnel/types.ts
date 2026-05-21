@@ -54,6 +54,7 @@ export type TierInfo = {
 }
 
 export type FunnelStep =
+  | "founding_pillars"
   | "service_area"
   | "product_or_service"
   | "service_is_financial"
