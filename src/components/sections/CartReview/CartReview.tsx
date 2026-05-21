@@ -2,7 +2,6 @@
 
 import PaymentButton from "./PaymentButton"
 import { CartItems } from "./CartItems"
-import CartPromotionCode from "./CartPromotionCode"
 import { CartSummary } from "@/components/organisms"
 
 const Review = ({ cart }: { cart: any }) => {
@@ -32,10 +31,6 @@ const Review = ({ cart }: { cart: any }) => {
             tax={cart?.tax_total || 0}
             discount_total={cart?.discount_total || 0}
           />
-        </div>
-
-        <div className="border-t border-[#d6d0c4]/30 mt-4 pt-4">
-          <CartPromotionCode cart={cart} />
         </div>
 
         {previousStepsCompleted && (
