@@ -37,7 +37,7 @@ const INVOICE_OPTIONS: InvoiceRange[] = [
   "$3,000+",
 ]
 
-const initialState: FunnelState = { step: "service_area" }
+const initialState: FunnelState = { step: "founding_pillars" }
 
 export const VendorOnboardingFunnel = () => {
   const [state, setState] = useState<FunnelState>(initialState)
@@ -51,15 +51,26 @@ export const VendorOnboardingFunnel = () => {
           <p className="text-[#BE9B32] text-[12px] font-semibold uppercase tracking-[0.2em]">
             Merchant Onboarding
           </p>
-          {state.step !== "service_area" && (
-            <button
-              onClick={reset}
-              className="text-[13px] text-[#44474e] hover:text-[#001435] underline"
-            >
-              Start over
-            </button>
-          )}
+          {state.step !== "founding_pillars" &&
+            state.step !== "service_area" && (
+              <button
+                onClick={reset}
+                className="text-[13px] text-[#44474e] hover:text-[#001435] underline"
+              >
+                Start over
+              </button>
+            )}
         </div>
+
+        {state.step === "founding_pillars" && (
+          <FoundingPillarsStep
+            onAgree={() =>
+              setState({
+                step: "service_area",
+              })
+            }
+          />
+        )}
 
         {state.step === "service_area" && (
           <ServiceAreaStep
@@ -217,6 +228,70 @@ const ChoiceButton: React.FC<{
   >
     {children}
   </button>
+)
+
+// Pre-funnel gate. Vendors see the four pillars and must click
+// "Agree and continue" before any onboarding question fires. Intentionally
+// not numbered ("Step 0 of 5") — it's an eligibility affirmation, not a
+// product question. The pillar copy is duplicated from /sell on purpose:
+// /sell is marketing-display, this is a gate. Future server-side
+// persistence (timestamp + copy snapshot, per seller_application.attestations
+// pattern) lands separately once we wire it to the seller record.
+const FOUNDING_PILLARS: { title: string }[] = [
+  {
+    title:
+      "Faithful to the Magisterium & in Full Communion with Rome",
+  },
+  {
+    title:
+      "Regularly practicing, sincere Catholic in good standing (52‑Sundays per year + Holydays, regular confession)",
+  },
+  {
+    title:
+      "Prays the Rosary or practices other sincere daily devotion(s)",
+  },
+  {
+    title:
+      "Operates business in accordance with the principles of the Catholic faith",
+  },
+]
+
+const FoundingPillarsStep: React.FC<{ onAgree: () => void }> = ({
+  onAgree,
+}) => (
+  <Card>
+    <StepHeading
+      eyebrow="Before You Begin"
+      title="Our Founding Pillars"
+      subtitle="Every Featured & Verified business on Catholic Owned® must align with our four Founding Pillars. By continuing, you affirm that you and your business meet each of these:"
+    />
+
+    <ul className="flex flex-col gap-y-3 mb-8">
+      {FOUNDING_PILLARS.map((pillar, i) => (
+        <li
+          key={i}
+          className="flex items-start gap-x-3 p-4 rounded-xl bg-[#001435] text-white"
+        >
+          <span className="text-[#BE9B32] text-[18px] font-bold leading-none mt-0.5 shrink-0">
+            {i + 1}.
+          </span>
+          <p className="text-[14px] leading-relaxed">{pillar.title}</p>
+        </li>
+      ))}
+    </ul>
+
+    <p className="text-[13px] text-[#44474e] leading-relaxed italic mb-6">
+      These pillars ensure that Catholic Owned® remains a trusted resource
+      for the faithful — and a powerful witness for Christ in the marketplace.
+    </p>
+
+    <button
+      onClick={onAgree}
+      className="w-full bg-[#BE9B32] text-[#001435] font-semibold py-3 rounded-xl hover:bg-[#DECF8F] shadow-lg shadow-[#BE9B32]/20 transition-all"
+    >
+      I agree — continue
+    </button>
+  </Card>
 )
 
 const ServiceAreaStep: React.FC<{
