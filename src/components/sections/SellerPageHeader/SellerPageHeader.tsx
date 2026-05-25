@@ -23,7 +23,7 @@ export const SellerPageHeader = ({
     <>
       {/* Hero Banner */}
       <header className="relative w-full overflow-hidden bg-[#f4f4f0]">
-        <div className="h-[400px] w-full relative">
+        <div className="h-[420px] md:h-[560px] lg:h-[640px] w-full relative">
           <img
             className="w-full h-full object-cover opacity-90"
             src={seller.cover_image_url || "/images/seller-banner-default.jpg"}
