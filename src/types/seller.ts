@@ -19,4 +19,8 @@ export type SellerProps = SellerAddress & {
   products?: Product[]
   email?: string
   store_status?: "ACTIVE" | "SUSPENDED" | "INACTIVE"
+  // Storefront hero/banner image. Fetched from the seller_storefront
+  // companion module on the Catholic Owned backend (not part of
+  // Mercur's seller schema). Null when the vendor hasn't uploaded one.
+  cover_image_url?: string | null
 }
