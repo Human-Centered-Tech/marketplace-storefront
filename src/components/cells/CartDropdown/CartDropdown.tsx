@@ -139,7 +139,7 @@ export const CartDropdown = () => {
                   <div className="text-secondary flex justify-between items-center">
                     Total <p className="label-xl text-primary">{total}</p>
                   </div>
-                  <LocalizedClientLink href="/cart">
+                  <LocalizedClientLink href="/cart" onClick={close}>
                     <Button className="w-full mt-4 py-3">Go to cart</Button>
                   </LocalizedClientLink>
                 </div>
