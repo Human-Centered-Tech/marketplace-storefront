@@ -1,11 +1,15 @@
 import { Radio, Radio as RadioGroupOption } from "@headlessui/react"
 import { Text, clx } from "@medusajs/ui"
-import React, { useContext, useMemo, type JSX } from "react"
+import React, { useContext, useMemo, useState, type JSX } from "react"
 
 import { isManual } from "../../../lib/constants"
 import SkeletonCardDetails from "./SkeletonCardDetails"
-import { CardElement } from "@stripe/react-stripe-js"
-import { StripeCardElementOptions } from "@stripe/stripe-js"
+import {
+  CardNumberElement,
+  CardExpiryElement,
+  CardCvcElement,
+} from "@stripe/react-stripe-js"
+import { StripeElementStyle } from "@stripe/stripe-js"
 import PaymentTest from "./PaymentTest"
 import { StripeContext } from "./StripeWrapper"
 
@@ -77,22 +81,42 @@ export const StripeCardContainer = ({
 }) => {
   const stripeReady = useContext(StripeContext)
 
-  const useOptions: StripeCardElementOptions = useMemo(() => {
-    return {
-      style: {
-        base: {
-          fontFamily: "Inter, sans-serif",
-          color: "#424270",
-          "::placeholder": {
-            color: "rgb(107 114 128)",
-          },
-        },
+  // Track completeness of each split field independently; the card is
+  // "complete" only when all three are. Mirrors the combined
+  // CardElement's single `complete` flag, but for separate inputs.
+  const [fieldComplete, setFieldComplete] = useState({
+    number: false,
+    expiry: false,
+    cvc: false,
+  })
+
+  const elementStyle: StripeElementStyle = useMemo(
+    () => ({
+      base: {
+        fontFamily: "Inter, sans-serif",
+        color: "#424270",
+        "::placeholder": { color: "rgb(107 114 128)" },
       },
-      classes: {
-        base: "pt-3 pb-1 block w-full h-11 px-4 mt-0 bg-ui-bg-field border rounded-md appearance-none focus:outline-none focus:ring-0 focus:shadow-borders-interactive-with-active border-ui-border-base hover:bg-ui-bg-field-hover transition-all duration-300 ease-in-out",
-      },
+    }),
+    []
+  )
+
+  const fieldClass =
+    "pt-3 pb-1 block w-full h-11 px-4 mt-0 bg-ui-bg-field border rounded-md appearance-none focus:outline-none focus:ring-0 focus:shadow-borders-interactive-with-active border-ui-border-base hover:bg-ui-bg-field-hover transition-all duration-300 ease-in-out"
+
+  const onFieldChange =
+    (key: "number" | "expiry" | "cvc") =>
+    (e: { complete: boolean; error?: { message: string }; brand?: string }) => {
+      if (key === "number" && e.brand) {
+        setCardBrand(e.brand.charAt(0).toUpperCase() + e.brand.slice(1))
+      }
+      setError(e.error?.message || null)
+      setFieldComplete((prev) => {
+        const next = { ...prev, [key]: e.complete }
+        setCardComplete(next.number && next.expiry && next.cvc)
+        return next
+      })
     }
-  }, [])
 
   return (
     <PaymentContainer
@@ -103,20 +127,42 @@ export const StripeCardContainer = ({
     >
       {selectedPaymentOptionId === paymentProviderId &&
         (stripeReady ? (
-          <div className="my-4 transition-all duration-150 ease-in-out">
-            <Text className="txt-medium-plus text-ui-fg-base mb-1">
-              Enter your card details:
-            </Text>
-            <CardElement
-              options={useOptions as StripeCardElementOptions}
-              onChange={(e) => {
-                setCardBrand(
-                  e.brand && e.brand.charAt(0).toUpperCase() + e.brand.slice(1)
-                )
-                setError(e.error?.message || null)
-                setCardComplete(e.complete)
-              }}
-            />
+          <div className="my-4 flex flex-col gap-y-3 transition-all duration-150 ease-in-out">
+            <div>
+              <Text className="txt-medium-plus text-ui-fg-base mb-1">
+                Card number
+              </Text>
+              <CardNumberElement
+                options={{ style: elementStyle, classes: { base: fieldClass } }}
+                onChange={onFieldChange("number")}
+              />
+            </div>
+            <div className="flex gap-x-3">
+              <div className="flex-1">
+                <Text className="txt-medium-plus text-ui-fg-base mb-1">
+                  Expiration
+                </Text>
+                <CardExpiryElement
+                  options={{
+                    style: elementStyle,
+                    classes: { base: fieldClass },
+                  }}
+                  onChange={onFieldChange("expiry")}
+                />
+              </div>
+              <div className="flex-1">
+                <Text className="txt-medium-plus text-ui-fg-base mb-1">
+                  CVC
+                </Text>
+                <CardCvcElement
+                  options={{
+                    style: elementStyle,
+                    classes: { base: fieldClass },
+                  }}
+                  onChange={onFieldChange("cvc")}
+                />
+              </div>
+            </div>
           </div>
         ) : (
           <SkeletonCardDetails />
