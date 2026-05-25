@@ -4,7 +4,13 @@ import ErrorMessage from "@/components/molecules/ErrorMessage/ErrorMessage"
 import { isManual, isStripe } from "../../../lib/constants"
 import { placeOrder } from "@/lib/data/cart"
 import { HttpTypes } from "@medusajs/types"
-import { useElements, useStripe } from "@stripe/react-stripe-js"
+import {
+  useElements,
+  useStripe,
+  CardNumberElement,
+  CardExpiryElement,
+  CardCvcElement,
+} from "@stripe/react-stripe-js"
 import React, { useEffect, useState } from "react"
 import { Button } from "@/components/atoms"
 import { orderErrorFormatter } from "@/lib/helpers/order-error-formatter"
@@ -42,11 +48,10 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
         <ManualTestPaymentButton notReady={notReady} data-testid={dataTestId} />
       )
     default:
-      return (
-        <Button disabled className="w-full">
-          Select a payment method
-        </Button>
-      )
+      // No payment method selected yet — render nothing rather than a
+      // disabled "Select a payment method" stub. The button only appears
+      // once the buyer can actually act on it.
+      return null
   }
 }
 
@@ -61,7 +66,7 @@ const StripePaymentButton = ({
 }) => {
   const [submitting, setSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  const [disabled, setDisabled] = useState(true)
+  const [cardComplete, setCardComplete] = useState(false)
 
   const onPaymentCompleted = async () => {
     try {
@@ -82,20 +87,63 @@ const StripePaymentButton = ({
 
   const stripe = useStripe()
   const elements = useElements()
-  const card = elements?.getElement("card")
 
   const session = cart.payment_collection?.payment_sessions?.find(
-    (s) => s.status === "pending"
+    (s: any) => s.status === "pending"
   )
 
+  // Reactively track completeness across the three split card fields
+  // (number / expiry / cvc) via Stripe's element change events. The
+  // fields are mounted by StripeCardContainer in the same Elements
+  // provider; they may mount slightly after this button, so retry
+  // attaching until all three exist.
   useEffect(() => {
-    //@ts-ignore
-    setDisabled(!card?._complete)
-  }, [card, stripe, elements, cart])
+    if (!elements) return
+    let active = true
+    const state = { number: false, expiry: false, cvc: false }
+    const attached: Array<{ off: () => void }> = []
+
+    const attach = (): boolean => {
+      const num = elements.getElement(CardNumberElement)
+      const exp = elements.getElement(CardExpiryElement)
+      const cvc = elements.getElement(CardCvcElement)
+      if (!num || !exp || !cvc) return false
+      const make =
+        (key: "number" | "expiry" | "cvc") => (e: { complete: boolean }) => {
+          state[key] = e.complete
+          if (active) setCardComplete(state.number && state.expiry && state.cvc)
+        }
+      const hn = make("number")
+      const he = make("expiry")
+      const hc = make("cvc")
+      num.on("change", hn)
+      exp.on("change", he)
+      cvc.on("change", hc)
+      attached.push(
+        { off: () => num.off("change", hn) },
+        { off: () => exp.off("change", he) },
+        { off: () => cvc.off("change", hc) }
+      )
+      return true
+    }
+
+    let interval: ReturnType<typeof setInterval> | undefined
+    if (!attach()) {
+      interval = setInterval(() => {
+        if (attach() && interval) clearInterval(interval)
+      }, 200)
+    }
+    return () => {
+      active = false
+      if (interval) clearInterval(interval)
+      attached.forEach((a) => a.off())
+    }
+  }, [elements])
 
   const handlePayment = async () => {
     setSubmitting(true)
 
+    const card = elements?.getElement(CardNumberElement)
     if (!stripe || !elements || !card || !cart) {
       setSubmitting(false)
       return
@@ -149,16 +197,18 @@ const StripePaymentButton = ({
       })
   }
 
+  // Only show the Place Order button once it's actually actionable —
+  // card fully entered and prior steps complete. No greyed-out button
+  // while the buyer is still filling in card details.
+  const canPlaceOrder = cardComplete && !notReady
+
   return (
     <>
-      <Button
-        disabled={disabled || notReady}
-        onClick={handlePayment}
-        loading={submitting}
-        className="w-full"
-      >
-        Place order
-      </Button>
+      {canPlaceOrder && (
+        <Button onClick={handlePayment} loading={submitting} className="w-full">
+          Place order
+        </Button>
+      )}
       <ErrorMessage
         error={errorMessage}
         data-testid="stripe-payment-error-message"

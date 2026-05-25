@@ -4,11 +4,11 @@ import { Badge, Button } from "@/components/atoms"
 import { CartDropdownItem, Dropdown } from "@/components/molecules"
 import { usePrevious } from "@/hooks/usePrevious"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
-import { CartIcon } from "@/icons"
+import { CartIcon, CloseIcon } from "@/icons"
 import { convertToLocale } from "@/lib/helpers/money"
 import { filterValidCartItems } from "@/lib/helpers/filter-valid-cart-items"
 import { HttpTypes } from "@medusajs/types"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { usePathname } from "next/navigation"
 import { useCartContext } from "@/components/providers"
 
@@ -19,6 +19,16 @@ const getItemCount = (cart: HttpTypes.StoreCart | null) => {
 export const CartDropdown = () => {
   const { cart } = useCartContext()
   const [open, setOpen] = useState(false)
+  // When opened by adding an item, the dropdown is "pinned": it stays until the
+  // user explicitly closes it (X button or click outside), rather than closing
+  // on mouse-leave like the transient hover preview does.
+  const [pinned, setPinned] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  const close = () => {
+    setOpen(false)
+    setPinned(false)
+  }
 
   const previousItemCount = usePrevious(getItemCount(cart))
   const cartItemsCount = (cart && getItemCount(cart)) || 0
@@ -47,14 +57,16 @@ export const CartDropdown = () => {
     currency_code: cart?.currency_code || "eur",
   })
 
+  // Close on click outside the dropdown ("click away").
   useEffect(() => {
-    if (open) {
-      const timeout = setTimeout(() => {
-        setOpen(false)
-      }, 2000)
-
-      return () => clearTimeout(timeout)
+    if (!open) return
+    const handleClickOutside = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        close()
+      }
     }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [open])
 
   useEffect(() => {
@@ -64,14 +76,18 @@ export const CartDropdown = () => {
       pathname.split("/")[2] !== "cart"
     ) {
       setOpen(true)
+      setPinned(true)
     }
   }, [cartItemsCount, previousItemCount])
 
   return (
     <div
+      ref={containerRef}
       className="relative"
       onMouseOver={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
+      onMouseLeave={() => {
+        if (!pinned) setOpen(false)
+      }}
     >
       <LocalizedClientLink
         href="/cart"
@@ -87,7 +103,17 @@ export const CartDropdown = () => {
       </LocalizedClientLink>
       <Dropdown show={open}>
         <div className="lg:w-[460px] shadow-lg">
-          <h3 className="uppercase heading-md border-b p-4">Shopping cart</h3>
+          <div className="flex justify-between items-center border-b p-4">
+            <h3 className="uppercase heading-md">Shopping cart</h3>
+            <button
+              type="button"
+              onClick={close}
+              aria-label="Close cart"
+              className="text-secondary hover:text-primary"
+            >
+              <CloseIcon size={20} />
+            </button>
+          </div>
           <div className="p-4">
             {Boolean(cartItemsCount) ? (
               <div>
