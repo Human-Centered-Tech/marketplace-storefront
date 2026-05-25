@@ -5,6 +5,7 @@ import {
 import { retrieveCustomer } from "@/lib/data/customer"
 import { getUserWishlists } from "@/lib/data/wishlist"
 import { listMyRegistries } from "@/lib/data/registry"
+import { getSellerStorefrontByHandle } from "@/lib/data/seller"
 import { AdditionalAttributeProps } from "@/types/product"
 import { SellerProps } from "@/types/seller"
 import { Wishlist } from "@/types/wishlist"
@@ -40,6 +41,15 @@ export const ProductDetails = async ({
     }
   }
 
+  // Pull the vendor's storefront-extension data so the PDP can surface
+  // the refund policy link next to Add to Cart (Etsy/Amazon-style:
+  // policy at the purchase-decision moment). Null when the vendor
+  // hasn't posted one — the link simply doesn't render.
+  const sellerHandle = product.seller?.handle
+  const sellerRefundPolicy = sellerHandle
+    ? (await getSellerStorefrontByHandle(sellerHandle)).refund_policy
+    : null
+
   return (
     <div className="space-y-6">
       <ProductDetailsHeader
@@ -48,6 +58,7 @@ export const ProductDetails = async ({
         user={user}
         wishlist={wishlist}
         registries={registries}
+        sellerRefundPolicy={sellerRefundPolicy}
       />
     </div>
   )
