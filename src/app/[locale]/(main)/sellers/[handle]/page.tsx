@@ -78,6 +78,7 @@ export default async function SellerPage({
           locale={locale}
           currency_code={currency_code}
           owner_preview={isOwnerPreview}
+          refund_policy={seller.refund_policy ?? null}
         />
       </div>
     </main>
