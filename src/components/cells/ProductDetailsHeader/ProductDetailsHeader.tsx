@@ -38,16 +38,22 @@ export const ProductDetailsHeader = ({
   user,
   wishlist,
   registries,
+  sellerRefundPolicy,
 }: {
   product: HttpTypes.StoreProduct & { seller?: SellerProps }
   locale: string
   user: HttpTypes.StoreCustomer | null
   wishlist?: Wishlist[]
   registries?: GiftRegistry[]
+  // The vendor's plain-text refund policy. Null = no policy posted →
+  // no link rendered. Surfaced near Add to Cart so buyers see the
+  // policy before they purchase (Amazon/Etsy pattern).
+  sellerRefundPolicy?: string | null
 }) => {
   const { onAddToCart, cart } = useCartContext()
   const [isAdding, setIsAdding] = useState(false)
   const [quantity, setQuantity] = useState(1)
+  const [showRefundPolicy, setShowRefundPolicy] = useState(false)
   const { allSearchParams } = useGetAllSearchParams()
   const updateSearchParams = useUpdateSearchParams()
 
@@ -318,6 +324,19 @@ export const ProductDetailsHeader = ({
         />
       </div>
 
+      {/* Refund policy link — only when the vendor has posted one. Sits
+          below the Add to Cart row so buyers see it at the purchase-
+          decision moment (Amazon/Etsy pattern). */}
+      {sellerRefundPolicy && sellerRefundPolicy.trim() && (
+        <button
+          type="button"
+          onClick={() => setShowRefundPolicy(true)}
+          className="text-[12px] font-sans text-[#75777f] hover:text-[#001435] underline underline-offset-2 self-start"
+        >
+          Refund &amp; return policy
+        </button>
+      )}
+
       {/* Product highlights */}
       <div className="space-y-4 pt-4 border-t border-[#75777f]/10">
         <ProductHighlight
@@ -388,6 +407,50 @@ export const ProductDetailsHeader = ({
             buttonClassNames="w-full uppercase font-sans text-[11px] font-bold tracking-widest border-2 border-[#001435] text-[#001435] hover:bg-[#001435] hover:text-white rounded-xl py-3 transition-all duration-200"
             product={product}
           />
+        </div>
+      )}
+
+      {/* Refund policy modal. Plain-text content rendered with
+          preserved line breaks. Click backdrop or X to close. */}
+      {showRefundPolicy && sellerRefundPolicy && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          onClick={() => setShowRefundPolicy(false)}
+        >
+          <div
+            className="bg-white rounded-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-labelledby="refund-policy-title"
+            aria-modal="true"
+          >
+            <div className="flex items-center justify-between border-b border-[#75777f]/20 px-6 py-4">
+              <h2
+                id="refund-policy-title"
+                className="font-serif text-xl font-bold text-[#001435]"
+              >
+                Refund &amp; return policy
+              </h2>
+              <button
+                type="button"
+                onClick={() => setShowRefundPolicy(false)}
+                aria-label="Close"
+                className="text-[#75777f] hover:text-[#001435] text-2xl leading-none"
+              >
+                &times;
+              </button>
+            </div>
+            <div className="px-6 py-5">
+              {product.seller && (
+                <p className="font-sans text-xs uppercase tracking-widest text-[#75777f] mb-3">
+                  From {product.seller.name}
+                </p>
+              )}
+              <p className="text-[14px] text-[#001435] whitespace-pre-line leading-relaxed">
+                {sellerRefundPolicy}
+              </p>
+            </div>
+          </div>
         </div>
       )}
     </div>
