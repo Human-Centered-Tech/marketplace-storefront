@@ -47,7 +47,18 @@ const CartPaymentSection = ({
   const router = useRouter()
   const pathname = usePathname()
 
-  const isOpen = searchParams.get("step") === "payment"
+  const step = searchParams.get("step")
+  const isOpen = step === "payment"
+
+  // Whether the buyer has advanced past the address step. The payment
+  // card stays hidden during address entry (no empty "Payment" box) and
+  // only appears once they click "Proceed to payment" (?step=payment),
+  // reach review, or already have a payment session from a prior visit.
+  const hasPaymentSession = Boolean(
+    cart?.payment_collection?.payment_sessions?.length
+  )
+  const showSection =
+    step === "payment" || step === "review" || hasPaymentSession
 
   const isStripe = isStripeFunc(selectedPaymentMethod)
 
@@ -117,8 +128,30 @@ const CartPaymentSection = ({
     setError(null)
   }, [isOpen])
 
+  // When the buyer reaches the payment step and there's exactly one
+  // payment method, auto-select it so the card fields appear without an
+  // extra radio click. Guarded so it runs once: only fires when nothing
+  // is selected yet and no session exists.
+  useEffect(() => {
+    if (
+      isOpen &&
+      !selectedPaymentMethod &&
+      !activeSession &&
+      availablePaymentMethods?.length === 1
+    ) {
+      setPaymentMethod(availablePaymentMethods[0].id)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, availablePaymentMethods])
+
   const isEditEnabled =
     !isOpen && !!cart?.payment_collection?.payment_sessions?.length
+
+  // Don't render the payment card at all while the buyer is still on the
+  // address step — avoids a confusing empty "Payment" box up front.
+  if (!showSection) {
+    return null
+  }
 
   return (
     <div className="border border-[#d6d0c4]/40 p-6 rounded-xl bg-white shadow-sm">
