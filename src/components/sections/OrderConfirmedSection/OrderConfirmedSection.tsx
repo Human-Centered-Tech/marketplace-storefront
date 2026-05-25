@@ -43,10 +43,6 @@ export const OrderConfirmedSection = ({
                 #{order.display_id}
               </p>
             </div>
-            <div className="flex items-center gap-2 text-[13px] text-[rgba(var(--gold-600))]">
-              <span>📦</span>
-              <span>3-5 Business Days via Faithful Logistics</span>
-            </div>
           </div>
 
           <p className="text-[14px] text-secondary">
