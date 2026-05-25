@@ -22,6 +22,13 @@ export const ProductCard = ({
 
   const priceLabel = cheapestPrice?.calculated_price ?? "View Price"
 
+  // Fall back to the first gallery image when no thumbnail is set. Vendors
+  // often upload product images without explicitly marking one as the
+  // thumbnail; the Algolia hit already carries the images array, so the card
+  // can show the same image the product detail page does.
+  const cardImage =
+    product.thumbnail || (product as any).images?.[0]?.url || null
+
   return (
     <article className="flex flex-col group h-full">
       {/* Image with category badge — fixed 4:5 aspect, so all images match in
@@ -34,11 +41,11 @@ export const ProductCard = ({
         title={`View ${productName}`}
         className="block aspect-[4/5] overflow-hidden bg-[#f7f4ec] relative rounded-lg"
       >
-        {product.thumbnail ? (
+        {cardImage ? (
           <Image
             priority
             fetchPriority="high"
-            src={decodeURIComponent(product.thumbnail)}
+            src={decodeURIComponent(cardImage)}
             alt={`${productName} image`}
             width={400}
             height={500}
