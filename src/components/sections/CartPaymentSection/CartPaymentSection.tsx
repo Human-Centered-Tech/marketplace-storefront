@@ -78,6 +78,14 @@ const CartPaymentSection = ({
   const paymentReady =
     (activeSession && cart?.shipping_methods.length !== 0) || paidByGiftcard
 
+  // Once payment details are complete, the review panel's "Place order"
+  // button appears and becomes the single CTA — so hide the now-redundant
+  // "Continue to review" button. Scoped to the active-session/card case so
+  // the gift-card and pre-session flows are unaffected.
+  const paymentDetailsComplete = Boolean(
+    activeSession && (!isStripe || cardComplete)
+  )
+
   const createQueryString = useCallback(
     (name: string, value: string) => {
       const params = new URLSearchParams(searchParams)
@@ -222,19 +230,21 @@ const CartPaymentSection = ({
             data-testid="payment-method-error-message"
           />
 
-          <Button
-            onClick={handleSubmit}
-            variant="tonal"
-            loading={isLoading}
-            disabled={
-              (isStripe && !cardComplete) ||
-              (!selectedPaymentMethod && !paidByGiftcard)
-            }
-          >
-            {!activeSession && isStripeFunc(selectedPaymentMethod)
-              ? " Enter card details"
-              : "Continue to review"}
-          </Button>
+          {!paymentDetailsComplete && (
+            <Button
+              onClick={handleSubmit}
+              variant="tonal"
+              loading={isLoading}
+              disabled={
+                (isStripe && !cardComplete) ||
+                (!selectedPaymentMethod && !paidByGiftcard)
+              }
+            >
+              {!activeSession && isStripeFunc(selectedPaymentMethod)
+                ? " Enter card details"
+                : "Continue to review"}
+            </Button>
+          )}
         </div>
 
         <div className={isOpen ? "hidden" : "block"}>
