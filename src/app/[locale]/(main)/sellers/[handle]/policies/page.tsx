@@ -6,7 +6,11 @@ import { getSellerByHandle } from "@/lib/data/seller"
 import { SellerProps } from "@/types/seller"
 import { notFound } from "next/navigation"
 
-export default async function SellerReviewsPage({
+// Per-tab seller page. Mirrors /sellers/[handle]/reviews — the only
+// difference is tab="policies" so SellerTabs renders the refund policy
+// pane. Returns 404 if the vendor hasn't posted a policy so the URL
+// can't be guessed into rendering an empty card.
+export default async function SellerPoliciesPage({
   params,
 }: {
   params: Promise<{ handle: string; locale: string }>
@@ -15,14 +19,13 @@ export default async function SellerReviewsPage({
 
   const seller = (await getSellerByHandle(handle)) as SellerProps
   const currency_code = (await getRegion(locale))?.currency_code || "usd"
-
   const user = await retrieveCustomer()
 
-  const tab = "reviews"
-
-  // Non-ACTIVE stores aren't browsable — see /sellers/[handle]/page.tsx
-  // for the same gate.
   if (!seller || Array.isArray(seller) || seller.store_status !== "ACTIVE") {
+    notFound()
+  }
+
+  if (!seller.refund_policy || !seller.refund_policy.trim()) {
     notFound()
   }
 
@@ -38,12 +41,12 @@ export default async function SellerReviewsPage({
 
       <div className="w-full max-w-7xl mx-auto px-8 pb-24">
         <SellerTabs
-          tab={tab}
+          tab="policies"
           seller_id={seller.id}
           seller_handle={seller.handle}
           locale={locale}
           currency_code={currency_code}
-          refund_policy={seller.refund_policy ?? null}
+          refund_policy={seller.refund_policy}
         />
       </div>
     </main>

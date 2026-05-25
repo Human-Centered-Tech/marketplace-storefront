@@ -11,26 +11,31 @@ export const getSellerByHandle = async (handle: string) => {
       cache: "no-cache",
     })
     .then(async ({ seller }) => {
-      // Fetch the vendor's cover image from the Catholic-Owned companion
-      // module. Mercur's seller row only carries the logo (`photo`); the
-      // hero banner lives in `seller_storefront`. Done as a separate
-      // request because Mercur's /store/seller/:handle is owned upstream
-      // and not extensible. Fail open: an unreachable endpoint or a
-      // seller without an uploaded cover both surface as null and the
-      // hero falls back to the default banner.
+      // Fetch the vendor's storefront extension data from the Catholic-
+      // Owned companion module (seller_storefront). Mercur's seller row
+      // doesn't carry a cover or a refund policy — both live in our
+      // companion table. One round trip returns both fields. Fail open:
+      // an unreachable endpoint surfaces as null for each, the hero
+      // falls back to the default banner, and the refund policy section
+      // simply doesn't render.
       let cover_image_url: string | null = null
+      let refund_policy: string | null = null
       try {
         const storefront = await sdk.client.fetch<{
           cover_image_url: string | null
+          refund_policy: string | null
         }>(`/store/sellers/${handle}/storefront`, { cache: "no-cache" })
         cover_image_url = storefront?.cover_image_url ?? null
+        refund_policy = storefront?.refund_policy ?? null
       } catch {
         cover_image_url = null
+        refund_policy = null
       }
 
       const response = {
         ...seller,
         cover_image_url,
+        refund_policy,
         reviews:
           seller.reviews
             ?.filter((item) => item !== null)

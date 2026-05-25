@@ -14,6 +14,7 @@ export const SellerTabs = ({
   locale,
   currency_code,
   owner_preview,
+  refund_policy,
 }: {
   tab: string
   seller_handle: string
@@ -25,13 +26,22 @@ export const SellerTabs = ({
   // store_status:ACTIVE Algolia filter so unpublished/inactive stores
   // are previewable. Always already verified server-side.
   owner_preview?: boolean
+  // Plain-text policy the vendor published on the storefront-edit page.
+  // Null = no policy → the policies tab is omitted entirely (no empty
+  // tab for vendors who haven't filled it in).
+  refund_policy?: string | null
 }) => {
+  const hasPolicy = Boolean(refund_policy && refund_policy.trim().length > 0)
+
   const tabsList = [
     { label: "products", link: `/sellers/${seller_handle}/` },
     {
       label: "reviews",
       link: `/sellers/${seller_handle}/reviews`,
     },
+    ...(hasPolicy
+      ? [{ label: "policies", link: `/sellers/${seller_handle}/policies` }]
+      : []),
   ]
 
   return (
@@ -60,6 +70,18 @@ export const SellerTabs = ({
           <SellerReviewTab seller_handle={seller_handle} />
         </Suspense>
       </TabsContent>
+      {hasPolicy && (
+        <TabsContent value="policies" activeTab={tab}>
+          <div className="max-w-3xl mx-auto bg-white p-8 rounded-xl border border-[#d6d0c4]/40 shadow-sm">
+            <h2 className="font-serif text-2xl font-bold text-[#001435] mb-4">
+              Refund &amp; return policy
+            </h2>
+            <p className="text-[15px] text-[#001435] whitespace-pre-line leading-relaxed">
+              {refund_policy}
+            </p>
+          </div>
+        </TabsContent>
+      )}
     </div>
   )
 }
