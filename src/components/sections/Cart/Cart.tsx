@@ -39,9 +39,6 @@ export const Cart = async () => {
                 Proceed to Checkout
               </Button>
             </LocalizedClientLink>
-            <p className="text-center text-[11px] text-secondary mt-3">
-              ✝ Secure Checkout
-            </p>
           </div>
         </div>
       </div>
