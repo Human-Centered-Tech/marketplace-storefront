@@ -86,7 +86,7 @@ export const CartAddressSection = ({
               cart={cart}
             />
             <Button
-              className="mt-6"
+              className="mt-6 bg-[#001435] text-white hover:bg-[#001435]/90"
               data-testid="submit-address-button"
               variant="tonal"
             >
