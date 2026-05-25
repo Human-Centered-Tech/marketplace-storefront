@@ -35,7 +35,6 @@ const CartPaymentSection = ({
     (paymentSession: any) => paymentSession.status === "pending"
   )
 
-  const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [cardBrand, setCardBrand] = useState<string | null>(null)
   const [cardComplete, setCardComplete] = useState(false)
@@ -60,12 +59,15 @@ const CartPaymentSection = ({
   const showSection =
     step === "payment" || step === "review" || hasPaymentSession
 
-  const isStripe = isStripeFunc(selectedPaymentMethod)
-
   const setPaymentMethod = async (method: string) => {
     setError(null)
     setSelectedPaymentMethod(method)
-    if (isStripeFunc(method)) {
+    // Initiate the payment session on selection so the review panel's
+    // "Place order" button is the single way forward — there's no separate
+    // "Continue to review" step. Stripe needs the session to mount the card
+    // fields; other providers (e.g. manual) need it so their Place Order
+    // button appears.
+    if (method) {
       await initiatePaymentSession(cart, {
         provider_id: method,
       })
@@ -77,14 +79,6 @@ const CartPaymentSection = ({
 
   const paymentReady =
     (activeSession && cart?.shipping_methods.length !== 0) || paidByGiftcard
-
-  // Once payment details are complete, the review panel's "Place order"
-  // button appears and becomes the single CTA — so hide the now-redundant
-  // "Continue to review" button. Scoped to the active-session/card case so
-  // the gift-card and pre-session flows are unaffected.
-  const paymentDetailsComplete = Boolean(
-    activeSession && (!isStripe || cardComplete)
-  )
 
   const createQueryString = useCallback(
     (name: string, value: string) => {
@@ -100,36 +94,6 @@ const CartPaymentSection = ({
     router.push(pathname + "?" + createQueryString("step", "payment"), {
       scroll: false,
     })
-  }
-
-  const handleSubmit = async () => {
-    setIsLoading(true)
-    try {
-      const shouldInputCard =
-        isStripeFunc(selectedPaymentMethod) && !activeSession
-
-      const checkActiveSession =
-        activeSession?.provider_id === selectedPaymentMethod
-
-      if (!checkActiveSession) {
-        await initiatePaymentSession(cart, {
-          provider_id: selectedPaymentMethod,
-        })
-      }
-
-      if (!shouldInputCard) {
-        return router.push(
-          pathname + "?" + createQueryString("step", "review"),
-          {
-            scroll: false,
-          }
-        )
-      }
-    } catch (err: any) {
-      setError(err.message)
-    } finally {
-      setIsLoading(false)
-    }
   }
 
   useEffect(() => {
@@ -229,22 +193,6 @@ const CartPaymentSection = ({
             error={error}
             data-testid="payment-method-error-message"
           />
-
-          {!paymentDetailsComplete && (
-            <Button
-              onClick={handleSubmit}
-              variant="tonal"
-              loading={isLoading}
-              disabled={
-                (isStripe && !cardComplete) ||
-                (!selectedPaymentMethod && !paidByGiftcard)
-              }
-            >
-              {!activeSession && isStripeFunc(selectedPaymentMethod)
-                ? " Enter card details"
-                : "Continue to review"}
-            </Button>
-          )}
         </div>
 
         <div className={isOpen ? "hidden" : "block"}>
