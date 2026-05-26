@@ -42,7 +42,7 @@ export const CartItemsProducts = ({
                     alt="Product thumbnail"
                     width={100}
                     height={132}
-                    className="rounded-xs w-[100px] h-[132px] object-contain"
+                    className="rounded-md w-[100px] h-[132px] object-contain"
                   />
                 ) : (
                   <Image
@@ -50,7 +50,7 @@ export const CartItemsProducts = ({
                     alt="Product thumbnail"
                     width={50}
                     height={66}
-                    className="rounded-xs w-[50px] h-[66px] object-contain opacity-30"
+                    className="rounded-md w-[50px] h-[66px] object-contain opacity-30"
                   />
                 )}
               </div>
