@@ -15,7 +15,7 @@ const tierBadgeStyles: Record<string, string> = {
   // Legacy
   enterprise: "bg-gold text-navy-dark",
   featured: "bg-navy-dark text-white",
-  verified: "bg-white text-navy-dark border border-navy-dark",
+  verified: "bg-navy-dark text-white",
 }
 
 const tierLabels: Record<string, string> = {
