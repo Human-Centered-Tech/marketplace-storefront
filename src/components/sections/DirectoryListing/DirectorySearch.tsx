@@ -392,28 +392,31 @@ export const DirectorySearch = ({
       const query = queryParts.join(" ")
 
       // When a state-served filter is on, the user's intent is "show me
-      // every business that serves this state" — proximity filtering
-      // (near-me radius, default-radius) would mask matching businesses
-      // outside that radius, so we drop geo entirely. Otherwise keep
-      // aroundLatLng for closer-first ranking and aroundRadius when the
-      // user has explicitly engaged with location.
+      // every business that serves this state" regardless of where it's
+      // physically located — so we drop ALL geo. This includes any active
+      // map viewport (bbox): an insideBoundingBox here would restrict to
+      // businesses physically inside the rectangle, masking most matches
+      // (a business can serve FL while being located elsewhere). State
+      // therefore takes priority over both proximity and the map box.
       //
-      // Map-driven viewport search (bbox) takes priority over both —
-      // when the user pans the map and clicks "Search this area", we
-      // want exactly the visible rectangle, not a radius from somewhere
-      // else.
+      // Without a state filter: a map-driven viewport (bbox, set via
+      // "Search this area") takes priority over proximity — we want exactly
+      // the visible rectangle. Otherwise aroundLatLng for closer-first
+      // ranking, plus aroundRadius when the user has engaged with location.
       const geoParams: Record<string, unknown> = {}
-      if (bbox) {
-        // Algolia insideBoundingBox: [[p1Lat, p1Lng, p2Lat, p2Lng]],
-        // two diagonally opposite corners. NW + SE works.
-        geoParams.insideBoundingBox = [
-          [bbox.north, bbox.west, bbox.south, bbox.east],
-        ]
-      } else if (!stateServed) {
-        geoParams.aroundLatLng = `${effectiveProximity.lat},${effectiveProximity.lng}`
-        geoParams.getRankingInfo = true
-        if (applyRadius) {
-          geoParams.aroundRadius = Math.round(radiusMi * KM_PER_MI * 1000)
+      if (!stateServed) {
+        if (bbox) {
+          // Algolia insideBoundingBox: [[p1Lat, p1Lng, p2Lat, p2Lng]],
+          // two diagonally opposite corners. NW + SE works.
+          geoParams.insideBoundingBox = [
+            [bbox.north, bbox.west, bbox.south, bbox.east],
+          ]
+        } else {
+          geoParams.aroundLatLng = `${effectiveProximity.lat},${effectiveProximity.lng}`
+          geoParams.getRankingInfo = true
+          if (applyRadius) {
+            geoParams.aroundRadius = Math.round(radiusMi * KM_PER_MI * 1000)
+          }
         }
       }
 
