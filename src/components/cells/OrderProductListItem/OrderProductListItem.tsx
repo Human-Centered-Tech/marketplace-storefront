@@ -1,5 +1,6 @@
 import { Divider } from "@/components/atoms"
 import { convertToLocale } from "@/lib/helpers/money"
+import { getLineItemThumbnail } from "@/lib/helpers/get-line-item-thumbnail"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
@@ -20,9 +21,9 @@ export const OrderProductListItem = ({
       <div className="grid grid-cols-1 sm:grid-cols-7 w-full sm:gap-4 mb-2">
         <div className="sm:col-span-2 flex gap-2 items-center">
           <div className="w-[66px] h-16 relative rounded-sm overflow-hidden flex items-center justify-center">
-            {item.thumbnail ? (
+            {getLineItemThumbnail(item) ? (
               <Image
-                src={item.thumbnail}
+                src={getLineItemThumbnail(item)!}
                 alt={item.title}
                 width={66}
                 height={66}
