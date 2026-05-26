@@ -2,6 +2,7 @@ import Image from "next/image"
 import { HttpTypes } from "@medusajs/types"
 import { convertToLocale } from "@/lib/helpers/money"
 import { filterValidCartItems } from "@/lib/helpers/filter-valid-cart-items"
+import { getLineItemThumbnail } from "@/lib/helpers/get-line-item-thumbnail"
 import { DeleteCartItemButton } from "@/components/molecules"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 import { UpdateCartItemButton } from "@/components/molecules/UpdateCartItemButton/UpdateCartItemButton"
@@ -24,6 +25,7 @@ export const CartItemsProducts = ({
     <div>
       {validProducts.map((product) => {
         const { options } = product.variant ?? {}
+        const itemImage = getLineItemThumbnail(product)
 
         const total = convertToLocale({
           amount: product.subtotal ?? 0,
@@ -34,9 +36,9 @@ export const CartItemsProducts = ({
           <div key={product.id} className="border rounded-sm p-1 flex gap-2">
             <LocalizedClientLink href={`/products/${product.product_handle}`}>
               <div className="w-[100px] h-[132px] flex items-center justify-center">
-                {product.thumbnail ? (
+                {itemImage ? (
                   <Image
-                    src={decodeURIComponent(product.thumbnail)}
+                    src={decodeURIComponent(itemImage)}
                     alt="Product thumbnail"
                     width={100}
                     height={132}

@@ -112,7 +112,7 @@ export const ProductDetailsHeader = ({
     const total = +(variantPrice?.calculated_price_number || 0)
 
     const storeCartLineItem = {
-      thumbnail: product.thumbnail || "",
+      thumbnail: product.thumbnail || product.images?.[0]?.url || "",
       product_title: product.title,
       quantity: quantity,
       subtotal: subtotal * quantity,

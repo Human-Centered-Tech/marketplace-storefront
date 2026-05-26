@@ -1,4 +1,5 @@
 import { convertToLocale } from "@/lib/helpers/money"
+import { getLineItemThumbnail } from "@/lib/helpers/get-line-item-thumbnail"
 import { HttpTypes } from "@medusajs/types"
 import Image from "next/image"
 
@@ -19,12 +20,14 @@ export const CartDropdownItem = ({
     currency_code,
   })
 
+  const itemImage = getLineItemThumbnail(item)
+
   return (
     <div className="border rounded-sm p-1 flex gap-2 mb-4">
       <div className="w-[100px] h-[132px] flex items-center justify-center">
-        {item.thumbnail ? (
+        {itemImage ? (
           <Image
-            src={decodeURIComponent(item.thumbnail)}
+            src={decodeURIComponent(itemImage)}
             alt={item.product_title || ""}
             width={80}
             height={90}
