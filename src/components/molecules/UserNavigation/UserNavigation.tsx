@@ -67,10 +67,6 @@ const navigationItems = [
     href: "/user/wishlist",
   },
   {
-    label: "My Directory",
-    href: "/user/directory",
-  },
-  {
     label: "My Registries",
     href: "/user/registry",
   },
@@ -114,8 +110,8 @@ export const UserNavigation = () => {
         </a>
       ) : (
         <NavigationItem
-          href="/user/become-vendor"
-          active={path === "/user/become-vendor"}
+          href="/sell"
+          active={path === "/sell"}
         >
           Become a Merchant
         </NavigationItem>

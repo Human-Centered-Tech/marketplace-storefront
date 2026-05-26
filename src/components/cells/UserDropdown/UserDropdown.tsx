@@ -70,7 +70,7 @@ export const UserDropdown = ({
                 Merchant Dashboard
               </a>
             ) : (
-              <NavigationItem href="/user/become-vendor">
+              <NavigationItem href="/sell">
                 Become a Merchant
               </NavigationItem>
             )}
