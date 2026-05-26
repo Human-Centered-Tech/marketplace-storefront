@@ -67,10 +67,6 @@ const navigationItems = [
     href: "/user/wishlist",
   },
   {
-    label: "My Directory",
-    href: "/user/directory",
-  },
-  {
     label: "My Registries",
     href: "/user/registry",
   },
