@@ -31,7 +31,7 @@ export const CartDropdownItem = ({
             alt={item.product_title || ""}
             width={80}
             height={90}
-            className="w-[80px] h-[90px] object-cover rounded-xs"
+            className="w-[80px] h-[90px] object-cover rounded-md"
             priority
           />
         ) : (
@@ -40,7 +40,7 @@ export const CartDropdownItem = ({
             alt="Product thumbnail"
             width={50}
             height={66}
-            className="rounded-xs w-[50px] h-[66px] object-contain opacity-30"
+            className="rounded-md w-[50px] h-[66px] object-contain opacity-30"
           />
         )}
       </div>
