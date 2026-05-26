@@ -33,7 +33,7 @@ export const CartItemsProducts = ({
         })
 
         return (
-          <div key={product.id} className="border rounded-sm p-1 flex gap-2">
+          <div key={product.id} className="border rounded-sm p-1 pl-3 flex gap-2">
             <LocalizedClientLink href={`/products/${product.product_handle}`}>
               <div className="w-[100px] h-[132px] flex items-center justify-center">
                 {itemImage ? (
