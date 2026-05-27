@@ -215,11 +215,9 @@ export default function SellPage() {
 
               {/* Pillar 3 */}
               <div className="bg-[#001435] rounded-xl p-6 flex flex-col items-center text-center">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#BE9B32" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mb-4">
-                  <path d="M12 3c-1.6 2.7-3 5-3 8v5c0 1.7 1.3 3 3 3s3-1.3 3-3v-5c0-3-1.4-5.3-3-8z" />
-                  <line x1="12" y1="4.5" x2="12" y2="18.5" />
-                  <path d="M9 12.5c-1 .2-1.7 .6-2.2 1.3" />
-                  <path d="M15 12.5c1 .2 1.7 .6 2.2 1.3" />
+                {/* Praying-hands icon from Phosphor Icons (MIT) */}
+                <svg width="32" height="32" viewBox="0 0 256 256" fill="#BE9B32" className="mb-4">
+                  <path d="M235.32,180l-36.24-36.25L162.62,23.46A21.76,21.76,0,0,0,128,12.93,21.76,21.76,0,0,0,93.38,23.46L56.92,143.76,20.68,180a16,16,0,0,0,0,22.62l32.69,32.69a16,16,0,0,0,22.63,0L124.28,187a40.68,40.68,0,0,0,3.72-4.29,40.68,40.68,0,0,0,3.72,4.29L180,235.32a16,16,0,0,0,22.63,0l32.69-32.69A16,16,0,0,0,235.32,180ZM64.68,224,32,191.32l12.69-12.69,32.69,32.69ZM120,158.75a23.85,23.85,0,0,1-7,17L88.68,200,56,167.32l13.65-13.66a8,8,0,0,0,2-3.34l37-122.22A5.78,5.78,0,0,1,120,29.78Zm23,17a23.85,23.85,0,0,1-7-17v-129a5.78,5.78,0,0,1,11.31-1.68l37,122.22a8,8,0,0,0,2,3.34l14.49,14.49-33.4,32ZM191.32,224l-12.56-12.57,33.39-32L224,191.32Z" />
                 </svg>
                 <p className="text-[14px] text-white leading-relaxed">
                   Prays the Rosary or practices other sincere daily devotion(s)
