@@ -28,6 +28,7 @@ export function DirectoryMapView({
   onSearchArea,
   bboxActive = false,
   isSearching = false,
+  showDistance = false,
 }: {
   listings: DirectoryListing[]
   // Fires when the user clicks "Search this area" — bbox is the map's
@@ -38,6 +39,10 @@ export function DirectoryMapView({
   // panning after each viewport-driven search.
   bboxActive?: boolean
   isSearching?: boolean
+  // Show "X mi away" on cards. Only true when proximity is from real user
+  // input (Near-me / zip), never the Denver ranking default — so we don't
+  // surface a misleading distance.
+  showDistance?: boolean
 }) {
   const [markers, setMarkers] = useState<MarkerData[]>([])
   const [loading, setLoading] = useState(true)
@@ -77,6 +82,12 @@ export function DirectoryMapView({
   const selected = selectedId
     ? listings.find((l) => l.id === selectedId)
     : null
+  const selectedDistanceMi =
+    selected &&
+    typeof (selected as { _distance_miles?: number })._distance_miles ===
+      "number"
+      ? ((selected as { _distance_miles?: number })._distance_miles as number)
+      : null
 
   return (
     <div className="flex flex-col lg:flex-row h-[calc(100vh-280px)] min-h-[500px] rounded-xl overflow-hidden border border-gray-200">
@@ -90,6 +101,8 @@ export function DirectoryMapView({
           ) : (
             listings.map((listing) => {
               const hasMarker = markers.some((m) => m.id === listing.id)
+              const distanceMi = (listing as { _distance_miles?: number })
+                ._distance_miles
               return (
                 <button
                   key={listing.id}
@@ -100,32 +113,54 @@ export function DirectoryMapView({
                       : "border-transparent"
                   }`}
                 >
-                  <div className="flex items-center gap-2 mb-1">
-                    {listing.verification_status === "approved" && (
-                      <span className="bg-green-50 text-green-700 text-[8px] font-bold px-1.5 py-0.5 rounded border border-green-100 uppercase">
-                        Verified
-                      </span>
+                  <div className="flex gap-3">
+                    {listing.logo_url && (
+                      <img
+                        src={listing.logo_url}
+                        alt={`${listing.business_name} logo`}
+                        className="w-12 h-12 rounded-lg object-contain bg-white border border-gray-100 shrink-0"
+                      />
                     )}
-                    <span className="text-secondary label-sm text-[9px] tracking-wider">
-                      {listing.category?.name || "Business"}
-                    </span>
-                  </div>
-                  <h3 className="font-serif text-lg font-bold text-navy-dark">
-                    {listing.business_name}
-                  </h3>
-                  {listing.address && (
-                    <div className="flex items-center gap-1 text-secondary text-xs mt-2">
-                      <span className="material-symbols-outlined text-xs">
-                        location_on
-                      </span>
-                      {[listing.address.city, listing.address.state]
-                        .filter(Boolean)
-                        .join(", ")}
-                      {!hasMarker && !loading && (
-                        <span className="text-gray-400 ml-1">(no map pin)</span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        {listing.verification_status === "approved" && (
+                          <span className="bg-green-50 text-green-700 text-[8px] font-bold px-1.5 py-0.5 rounded border border-green-100 uppercase">
+                            Verified
+                          </span>
+                        )}
+                        <span className="text-secondary label-sm text-[9px] tracking-wider">
+                          {listing.category?.name || "Business"}
+                        </span>
+                      </div>
+                      <h3 className="font-serif text-lg font-bold text-navy-dark">
+                        {listing.business_name}
+                      </h3>
+                      {listing.address && (
+                        <div className="flex items-center gap-1 text-secondary text-xs mt-2">
+                          <span className="material-symbols-outlined text-xs">
+                            location_on
+                          </span>
+                          {[listing.address.city, listing.address.state]
+                            .filter(Boolean)
+                            .join(", ")}
+                          {!hasMarker && !loading && (
+                            <span className="text-gray-400 ml-1">
+                              (no map pin)
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      {showDistance && typeof distanceMi === "number" && (
+                        <div className="flex items-center gap-1 text-gold-dark text-xs mt-1 font-semibold">
+                          <span className="material-symbols-outlined text-xs">
+                            near_me
+                          </span>
+                          {distanceMi < 0.1 ? "<0.1" : distanceMi.toFixed(1)} mi
+                          away
+                        </div>
                       )}
                     </div>
-                  )}
+                  </div>
                 </button>
               )
             })
@@ -194,24 +229,46 @@ export function DirectoryMapView({
             >
               close
             </button>
-            <h4 className="font-serif text-lg font-bold text-navy-dark mb-1">
-              {selected.business_name}
-            </h4>
-            {selected.category && (
-              <p className="label-sm text-[9px] text-gold-dark tracking-wider mb-1">
-                {selected.category.name}
-              </p>
-            )}
-            {selected.address && (
-              <p className="text-xs text-secondary mb-3">
-                {[selected.address.city, selected.address.state]
-                  .filter(Boolean)
-                  .join(", ")}
-              </p>
-            )}
+            <div className="flex gap-3 pr-5">
+              {selected.logo_url && (
+                <img
+                  src={selected.logo_url}
+                  alt={`${selected.business_name} logo`}
+                  className="w-12 h-12 rounded-lg object-contain bg-white border border-gray-100 shrink-0"
+                />
+              )}
+              <div className="min-w-0">
+                <h4 className="font-serif text-lg font-bold text-navy-dark mb-1">
+                  {selected.business_name}
+                </h4>
+                {selected.category && (
+                  <p className="label-sm text-[9px] text-gold-dark tracking-wider mb-1">
+                    {selected.category.name}
+                  </p>
+                )}
+                {selected.address && (
+                  <p className="text-xs text-secondary">
+                    {[selected.address.city, selected.address.state]
+                      .filter(Boolean)
+                      .join(", ")}
+                  </p>
+                )}
+                {showDistance && selectedDistanceMi !== null && (
+                  <p className="flex items-center gap-1 text-gold-dark text-xs mt-1 font-semibold">
+                    <span className="material-symbols-outlined text-xs">
+                      near_me
+                    </span>
+                    {selectedDistanceMi < 0.1
+                      ? "<0.1"
+                      : selectedDistanceMi.toFixed(1)}{" "}
+                    mi away
+                  </p>
+                )}
+              </div>
+            </div>
             <a
               href={`/directory/${selected.id}`}
-              className="label-sm text-[10px] text-gold-dark font-bold tracking-widest hover:text-navy-dark transition-colors"
+              className="label-sm text-[10px] text-gold-dark font-bold tracking-widest hover:text-navy-dark transition-colors mt-3 inline-block"
             >
               View Details →
             </a>
