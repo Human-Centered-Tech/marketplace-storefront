@@ -359,6 +359,20 @@ export const DirectorySearch = ({
   // the user has *opted in* to location.
   const proximityActive = applyRadius
 
+  // The state filter we actually apply. An explicit dropdown pick always
+  // wins. Otherwise, when Near-me is OFF — and we're not driving a map
+  // "Search this area" box — fall back to the user's detected home state,
+  // so unchecking Near-me shows "what's in your state" instead of every
+  // listing nationwide. Requires a known 2-letter state from geolocation;
+  // without one we leave it empty and fall through to default ranking.
+  const effectiveStateServed = useMemo(() => {
+    if (stateServed) return stateServed
+    if (!useNearMe && hydrated && !bbox && userLocation?.state) {
+      return userLocation.state
+    }
+    return ""
+  }, [stateServed, useNearMe, hydrated, bbox, userLocation?.state])
+
   useEffect(() => {
     if (urlQuery && urlQuery !== search) {
       setSearch(urlQuery)
@@ -378,7 +392,8 @@ export const DirectorySearch = ({
       // contains the selected 2-letter code. ANDs with everything else
       // (proximity, category, query): a vendor must service the picked
       // state to appear, even if they're physically close.
-      if (stateServed) facetFilters.push([`serviced_states:${stateServed}`])
+      if (effectiveStateServed)
+        facetFilters.push([`serviced_states:${effectiveStateServed}`])
 
       // Combine search + (location text) into a single query if both present.
       // When proximity is active we drop the freeform location text — the
@@ -404,7 +419,7 @@ export const DirectorySearch = ({
       // the visible rectangle. Otherwise aroundLatLng for closer-first
       // ranking, plus aroundRadius when the user has engaged with location.
       const geoParams: Record<string, unknown> = {}
-      if (!stateServed) {
+      if (!effectiveStateServed) {
         if (bbox) {
           // Algolia insideBoundingBox: [[p1Lat, p1Lng, p2Lat, p2Lng]],
           // two diagonally opposite corners. NW + SE works.
@@ -424,8 +439,8 @@ export const DirectorySearch = ({
       // a state, listings that paid for premium placement in that state
       // (premium_states contains it) float above peers within the same
       // tier. optionalFilters affects ranking only, never the result set.
-      const optionalFilters = stateServed
-        ? [`premium_states:${stateServed}`]
+      const optionalFilters = effectiveStateServed
+        ? [`premium_states:${effectiveStateServed}`]
         : undefined
 
       return {
@@ -438,7 +453,7 @@ export const DirectorySearch = ({
         ...geoParams,
       }
     },
-    [search, location, categoryId, stateServed, proximityActive, effectiveProximity, radiusMi, applyRadius, bbox]
+    [search, location, categoryId, effectiveStateServed, proximityActive, effectiveProximity, radiusMi, applyRadius, bbox]
   )
 
   const runSearch = useCallback(
