@@ -302,21 +302,22 @@ const FoundingPillarsStep: React.FC<{ onAgree: () => void }> = ({
 
       {/* Pillar 3 */}
       <div className="bg-[#001435] rounded-xl p-6 flex flex-col items-center text-center">
+        {/* Praying-hands icon adapted from OpenMoji (1F64F), CC BY-SA 4.0 */}
         <svg
           width="32"
           height="32"
-          viewBox="0 0 24 24"
+          viewBox="0 0 72 72"
           fill="none"
           stroke="#BE9B32"
-          strokeWidth="1.5"
+          strokeWidth="4.5"
           strokeLinecap="round"
           strokeLinejoin="round"
           className="mb-4"
         >
-          <path d="M12 3c-1.6 2.7-3 5-3 8v5c0 1.7 1.3 3 3 3s3-1.3 3-3v-5c0-3-1.4-5.3-3-8z" />
-          <line x1="12" y1="4.5" x2="12" y2="18.5" />
-          <path d="M9 12.5c-1 .2-1.7 .6-2.2 1.3" />
-          <path d="M15 12.5c1 .2 1.7 .6 2.2 1.3" />
+          <path d="M27.1667,68H4V56.3333l15-7.5c-2.6034,8.5367,7.4551,14.557,12.5,11.6667L27.1667,68z" />
+          <path d="M29.8302,61.109c0-0.6628,2.1906-3.6923,3.0031-3.6923c1,0,3.8958-1.5654,3.8958-3.5V7C36.079,4.3418,32.125,4,31.5,7.3474 l-2.625,17.8088c-0.4583,2.8906-1.75,2.8906-2.25,5.7812c-0.6875,5.625-1.3431,15.4439-7.9681,19.4647" />
+          <path d="M46.2917,68h23.1667V56.3333l-15-7.5c2.6034,8.5367-7.4551,14.557-12.5,11.6667L46.2917,68z" />
+          <path d="M43.6281,61.109c0-0.6628-2.1906-3.6923-3.0031-3.6923c-1,0-3.8958-1.5654-3.8958-3.5V7c0.6502-2.6582,4.6042-3,5.2292,0.3474 l2.625,17.8088c0.4583,2.8906,1.75,2.8906,2.25,5.7812c0.6875,5.625,1.3431,15.4439,7.9681,19.4647" />
         </svg>
         <p className="text-[14px] text-white leading-relaxed">
           Prays the Rosary or practices other sincere daily devotion(s)
