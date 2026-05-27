@@ -804,6 +804,7 @@ export const DirectorySearch = ({
           onSearchArea={setBbox}
           bboxActive={bbox !== null}
           isSearching={loading}
+          showDistance={showDistance}
         />
       )}
     </>
