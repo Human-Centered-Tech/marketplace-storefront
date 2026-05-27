@@ -295,8 +295,8 @@ const FoundingPillarsStep: React.FC<{ onAgree: () => void }> = ({
           />
         </svg>
         <p className="text-[14px] text-white leading-relaxed">
-          Regularly practicing, sincere Catholic in good standing (52‑Sundays
-          per year + Holydays, regular confession)
+          Regularly practicing, sincere Catholic in good standing (Mass on
+          Sundays + Holydays, regular confession)
         </p>
       </div>
 
@@ -313,8 +313,10 @@ const FoundingPillarsStep: React.FC<{ onAgree: () => void }> = ({
           strokeLinejoin="round"
           className="mb-4"
         >
-          <path d="M12 2c-1 2-2 4-3 6-1 2-2 4-2 6v4c0 2 2 4 5 4s5-2 5-4v-4c0-2-1-4-2-6-1-2-2-4-3-6z" />
-          <line x1="9" y1="14" x2="15" y2="14" />
+          <path d="M12 3c-1.6 2.7-3 5-3 8v5c0 1.7 1.3 3 3 3s3-1.3 3-3v-5c0-3-1.4-5.3-3-8z" />
+          <line x1="12" y1="4.5" x2="12" y2="18.5" />
+          <path d="M9 12.5c-1 .2-1.7 .6-2.2 1.3" />
+          <path d="M15 12.5c1 .2 1.7 .6 2.2 1.3" />
         </svg>
         <p className="text-[14px] text-white leading-relaxed">
           Prays the Rosary or practices other sincere daily devotion(s)
