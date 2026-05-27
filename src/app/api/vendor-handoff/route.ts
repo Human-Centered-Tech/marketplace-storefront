@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server"
 import { getVendorToken, removeVendorToken } from "@/lib/data/cookies"
 import { isVendorTokenStale } from "@/lib/data/vendor"
+import { retrieveCustomer } from "@/lib/data/customer"
+import { requiresEmailVerification } from "@/lib/util/email-verification"
 
 const VENDOR_URL =
   process.env.NEXT_PUBLIC_VENDOR_URL || "http://localhost:5173"
@@ -25,6 +27,16 @@ export async function GET() {
     return NextResponse.redirect(
       new URL("/us/user/become-vendor?session_refresh=1", STOREFRONT_URL)
     )
+  }
+
+  // Email-verification gate: don't hand a token to the merchant dashboard if
+  // the linked customer still needs to verify (post-cutoff, unverified). Send
+  // them to /user, where the dashboard gate shows the verify screen + resend.
+  // Best-effort — the customer session is present here right after storefront
+  // login; the vendor app + backend enforce the gate regardless.
+  const customer = await retrieveCustomer().catch(() => null)
+  if (customer && requiresEmailVerification(customer)) {
+    return NextResponse.redirect(new URL("/us/user", STOREFRONT_URL))
   }
 
   // Return an HTML page that redirects via JS to preserve the URL fragment.
