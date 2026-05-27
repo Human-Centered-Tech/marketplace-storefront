@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 
 /**
  * Full-content gate shown in place of the account dashboard when the
@@ -9,9 +10,28 @@ import { useState } from "react"
  * route the soft banner uses.
  */
 export function VerifyEmailGate({ email }: { email?: string | null }) {
+  const router = useRouter()
   const [status, setStatus] = useState<
     "idle" | "sending" | "sent" | "error"
   >("idle")
+
+  // The gate lives in a server layout, so once the user verifies (often in a
+  // different tab/device via the email link) we re-run the server render when
+  // they return to this tab — router.refresh() re-evaluates the gate and drops
+  // them into the dashboard, no manual reload or re-login needed.
+  useEffect(() => {
+    const refreshIfVisible = () => {
+      if (document.visibilityState === "visible") {
+        router.refresh()
+      }
+    }
+    document.addEventListener("visibilitychange", refreshIfVisible)
+    window.addEventListener("focus", refreshIfVisible)
+    return () => {
+      document.removeEventListener("visibilitychange", refreshIfVisible)
+      window.removeEventListener("focus", refreshIfVisible)
+    }
+  }, [router])
 
   const onResend = async () => {
     setStatus("sending")
