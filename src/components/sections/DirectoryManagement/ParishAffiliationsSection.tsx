@@ -15,7 +15,7 @@ import {
 const TIER_PARISH_LIMITS: Record<string, number> = {
   verified: 1,
   featured: 3,
-  enterprise: 10,
+  enterprise: 25,
 }
 
 const formatParish = (p: Parish) => {
