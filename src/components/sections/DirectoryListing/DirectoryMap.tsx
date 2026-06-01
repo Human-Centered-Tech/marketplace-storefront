@@ -131,7 +131,7 @@ export function DirectoryMapView({
                             Verified
                           </span>
                         )}
-                        <span className="text-secondary label-sm text-[9px] tracking-wider">
+                        <span className="text-secondary label-sm text-[8px] tracking-wider">
                           {listing.category?.name || "Business"}
                         </span>
                       </div>
@@ -242,7 +242,7 @@ export function DirectoryMapView({
                   {selected.business_name}
                 </h4>
                 {selected.category && (
-                  <p className="label-sm text-[9px] text-gold-dark tracking-wider mb-1">
+                  <p className="label-sm text-[8px] text-gold-dark tracking-wider mb-1">
                     {selected.category.name}
                   </p>
                 )}
