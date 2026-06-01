@@ -122,7 +122,10 @@ export function DirectoryMapView({
                       />
                     )}
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-serif text-lg font-bold text-navy-dark mb-1">
+                        {listing.business_name}
+                      </h3>
+                      <div className="flex items-center gap-2">
                         {listing.verification_status === "approved" && (
                           <span className="bg-green-50 text-green-700 text-[8px] font-bold px-1.5 py-0.5 rounded border border-green-100 uppercase">
                             Verified
@@ -132,9 +135,6 @@ export function DirectoryMapView({
                           {listing.category?.name || "Business"}
                         </span>
                       </div>
-                      <h3 className="font-serif text-lg font-bold text-navy-dark">
-                        {listing.business_name}
-                      </h3>
                       {listing.address && (
                         <div className="flex items-center gap-1 text-secondary text-xs mt-2">
                           <span className="material-symbols-outlined text-xs">
