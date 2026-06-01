@@ -3,6 +3,7 @@ import { LoginForm, UserNavigation } from "@/components/molecules"
 import { BecomeVendorForm } from "@/components/molecules/BecomeVendorForm/BecomeVendorForm"
 import { RefreshMerchantSessionForm } from "@/components/molecules/RefreshMerchantSessionForm/RefreshMerchantSessionForm"
 import { retrieveVendorStatus } from "@/lib/data/vendor"
+import { requiresEmailVerification } from "@/lib/util/email-verification"
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
@@ -23,7 +24,11 @@ export default async function BecomeVendorPage({
 
   const vendorStatus = await retrieveVendorStatus()
   const isAlreadyVendor = vendorStatus.isVendor
-  const isEmailVerified = (user as any).metadata?.email_verified === true
+  // Use the shared grandfather-aware gate (verified OR created before the
+  // EMAIL_VERIFICATION_ENFORCED_AFTER cutoff) rather than a raw
+  // `email_verified === true` check — otherwise existing/grandfathered
+  // accounts get wrongly bounced to the "Verify Your Email First" screen.
+  const needsEmailVerification = requiresEmailVerification(user)
 
   return (
     <main className="container">
@@ -54,7 +59,7 @@ export default async function BecomeVendorPage({
                 Go to Merchant Dashboard
               </a>
             </div>
-          ) : !isEmailVerified ? (
+          ) : needsEmailVerification ? (
             <div className="border rounded-sm p-8 text-center bg-[rgba(190,155,50,0.06)]">
               <h2 className="heading-md text-primary mb-2">
                 Verify Your Email First
