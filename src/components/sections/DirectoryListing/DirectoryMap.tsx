@@ -137,9 +137,6 @@ export function DirectoryMapView({
                       </div>
                       {listing.address && (
                         <div className="flex items-center gap-1 text-secondary text-xs mt-2">
-                          <span className="material-symbols-outlined text-xs">
-                            location_on
-                          </span>
                           {[listing.address.city, listing.address.state]
                             .filter(Boolean)
                             .join(", ")}
