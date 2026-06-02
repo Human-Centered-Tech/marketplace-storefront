@@ -15,8 +15,9 @@ const links = {
     { label: "Barter", path: "/barter" },
   ],
   legal: [
-    { label: "Privacy Policy", path: "#" },
-    { label: "Terms of Service", path: "#" },
+    { label: "Privacy Policy", path: "/privacy" },
+    { label: "Terms of Service", path: "/terms" },
+    { label: "Merchant Terms", path: "/merchant-terms" },
   ],
   connect: [
     { label: "Contact Us", path: "#" },
