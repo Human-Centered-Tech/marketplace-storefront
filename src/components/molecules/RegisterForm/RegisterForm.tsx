@@ -34,6 +34,7 @@ export const RegisterForm = ({
       email: "",
       password: "",
       businessName: "",
+      agreedToTos: false,
     },
   })
 
@@ -184,19 +185,32 @@ const Form = ({
 
             {error && <p className="label-md text-negative">{error}</p>}
 
-            <div className="flex items-start gap-2 mt-2">
-              <input
-                type="checkbox"
-                id="terms"
-                className="mt-1 accent-[rgba(var(--brand-800))]"
-              />
-              <label htmlFor="terms" className="text-[13px] text-secondary">
-                Agree to the{" "}
-                <LocalizedClientLink href="#" className="underline text-primary">
-                  Terms of Service
-                </LocalizedClientLink>{" "}
-                &amp; Faithful Catholic Standards of the community.
-              </label>
+            <div className="mt-2">
+              <div className="flex items-start gap-2">
+                <input
+                  type="checkbox"
+                  id="terms"
+                  className="mt-1 accent-[rgba(var(--brand-800))]"
+                  {...register("agreedToTos")}
+                />
+                <label htmlFor="terms" className="text-[13px] text-secondary">
+                  Agree to the{" "}
+                  <LocalizedClientLink
+                    href={vendorFlow ? "/merchant-terms" : "/terms"}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="underline text-primary"
+                  >
+                    {vendorFlow ? "Merchant Terms of Service" : "Terms of Service"}
+                  </LocalizedClientLink>{" "}
+                  &amp; Faithful Catholic Standards of the community.
+                </label>
+              </div>
+              {errors.agreedToTos && (
+                <p className="label-md text-negative mt-1">
+                  {errors.agreedToTos.message as string}
+                </p>
+              )}
             </div>
 
             <Button
