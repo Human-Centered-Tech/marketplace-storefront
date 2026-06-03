@@ -7,6 +7,12 @@ import CartPromotionCode from "../CartReview/CartPromotionCode"
 export const Cart = async () => {
   const cart = await retrieveCart()
 
+  // Pre-launch kill-switch: shoppers can still browse and build a cart, but
+  // checkout is held back until we're ready for public sales. Flip
+  // NEXT_PUBLIC_CHECKOUT_DISABLED=false (+ redeploy, it's inlined at build
+  // time) to open checkout. Independent of the vendor PAYMENTS_DISABLED flags.
+  const checkoutDisabled = process.env.NEXT_PUBLIC_CHECKOUT_DISABLED === "true"
+
   if (!cart || !cart.items?.length) {
     return <CartEmpty />
   }
@@ -34,11 +40,25 @@ export const Cart = async () => {
               tax={cart?.tax_total || 0}
               discount_total={cart?.discount_total || 0}
             />
-            <LocalizedClientLink href="/checkout?step=address">
-              <Button className="w-full py-3.5 flex justify-center items-center bg-navy text-white hover:bg-navy-dark uppercase tracking-[0.1em] text-[13px] font-semibold mt-4">
-                Proceed to Checkout
-              </Button>
-            </LocalizedClientLink>
+            {checkoutDisabled ? (
+              <div className="mt-4">
+                <Button
+                  disabled
+                  className="w-full py-3.5 flex justify-center items-center bg-navy text-white uppercase tracking-[0.1em] text-[13px] font-semibold opacity-50 cursor-not-allowed hover:bg-navy"
+                >
+                  Proceed to Checkout
+                </Button>
+                <p className="text-center text-xs text-secondary mt-2">
+                  Checkout coming soon
+                </p>
+              </div>
+            ) : (
+              <LocalizedClientLink href="/checkout?step=address">
+                <Button className="w-full py-3.5 flex justify-center items-center bg-navy text-white hover:bg-navy-dark uppercase tracking-[0.1em] text-[13px] font-semibold mt-4">
+                  Proceed to Checkout
+                </Button>
+              </LocalizedClientLink>
+            )}
           </div>
         </div>
       </div>
