@@ -25,6 +25,26 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
   cart,
   "data-testid": dataTestId,
 }) => {
+  // Pre-launch kill-switch (same flag as the cart's Proceed to Checkout):
+  // if a shopper reaches this page via a direct /checkout URL, still block
+  // order completion. Greyed/disabled button + "Checkout coming soon".
+  if (process.env.NEXT_PUBLIC_CHECKOUT_DISABLED === "true") {
+    return (
+      <div>
+        <Button
+          disabled
+          className="w-full opacity-50 cursor-not-allowed"
+          data-testid={dataTestId}
+        >
+          Place order
+        </Button>
+        <p className="text-center text-xs text-secondary mt-2">
+          Checkout coming soon
+        </p>
+      </div>
+    )
+  }
+
   const notReady =
     !cart ||
     !cart.shipping_address ||
