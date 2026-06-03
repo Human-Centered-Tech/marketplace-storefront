@@ -86,12 +86,16 @@ export const CartAddressSection = ({
               cart={cart}
             />
             <Button
-              className="mt-6 bg-[#001435] text-white hover:bg-[#001435]/90"
+              className="mt-6 bg-[#001435] text-white hover:bg-[#001435]/90 disabled:opacity-50 disabled:cursor-not-allowed"
               data-testid="submit-address-button"
               variant="tonal"
+              disabled={process.env.NEXT_PUBLIC_CHECKOUT_DISABLED === "true"}
             >
               Proceed to payment
             </Button>
+            {process.env.NEXT_PUBLIC_CHECKOUT_DISABLED === "true" && (
+              <p className="text-xs text-secondary mt-2">Checkout coming soon</p>
+            )}
             <ErrorMessage
               error={message !== "success" && message}
               data-testid="address-error-message"
