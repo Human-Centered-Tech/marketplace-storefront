@@ -97,6 +97,11 @@ const Form = ({
     if (recommendedTier) {
       formData.append("recommended_tier", recommendedTier)
     }
+    // Remember the claim context so the post-verification redirect returns
+    // them to the claim checkout (persisted on customer.metadata in signup).
+    if (claimListingId) {
+      formData.append("claim_listing", claimListingId)
+    }
 
     const res = passwordError.isValid && (await signup(formData))
 
