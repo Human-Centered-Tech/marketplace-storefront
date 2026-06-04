@@ -90,21 +90,14 @@ export async function signup(formData: FormData) {
   // /vendor/store/go-live can read it later and build subscribe_url
   // for the right tier without re-asking the quiz questions.
   const recommendedTier = formData.get("recommended_tier") as string | null
-  // When registering via the claim flow, remember which listing they're
-  // claiming so the post-email-verification redirect can send them back to
-  // the claim checkout instead of the merchant dashboard.
-  const claimListing = formData.get("claim_listing") as string | null
   const customerForm: Record<string, unknown> = {
     email: formData.get("email") as string,
     first_name: formData.get("first_name") as string,
     last_name: formData.get("last_name") as string,
     phone: formData.get("phone") as string,
   }
-  const metadata: Record<string, unknown> = {}
-  if (recommendedTier) metadata.recommended_tier = recommendedTier
-  if (claimListing) metadata.claim_listing = claimListing
-  if (Object.keys(metadata).length > 0) {
-    customerForm.metadata = metadata
+  if (recommendedTier) {
+    customerForm.metadata = { recommended_tier: recommendedTier }
   }
 
   try {

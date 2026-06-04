@@ -27,7 +27,8 @@ export const RegisterForm = ({
   vendorFlow?: boolean
   recommendedTier?: string
   // Set when arriving from the claim flow (?claim_listing=…). Threaded to
-  // becomeVendor so it skips auto-creating a duplicate directory listing.
+  // becomeVendor so it attaches that listing as the new seller's draft
+  // (instead of auto-creating a fresh one).
   claimListingId?: string
   // Pre-fills the business name from the listing being claimed, so the
   // claimant doesn't retype it (and doesn't drift to a different name).
@@ -96,11 +97,6 @@ const Form = ({
     formData.append("phone", data.phone)
     if (recommendedTier) {
       formData.append("recommended_tier", recommendedTier)
-    }
-    // Remember the claim context so the post-verification redirect returns
-    // them to the claim checkout (persisted on customer.metadata in signup).
-    if (claimListingId) {
-      formData.append("claim_listing", claimListingId)
     }
 
     const res = passwordError.isValid && (await signup(formData))

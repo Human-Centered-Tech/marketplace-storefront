@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server"
 import { cookies as nextCookies } from "next/headers"
 import { revalidateTag } from "next/cache"
 import { retrieveVendorStatus } from "@/lib/data/vendor"
-import { retrieveCustomer } from "@/lib/data/customer"
 
 const STOREFRONT_URL =
   process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:8000"
@@ -70,19 +69,6 @@ export async function GET(req: NextRequest) {
     // serves stale cached data.
     const cacheId = cookies.get("_medusa_cache_id")?.value
     if (cacheId) revalidateTag(`customers-${cacheId}`)
-
-    // Claim flow: if they registered to claim a listing (claim_listing stashed
-    // on customer.metadata at signup), send them back to the claim checkout to
-    // finish — not the merchant dashboard. Takes precedence over the vendor
-    // handoff below so a claimant resumes their claim instead of landing in
-    // the portal.
-    const customer = await retrieveCustomer().catch(() => null)
-    const claimListing = (customer?.metadata as any)?.claim_listing
-    if (claimListing) {
-      return NextResponse.redirect(
-        `${STOREFRONT_URL}/us/directory/${claimListing}/claim/checkout`
-      )
-    }
 
     // If this customer is also an active vendor (i.e., they completed
     // Become a Merchant before verifying email), bounce them into the

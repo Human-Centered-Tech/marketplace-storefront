@@ -242,39 +242,45 @@ export async function becomeVendor(formData: FormData) {
     await setVendorToken(vendorToken)
     await setVendorFlag(true)
 
-    // Step 4: Auto-create a draft directory listing so the vendor has a
-    // directory presence from the start (per 3/31 decision). Non-fatal.
-    // Includes vendor_id so the floor-enforcement middleware can look up
-    // the listing by seller ID without an email join.
-    //
-    // Skipped in the claim flow: the vendor is taking over an existing
-    // pre-seeded listing (attached on payment by the directory webhook), so
-    // creating a second one here would collide on the listing's unique slug
-    // (same name) or orphan a duplicate (different name).
+    // Step 4: give the vendor a draft directory listing. Non-fatal.
+    //   - Normal signup: auto-create a fresh listing (per 3/31 decision),
+    //     including vendor_id so floor-enforcement can find it by seller id.
+    //   - Claim flow: ADOPT the listing they came to claim instead of
+    //     creating a duplicate (which would collide on the unique slug). The
+    //     attach endpoint sets owner_id + vendor_id and marks it pending, so
+    //     they pay/activate it via the standard go-live flow — landing them on
+    //     the dashboard like every other vendor.
     try {
-      // Claim flow: skip auto-create — the claimed listing becomes theirs.
-      const customerHeaders = claimListingId ? null : await getAuthHeaders()
+      const customerHeaders = await getAuthHeaders()
       if (customerHeaders && "authorization" in customerHeaders) {
-        await fetch(
-          `${process.env.MEDUSA_BACKEND_URL}/store/directory/listings`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "x-publishable-api-key":
-                process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "",
-              ...customerHeaders,
-            },
-            body: JSON.stringify({
-              business_name: name,
-              contact_email: email,
-              ...(sellerId ? { vendor_id: sellerId } : {}),
-            }),
-          }
-        )
+        const baseHeaders = {
+          "Content-Type": "application/json",
+          "x-publishable-api-key":
+            process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "",
+          ...customerHeaders,
+        }
+        if (claimListingId) {
+          await fetch(
+            `${process.env.MEDUSA_BACKEND_URL}/store/directory/listings/${claimListingId}/attach`,
+            { method: "POST", headers: baseHeaders }
+          )
+        } else {
+          await fetch(
+            `${process.env.MEDUSA_BACKEND_URL}/store/directory/listings`,
+            {
+              method: "POST",
+              headers: baseHeaders,
+              body: JSON.stringify({
+                business_name: name,
+                contact_email: email,
+                ...(sellerId ? { vendor_id: sellerId } : {}),
+              }),
+            }
+          )
+        }
       }
     } catch {
-      // Non-fatal — vendor can create the listing from the dashboard.
+      // Non-fatal — vendor can create/claim the listing from the dashboard.
     }
 
     const customerCacheTag = await getCacheTag("customers")
