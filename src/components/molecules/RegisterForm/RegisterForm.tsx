@@ -21,9 +21,17 @@ import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedL
 export const RegisterForm = ({
   vendorFlow = false,
   recommendedTier,
+  claimListingId,
+  defaultBusinessName,
 }: {
   vendorFlow?: boolean
   recommendedTier?: string
+  // Set when arriving from the claim flow (?claim_listing=…). Threaded to
+  // becomeVendor so it skips auto-creating a duplicate directory listing.
+  claimListingId?: string
+  // Pre-fills the business name from the listing being claimed, so the
+  // claimant doesn't retype it (and doesn't drift to a different name).
+  defaultBusinessName?: string
 }) => {
   const methods = useForm<RegisterFormData>({
     resolver: zodResolver(vendorFlow ? vendorRegisterFormSchema : registerFormSchema),
@@ -33,14 +41,18 @@ export const RegisterForm = ({
       phone: "",
       email: "",
       password: "",
-      businessName: "",
+      businessName: defaultBusinessName ?? "",
       agreedToTos: false,
     },
   })
 
   return (
     <FormProvider {...methods}>
-      <Form vendorFlow={vendorFlow} recommendedTier={recommendedTier} />
+      <Form
+        vendorFlow={vendorFlow}
+        recommendedTier={recommendedTier}
+        claimListingId={claimListingId}
+      />
     </FormProvider>
   )
 }
@@ -48,9 +60,11 @@ export const RegisterForm = ({
 const Form = ({
   vendorFlow,
   recommendedTier,
+  claimListingId,
 }: {
   vendorFlow: boolean
   recommendedTier?: string
+  claimListingId?: string
 }) => {
   const router = useRouter()
   const [passwordError, setPasswordError] = useState({
@@ -92,6 +106,11 @@ const Form = ({
       vendorFormData.append("name", data.businessName)
       vendorFormData.append("email", data.email)
       vendorFormData.append("password", data.password)
+      // Claim flow: tells becomeVendor to skip auto-creating a listing
+      // (the claimed listing is attached to them on payment instead).
+      if (claimListingId) {
+        vendorFormData.append("claim_listing", claimListingId)
+      }
 
       const vendorRes = await becomeVendor(vendorFormData)
       if (!vendorRes.success) {

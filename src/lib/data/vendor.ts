@@ -95,6 +95,12 @@ export async function becomeVendor(formData: FormData) {
   const name = formData.get("name") as string
   const email = formData.get("email") as string
   const password = formData.get("password") as string
+  // When the vendor is claiming an existing directory listing, we must NOT
+  // auto-create a draft listing below: the claim attaches them to the
+  // pre-seeded listing (which already has its own unique slug), so a fresh
+  // auto-create would either collide on the slug or leave them with a
+  // duplicate listing. Presence of this id means "claim flow — skip Step 4".
+  const claimListingId = formData.get("claim_listing") as string | null
 
   // Guard against the email coming through as undefined or as the
   // literal string "undefined" (which is what FormData.set() does when
@@ -240,8 +246,14 @@ export async function becomeVendor(formData: FormData) {
     // directory presence from the start (per 3/31 decision). Non-fatal.
     // Includes vendor_id so the floor-enforcement middleware can look up
     // the listing by seller ID without an email join.
+    //
+    // Skipped in the claim flow: the vendor is taking over an existing
+    // pre-seeded listing (attached on payment by the directory webhook), so
+    // creating a second one here would collide on the listing's unique slug
+    // (same name) or orphan a duplicate (different name).
     try {
-      const customerHeaders = await getAuthHeaders()
+      // Claim flow: skip auto-create — the claimed listing becomes theirs.
+      const customerHeaders = claimListingId ? null : await getAuthHeaders()
       if (customerHeaders && "authorization" in customerHeaders) {
         await fetch(
           `${process.env.MEDUSA_BACKEND_URL}/store/directory/listings`,
