@@ -216,7 +216,9 @@ export const DirectoryDetail = ({
               </p>
             </div>
             <LocalizedClientLink
-              href={`/directory/${listing.id}/claim`}
+              href={`/sell/onboarding?claim_listing=${listing.id}&return_to=${encodeURIComponent(
+                `/directory/${listing.id}/claim/checkout`
+              )}`}
               className="bg-navy-dark text-white px-6 py-3 rounded-xl label-sm text-[10px] font-bold tracking-widest hover:bg-navy transition-colors whitespace-nowrap"
             >
               Claim This Listing
@@ -457,7 +459,9 @@ export const DirectoryDetail = ({
                   Claim it to manage your profile and reach Catholic shoppers.
                 </p>
                 <LocalizedClientLink
-                  href={`/directory/${listing.id}/claim`}
+                  href={`/sell/onboarding?claim_listing=${listing.id}&return_to=${encodeURIComponent(
+                `/directory/${listing.id}/claim/checkout`
+              )}`}
                   className="block w-full bg-navy-dark text-white py-4 rounded-xl label-sm text-[10px] font-bold tracking-widest hover:bg-navy transition-colors"
                 >
                   Claim This Listing
