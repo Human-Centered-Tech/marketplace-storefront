@@ -27,9 +27,11 @@ export default async function ClaimCheckoutPage({ params }: Props) {
   }
 
   if (!customer) {
-    // Force registration before claiming.
+    // Route through the onboarding questionnaire first so the claimant gets a
+    // recommended_tier (which the claim checkout charges). It carries
+    // claim_listing + return_to onto its register links and lands back here.
     redirect(
-      `/${locale}/user/register?vendor=true&claim_listing=${id}&return_to=${encodeURIComponent(
+      `/${locale}/sell/onboarding?claim_listing=${id}&return_to=${encodeURIComponent(
         `/directory/${id}/claim/checkout`
       )}`
     )

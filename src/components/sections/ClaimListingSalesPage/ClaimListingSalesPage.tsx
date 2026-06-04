@@ -45,7 +45,11 @@ export const ClaimListingSalesPage = ({
         .join(", ")
     : null
 
-  const claimStartHref = `/user/register?vendor=true&claim_listing=${listing.id}&return_to=${encodeURIComponent(
+  // Start the claim at the onboarding questionnaire so the claimant is
+  // assigned a recommended_tier (which the claim checkout charges), then
+  // continues into registration + back to the claim checkout. claim_listing
+  // + return_to are carried through the funnel onto the register links.
+  const claimStartHref = `/sell/onboarding?claim_listing=${listing.id}&return_to=${encodeURIComponent(
     `/directory/${listing.id}/claim/checkout`
   )}`
 
