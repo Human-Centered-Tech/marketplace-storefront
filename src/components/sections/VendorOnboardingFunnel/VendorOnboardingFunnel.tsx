@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useSearchParams } from "next/navigation"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 import {
   EmployeeRange,
@@ -41,6 +42,19 @@ const initialState: FunnelState = { step: "founding_pillars" }
 
 export const VendorOnboardingFunnel = () => {
   const [state, setState] = useState<FunnelState>(initialState)
+
+  // Claim flow: when the questionnaire is entered from "claim your listing"
+  // (/sell/onboarding?claim_listing=…&return_to=…), carry those params onto
+  // every register link so the claim context survives the quiz — the
+  // register page pre-fills/skips-auto-create on claim_listing, and the
+  // backend charges the recommended_tier the quiz assigns.
+  const searchParams = useSearchParams()
+  const claimListing = searchParams.get("claim_listing")
+  const returnTo = searchParams.get("return_to")
+  const claimSuffix = claimListing
+    ? `&claim_listing=${encodeURIComponent(claimListing)}` +
+      (returnTo ? `&return_to=${encodeURIComponent(returnTo)}` : "")
+    : ""
 
   const reset = () => setState(initialState)
 
@@ -102,7 +116,8 @@ export const VendorOnboardingFunnel = () => {
                 // recommended_tier persistence pipeline catches it the
                 // same way service-provider tiers are captured.
                 window.location.href =
-                  "/user/register?vendor=true&recommended_tier=merchant"
+                  "/user/register?vendor=true&recommended_tier=merchant" +
+                  claimSuffix
                 return
               }
               setState({
@@ -141,7 +156,7 @@ export const VendorOnboardingFunnel = () => {
         )}
 
         {state.step === "financial_preapproved" && (
-          <PreApprovedStep />
+          <PreApprovedStep claimSuffix={claimSuffix} />
         )}
 
         {state.step === "financial_book_call" && <BookCallStep />}
@@ -175,7 +190,10 @@ export const VendorOnboardingFunnel = () => {
         )}
 
         {state.step === "recommended_tier" && state.recommendedTier && (
-          <RecommendedTierStep tierKey={state.recommendedTier} />
+          <RecommendedTierStep
+            tierKey={state.recommendedTier}
+            claimSuffix={claimSuffix}
+          />
         )}
       </div>
     </main>
@@ -481,7 +499,9 @@ const ScreeningStep: React.FC<{
   )
 }
 
-const PreApprovedStep: React.FC = () => (
+const PreApprovedStep: React.FC<{ claimSuffix?: string }> = ({
+  claimSuffix = "",
+}) => (
   <Card>
     <StepHeading
       eyebrow="You're pre-approved"
@@ -489,7 +509,7 @@ const PreApprovedStep: React.FC = () => (
       subtitle="Since you're already using pre-approved screening methods aligned with the USCCB, you can proceed with creating your listing right away."
     />
     <LocalizedClientLink
-      href="/user/register?vendor=true"
+      href={`/user/register?vendor=true${claimSuffix}`}
       className="inline-flex items-center px-10 py-4 text-[13px] font-semibold uppercase tracking-[0.1em] rounded-xl bg-[#BE9B32] text-[#001435] hover:bg-[#d4af4c] shadow-lg transition-colors"
     >
       Create your listing
@@ -634,7 +654,8 @@ const RadioRow: React.FC<{
 
 const RecommendedTierStep: React.FC<{
   tierKey: import("./types").RecommendedTierKey
-}> = ({ tierKey }) => {
+  claimSuffix?: string
+}> = ({ tierKey, claimSuffix = "" }) => {
   const tier = getTierInfo(tierKey)
   const upsell = tier.upsellTier ? getTierInfo(tier.upsellTier) : undefined
 
@@ -642,7 +663,7 @@ const RecommendedTierStep: React.FC<{
   // sellers. The price shown here is informational ("you'll pay this
   // when you go live") — actual payment is collected at the /go-live
   // step in the vendor portal, after they've set up their store.
-  const signupHref = `/user/register?vendor=true&recommended_tier=${tier.key}`
+  const signupHref = `/user/register?vendor=true&recommended_tier=${tier.key}${claimSuffix}`
 
   return (
     <Card>
