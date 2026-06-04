@@ -52,6 +52,9 @@ export const RegisterForm = ({
         vendorFlow={vendorFlow}
         recommendedTier={recommendedTier}
         claimListingId={claimListingId}
+        // Lock the business name when it's pre-filled from a claimed listing
+        // so the seller name can't diverge from the listing being claimed.
+        businessNameLocked={Boolean(claimListingId && defaultBusinessName)}
       />
     </FormProvider>
   )
@@ -61,10 +64,12 @@ const Form = ({
   vendorFlow,
   recommendedTier,
   claimListingId,
+  businessNameLocked = false,
 }: {
   vendorFlow: boolean
   recommendedTier?: string
   claimListingId?: string
+  businessNameLocked?: boolean
 }) => {
   const router = useRouter()
   const [passwordError, setPasswordError] = useState({
@@ -173,12 +178,24 @@ const Form = ({
               {...register("email")}
             />
             {vendorFlow && (
-              <LabeledInput
-                label="Business Name"
-                placeholder="Your business or company name"
-                error={errors.businessName as FieldError}
-                {...register("businessName")}
-              />
+              <div>
+                <LabeledInput
+                  label="Business Name"
+                  placeholder="Your business or company name"
+                  error={errors.businessName as FieldError}
+                  // readOnly (not disabled) when claiming: keeps the value in
+                  // the submitted form data — a disabled field submits as
+                  // undefined in react-hook-form and would break becomeVendor.
+                  readOnly={businessNameLocked}
+                  className={businessNameLocked ? "opacity-70" : undefined}
+                  {...register("businessName")}
+                />
+                {businessNameLocked && (
+                  <p className="label-sm text-secondary mt-1">
+                    From the listing you&apos;re claiming.
+                  </p>
+                )}
+              </div>
             )}
             <div className="flex flex-col md:flex-row gap-4">
               <LabeledInput
