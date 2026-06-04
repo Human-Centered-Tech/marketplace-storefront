@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server"
 import { getVendorToken, removeVendorToken } from "@/lib/data/cookies"
 import { isVendorTokenStale } from "@/lib/data/vendor"
-import { retrieveCustomer } from "@/lib/data/customer"
-import { requiresEmailVerification } from "@/lib/util/email-verification"
 
 const VENDOR_URL =
   process.env.NEXT_PUBLIC_VENDOR_URL || "http://localhost:5173"
@@ -29,15 +27,14 @@ export async function GET() {
     )
   }
 
-  // Email-verification gate: don't hand a token to the merchant dashboard if
-  // the linked customer still needs to verify (post-cutoff, unverified). Send
-  // them to /user, where the dashboard gate shows the verify screen + resend.
-  // Best-effort — the customer session is present here right after storefront
-  // login; the vendor app + backend enforce the gate regardless.
-  const customer = await retrieveCustomer().catch(() => null)
-  if (customer && requiresEmailVerification(customer)) {
-    return NextResponse.redirect(new URL("/us/user", STOREFRONT_URL))
-  }
+  // NOTE: we intentionally do NOT bounce unverified merchants to the
+  // storefront /user page here. A brand-new vendor is always unverified at
+  // this moment (they haven't clicked the verify link yet), so doing so dumped
+  // every new signup onto the consumer profile page instead of the merchant
+  // app. The vendor app's ProtectedRoute already routes unverified merchants to
+  // its own /verify-email screen (with resend), and the backend gates /vendor/*
+  // regardless — so hand the token off and let the merchant context handle
+  // verification.
 
   // Return an HTML page that redirects via JS to preserve the URL fragment.
   // Fragments (#) are never sent to servers, so the token won't appear in
