@@ -1,6 +1,15 @@
 "use client"
 
 import { useCallback, useEffect, useState } from "react"
+import { GOOGLE_MAPS_API_KEY } from "@/components/sections/DirectoryListing/GoogleMapsProvider"
+
+type GeoComponent = { short_name?: string; types?: string[] }
+
+function stateFromComponents(comps: GeoComponent[]): string | undefined {
+  const code = comps.find((c) => c.types?.includes("administrative_area_level_1"))
+    ?.short_name
+  return code && code.length === 2 ? code.toUpperCase() : undefined
+}
 
 export type LocationStatus =
   | "idle"
@@ -39,25 +48,28 @@ export function writeRadiusMi(mi: number) {
   localStorage.setItem(RADIUS_STORAGE_KEY, String(mi))
 }
 
-// Best-effort reverse geocode → 2-letter US state code. Nominatim
-// returns ISO3166-2 like "US-CO" — we strip the prefix. Failures
-// resolve to undefined so callers can store coords without a state.
+// Best-effort reverse geocode → 2-letter US state code via the Google
+// Geocoding API. Returns the state's short_name (e.g. "CO"); resolves to
+// undefined on any failure (or when no key is configured) so callers can
+// store coords without a state.
 async function reverseStateCode(
   lat: number,
   lng: number
 ): Promise<string | undefined> {
+  if (!GOOGLE_MAPS_API_KEY) return undefined
   try {
-    const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1&zoom=5`
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${GOOGLE_MAPS_API_KEY}`
     const res = await fetch(url)
     if (!res.ok) return undefined
     const data = (await res.json()) as {
-      address?: { ["ISO3166-2-lvl4"]?: string; country_code?: string }
+      status?: string
+      results?: Array<{ address_components?: GeoComponent[] }>
     }
-    if (data.address?.country_code !== "us") return undefined
-    const iso = data.address?.["ISO3166-2-lvl4"]
-    if (!iso) return undefined
-    const code = iso.split("-").pop()
-    return code && code.length === 2 ? code.toUpperCase() : undefined
+    if (data.status !== "OK") return undefined
+    const comps = data.results?.[0]?.address_components ?? []
+    const country = comps.find((c) => c.types?.includes("country"))?.short_name
+    if (country !== "US") return undefined
+    return stateFromComponents(comps)
   } catch {
     return undefined
   }
@@ -170,25 +182,27 @@ export function useUserLocation() {
   const setFromZip = useCallback(async (zip: string): Promise<UserLocation | null> => {
     const trimmed = zip.trim()
     if (!/^\d{5}(-\d{4})?$/.test(trimmed)) return null
+    if (!GOOGLE_MAPS_API_KEY) return null
     try {
-      const url = `https://nominatim.openstreetmap.org/search?postalcode=${encodeURIComponent(
+      const url = `https://maps.googleapis.com/maps/api/geocode/json?components=postal_code:${encodeURIComponent(
         trimmed
-      )}&countrycodes=us&format=json&addressdetails=1&limit=1`
+      )}|country:US&key=${GOOGLE_MAPS_API_KEY}`
       const res = await fetch(url)
       if (!res.ok) return null
-      const data = (await res.json()) as Array<{
-        lat?: string
-        lon?: string
-        address?: { ["ISO3166-2-lvl4"]?: string }
-      }>
-      const hit = data?.[0]
+      const data = (await res.json()) as {
+        status?: string
+        results?: Array<{
+          geometry?: { location?: { lat?: number; lng?: number } }
+          address_components?: GeoComponent[]
+        }>
+      }
+      if (data.status !== "OK") return null
+      const hit = data.results?.[0]
       if (!hit) return null
-      const lat = parseFloat(hit.lat || "")
-      const lng = parseFloat(hit.lon || "")
+      const lat = Number(hit.geometry?.location?.lat)
+      const lng = Number(hit.geometry?.location?.lng)
       if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null
-      const isoState = hit.address?.["ISO3166-2-lvl4"]?.split("-").pop()
-      const state =
-        isoState && isoState.length === 2 ? isoState.toUpperCase() : undefined
+      const state = stateFromComponents(hit.address_components ?? [])
       const next: UserLocation = {
         lat,
         lng,

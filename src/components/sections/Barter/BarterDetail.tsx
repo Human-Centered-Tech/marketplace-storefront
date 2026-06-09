@@ -1,10 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { BarterListing } from "@/types/barter"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 import { startConversation } from "@/lib/data/messaging"
+import { SingleLocationMap } from "@/components/sections/DirectoryListing/SingleLocationMap"
 
 const conditionLabels: Record<string, string> = {
   new: "Mint/New",
@@ -242,7 +243,7 @@ export const BarterDetail = ({
             </div>
           </article>
 
-          {/* Location with OpenStreetMap */}
+          {/* Location map */}
           {listing.location && (
             <div className="space-y-4">
               <h3 className="label-sm font-bold tracking-widest text-navy-dark flex items-center gap-2">
@@ -335,57 +336,32 @@ function LocationMap({
 }: {
   location: { city?: string; state?: string; zip?: string }
 }) {
-  const [embedUrl, setEmbedUrl] = useState<string | null>(null)
   const locationStr = [location.city, location.state, location.zip]
     .filter(Boolean)
     .join(", ")
 
-  useEffect(() => {
-    // Use Nominatim (free, no API key) to geocode, then build an OSM embed
-    const query = encodeURIComponent(locationStr)
-    fetch(
-      `https://nominatim.openstreetmap.org/search?q=${query}&format=json&limit=1`,
-      { headers: { "User-Agent": "CatholicOwned/1.0" } }
-    )
-      .then((res) => res.json())
-      .then((results) => {
-        if (results.length > 0) {
-          const { lat, lon, boundingbox } = results[0]
-          // boundingbox: [south, north, west, east]
-          const bbox = `${boundingbox[2]},${boundingbox[0]},${boundingbox[3]},${boundingbox[1]}`
-          setEmbedUrl(
-            `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${lat},${lon}`
-          )
-        }
-      })
-      .catch(() => {
-        // silently fail — show fallback
-      })
-  }, [locationStr])
-
-  if (!embedUrl) {
-    return (
-      <div className="h-64 rounded-xl bg-gray-100 flex items-center justify-center">
-        <div className="text-center text-secondary">
-          <span className="material-symbols-outlined text-4xl mb-2 block">
-            location_on
-          </span>
-          <p className="font-serif text-lg">{locationStr}</p>
-        </div>
+  const fallback = (
+    <div className="h-64 rounded-xl bg-gray-100 flex items-center justify-center">
+      <div className="text-center text-secondary">
+        <span className="material-symbols-outlined text-4xl mb-2 block">
+          location_on
+        </span>
+        <p className="font-serif text-lg">{locationStr}</p>
       </div>
-    )
-  }
+    </div>
+  )
+
+  if (!locationStr) return fallback
 
   return (
     <div className="h-64 rounded-xl overflow-hidden relative">
-      <iframe
-        src={embedUrl}
-        className="w-full border-0"
-        style={{ height: "calc(100% + 30px)" }}
-        title={`Map of ${locationStr}`}
-        loading="lazy"
+      <SingleLocationMap
+        query={locationStr}
+        zoom={11}
+        className="absolute inset-0"
+        fallback={fallback}
       />
-      <div className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-lg shadow-sm">
+      <div className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-lg shadow-sm z-[1]">
         <p className="font-serif text-sm text-navy-dark">{locationStr}</p>
       </div>
     </div>
