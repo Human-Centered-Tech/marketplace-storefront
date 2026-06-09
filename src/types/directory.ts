@@ -47,6 +47,15 @@ export type DirectoryListing = {
   description: string | null
   category_id: string | null
   category?: DirectoryCategory
+  // Many-to-many category set (primary + additional). category/category_id
+  // stay the PRIMARY. `category_links` is the backend pivot relation;
+  // `category_ids` comes from the Algolia hit (search results).
+  category_ids?: string[]
+  category_links?: Array<{
+    category_id: string
+    is_primary?: boolean
+    category?: DirectoryCategory
+  }>
   subscription_tier:
     | "verified"
     | "featured"

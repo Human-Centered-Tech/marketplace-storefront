@@ -162,9 +162,18 @@ export const DirectoryDetail = ({
             <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl text-navy-dark mb-2">
               {listing.business_name}
             </h1>
-            {listing.category && (
+            {(listing.category_links?.length || listing.category) && (
               <p className="font-serif italic text-lg text-secondary">
-                {listing.category.name}
+                {(listing.category_links?.length
+                  ? listing.category_links
+                      .slice()
+                      .sort(
+                        (a, b) => (b.is_primary ? 1 : 0) - (a.is_primary ? 1 : 0)
+                      )
+                      .map((l) => l.category?.name)
+                      .filter(Boolean)
+                  : [listing.category?.name].filter(Boolean)
+                ).join(" \u2022 ")}
                 {locationStr && ` \u2022 ${locationStr}`}
               </p>
             )}

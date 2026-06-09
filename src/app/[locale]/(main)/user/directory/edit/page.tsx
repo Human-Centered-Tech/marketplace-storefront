@@ -92,6 +92,10 @@ export default function EditDirectoryListingPage() {
             slug: listing.slug,
             description: listing.description || "",
             category_id: listing.category_id || "",
+            // Pre-fill the additional (non-primary) category from the pivot.
+            secondary_category_id:
+              listing.category_links?.find((l) => !l.is_primary)?.category_id ||
+              "",
             contact_email: listing.contact_email || "",
             contact_phone: listing.contact_phone || "",
             website_url: listing.website_url || "",

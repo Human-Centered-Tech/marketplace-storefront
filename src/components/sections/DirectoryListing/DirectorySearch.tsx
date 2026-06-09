@@ -78,6 +78,8 @@ type DirectoryHit = {
   description: string | null
   category_name: string
   category_id: string | null
+  category_ids?: string[]
+  category_names?: string[]
   subscription_tier:
     | "verified"
     | "featured"
@@ -120,6 +122,7 @@ function hitToListing(hit: DirectoryHit): DirectoryListing {
           slug: hit.category_name,
         } as DirectoryCategory)
       : undefined,
+    category_ids: hit.category_ids ?? undefined,
     subscription_tier: hit.subscription_tier,
     // Filled with defaults — Algolia is the source of truth for "what's
     // searchable". Unclaimed stubs index too, distinguished by
@@ -387,7 +390,8 @@ export const DirectorySearch = ({
   const buildSearchParams = useCallback(
     (page: number) => {
       const facetFilters: string[][] = []
-      if (categoryId) facetFilters.push([`category_id:${categoryId}`])
+      // Match on the full category set (primary OR additional).
+      if (categoryId) facetFilters.push([`category_ids:${categoryId}`])
       // State-served filter — listings whose serviced_states array
       // contains the selected 2-letter code. ANDs with everything else
       // (proximity, category, query): a vendor must service the picked
