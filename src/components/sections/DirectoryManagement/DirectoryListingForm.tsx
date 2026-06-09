@@ -7,6 +7,7 @@ import {
   Parish,
 } from "@/types/directory"
 import { ParishAffiliationsSection } from "./ParishAffiliationsSection"
+import { OWNER_INTERVIEW_QUESTIONS } from "@/lib/owner-interview"
 
 type DirectoryFormData = {
   business_name: string
@@ -176,13 +177,15 @@ export const DirectoryListingForm = ({
           form.owner_q3_answer || form.owner_q4_answer || form.owner_photo_url
           ? {
               photo_url: form.owner_photo_url || undefined,
-              q1_prompt: form.owner_q1_prompt,
+              // Questions are hardcoded — always submit the canonical prompts,
+              // never an editable form value. (Backend also enforces this.)
+              q1_prompt: OWNER_INTERVIEW_QUESTIONS[0],
               q1_answer: form.owner_q1_answer,
-              q2_prompt: form.owner_q2_prompt,
+              q2_prompt: OWNER_INTERVIEW_QUESTIONS[1],
               q2_answer: form.owner_q2_answer,
-              q3_prompt: form.owner_q3_prompt,
+              q3_prompt: OWNER_INTERVIEW_QUESTIONS[2],
               q3_answer: form.owner_q3_answer,
-              q4_prompt: form.owner_q4_prompt,
+              q4_prompt: OWNER_INTERVIEW_QUESTIONS[3],
               q4_answer: form.owner_q4_answer,
             }
           : undefined,
@@ -440,16 +443,15 @@ export const DirectoryListingForm = ({
                 <label className="label-sm text-secondary block mb-1">
                   Question {n}
                 </label>
-                <input
-                  name={`owner_q${n}_prompt`}
-                  value={(form as any)[`owner_q${n}_prompt`]}
-                  onChange={handleChange}
-                  className="w-full border rounded-sm px-3 py-2 text-sm"
-                />
+                {/* Questions are fixed platform-wide — shown as static text.
+                    Merchants edit only their answer below. */}
+                <p className="text-sm text-primary font-medium">
+                  {OWNER_INTERVIEW_QUESTIONS[n - 1]}
+                </p>
               </div>
               <div>
                 <label className="label-sm text-secondary block mb-1">
-                  Answer {n}
+                  Your answer
                 </label>
                 <textarea
                   name={`owner_q${n}_answer`}

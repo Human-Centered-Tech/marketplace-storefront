@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { DirectoryListing } from "@/types/directory"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
+import { OWNER_INTERVIEW_QUESTIONS } from "@/lib/owner-interview"
 
 const tierLabels: Record<string, string> = {
   // Canva tier set
@@ -273,9 +274,9 @@ export const DirectoryDetail = ({
                       }`}
                     >
                       {([1, 2, 3, 4] as const).map((n) => {
-                        const prompt = (listing.owner_interview as any)?.[
-                          `q${n}_prompt`
-                        ]
+                        // Questions are hardcoded platform-wide — always render
+                        // the canonical text, ignoring any stored/legacy prompt.
+                        const prompt = OWNER_INTERVIEW_QUESTIONS[n - 1]
                         const answer = (listing.owner_interview as any)?.[
                           `q${n}_answer`
                         ]
