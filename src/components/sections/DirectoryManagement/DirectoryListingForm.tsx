@@ -15,6 +15,7 @@ type DirectoryFormData = {
   slug: string
   description: string
   category_id: string
+  secondary_category_id: string
   contact_email: string
   contact_phone: string
   website_url: string
@@ -88,6 +89,7 @@ export const DirectoryListingForm = ({
     slug: initialData?.slug || "",
     description: initialData?.description || "",
     category_id: initialData?.category_id || "",
+    secondary_category_id: initialData?.secondary_category_id || "",
     contact_email: initialData?.contact_email || "",
     contact_phone: initialData?.contact_phone || "",
     website_url: initialData?.website_url || "",
@@ -160,7 +162,11 @@ export const DirectoryListingForm = ({
         business_name: form.business_name,
         slug: form.slug,
         description: form.description,
-        category_id: form.category_id || undefined,
+        // First id = primary; second (optional) = additional. Backend writes
+        // the M2M set and mirrors the primary onto category_id.
+        category_ids: [form.category_id, form.secondary_category_id].filter(
+          Boolean
+        ),
         contact_email: form.contact_email || undefined,
         contact_phone: form.contact_phone || undefined,
         website_url: form.website_url || undefined,
@@ -248,9 +254,9 @@ export const DirectoryListingForm = ({
               className="w-full border rounded-sm px-3 py-2 text-sm"
             />
           </div>
-          <div className="md:col-span-2">
+          <div>
             <label className="label-sm text-secondary block mb-1">
-              Category *
+              Primary category *
             </label>
             <select
               name="category_id"
@@ -265,6 +271,26 @@ export const DirectoryListingForm = ({
                   {cat.name}
                 </option>
               ))}
+            </select>
+          </div>
+          <div>
+            <label className="label-sm text-secondary block mb-1">
+              Additional category (optional)
+            </label>
+            <select
+              name="secondary_category_id"
+              value={form.secondary_category_id}
+              onChange={handleChange}
+              className="w-full border rounded-sm px-3 py-2 text-sm"
+            >
+              <option value="">None</option>
+              {categories
+                .filter((cat) => cat.id !== form.category_id)
+                .map((cat) => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.name}
+                  </option>
+                ))}
             </select>
           </div>
           <div className="md:col-span-2">
