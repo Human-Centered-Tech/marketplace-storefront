@@ -8,6 +8,7 @@ import {
 } from "@/types/directory"
 import { ParishAffiliationsSection } from "./ParishAffiliationsSection"
 import { OWNER_INTERVIEW_QUESTIONS } from "@/lib/owner-interview"
+import { ImageUploadField } from "./ImageUploadField"
 
 type DirectoryFormData = {
   business_name: string
@@ -125,6 +126,9 @@ export const DirectoryListingForm = ({
       errorRef.current.scrollIntoView({ behavior: "smooth", block: "center" })
     }
   }, [error])
+
+  const setField = (name: string, value: string) =>
+    setForm((prev) => ({ ...prev, [name]: value }))
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -424,19 +428,11 @@ export const DirectoryListingForm = ({
           listing.
         </p>
         <div className="grid grid-cols-1 gap-4">
-          <div>
-            <label className="label-sm text-secondary block mb-1">
-              Owner Photo URL
-            </label>
-            <input
-              name="owner_photo_url"
-              type="url"
-              value={form.owner_photo_url}
-              onChange={handleChange}
-              placeholder="https://"
-              className="w-full border rounded-sm px-3 py-2 text-sm"
-            />
-          </div>
+          <ImageUploadField
+            label="Owner Photo"
+            value={form.owner_photo_url}
+            onChange={(url) => setField("owner_photo_url", url)}
+          />
           {([1, 2, 3, 4] as const).map((n) => (
             <div key={n} className="border rounded-sm p-3 space-y-2">
               <div>
@@ -486,19 +482,11 @@ export const DirectoryListingForm = ({
           Optional — a devotional image and reflection shown on your listing.
         </p>
         <div className="grid grid-cols-1 gap-4">
-          <div>
-            <label className="label-sm text-secondary block mb-1">
-              Image URL
-            </label>
-            <input
-              name="devotional_image_url"
-              type="url"
-              value={form.devotional_image_url}
-              onChange={handleChange}
-              placeholder="https://"
-              className="w-full border rounded-sm px-3 py-2 text-sm"
-            />
-          </div>
+          <ImageUploadField
+            label="Devotional Image"
+            value={form.devotional_image_url}
+            onChange={(url) => setField("devotional_image_url", url)}
+          />
           <div>
             <label className="label-sm text-secondary block mb-1">
               Question / Prompt

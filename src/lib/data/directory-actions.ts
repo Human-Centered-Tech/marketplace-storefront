@@ -85,6 +85,40 @@ export async function updateDirectoryListing(
   return { ok: true, listing: res.data.listing }
 }
 
+/**
+ * Upload a directory image (logo / cover / owner photo / devotional) for the
+ * logged-in customer. Reads the file server-side, base64-encodes it, and
+ * posts JSON to the customer-authed backend route, which writes it to MinIO
+ * and returns a public URL. Called from the listing editor's image fields.
+ */
+export async function uploadDirectoryImage(
+  formData: FormData
+): Promise<{ ok: true; url: string } | { ok: false; error: string }> {
+  const file = formData.get("file")
+  if (!(file instanceof File) || file.size === 0) {
+    return { ok: false, error: "No file provided" }
+  }
+  if (file.size > 10 * 1024 * 1024) {
+    return { ok: false, error: "Image exceeds the 10MB limit" }
+  }
+
+  const data_base64 = Buffer.from(await file.arrayBuffer()).toString("base64")
+
+  const res = await authedBackendFetch<{ url: string }>(
+    "/store/directory/uploads",
+    {
+      method: "POST",
+      body: JSON.stringify({
+        filename: file.name,
+        content_type: file.type,
+        data_base64,
+      }),
+    }
+  )
+  if (!res.ok) return res
+  return { ok: true, url: res.data.url }
+}
+
 export async function getMyDirectoryListing(): Promise<DirectoryListing | null> {
   // /store/directory/listings/me returns the authed customer's own listing
   // regardless of verification/subscription status. The plain
