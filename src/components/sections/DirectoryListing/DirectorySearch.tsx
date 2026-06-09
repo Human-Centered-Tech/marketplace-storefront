@@ -6,7 +6,8 @@ import { algoliasearch } from "algoliasearch"
 import { DirectoryListing, DirectoryCategory } from "@/types/directory"
 import { DirectoryListingCard } from "./DirectoryListingCard"
 import { DirectoryMapView } from "./DirectoryMap"
-import type { MapBbox } from "./LeafletMap"
+import type { MapBbox } from "./GoogleDirectoryMap"
+import { GOOGLE_MAPS_API_KEY } from "./GoogleMapsProvider"
 import {
   useUserLocation,
   readRadiusMi,
@@ -280,8 +281,8 @@ export const DirectorySearch = ({
 
   // When the user has NOT shared their location, they can still get
   // proximity-ranked results by typing a zip code into the location
-  // field. We geocode the zip via Nominatim (debounced) and feed those
-  // coords into Algolia's aroundLatLng. Not persisted — this is a
+  // field. We geocode the zip via the Google Geocoding API (debounced) and
+  // feed those coords into Algolia's aroundLatLng. Not persisted — this is a
   // one-search-only override of proximity origin.
   const [zipCoords, setZipCoords] = useState<{ lat: number; lng: number } | null>(
     null
@@ -289,7 +290,7 @@ export const DirectorySearch = ({
   useEffect(() => {
     const raw = location.trim()
     const isZip = /^\d{5}(-\d{4})?$/.test(raw)
-    if (!isZip) {
+    if (!isZip || !GOOGLE_MAPS_API_KEY) {
       if (zipCoords) setZipCoords(null)
       return
     }
@@ -297,16 +298,19 @@ export const DirectorySearch = ({
     const t = setTimeout(async () => {
       try {
         const res = await fetch(
-          `https://nominatim.openstreetmap.org/search?postalcode=${encodeURIComponent(
+          `https://maps.googleapis.com/maps/api/geocode/json?components=postal_code:${encodeURIComponent(
             raw
-          )}&countrycodes=us&format=json&limit=1`
+          )}|country:US&key=${GOOGLE_MAPS_API_KEY}`
         )
         if (!res.ok) return
-        const data = (await res.json()) as Array<{ lat?: string; lon?: string }>
-        const hit = data?.[0]
-        if (!hit || cancelled) return
-        const lat = parseFloat(hit.lat || "")
-        const lng = parseFloat(hit.lon || "")
+        const data = (await res.json()) as {
+          status?: string
+          results?: Array<{ geometry?: { location?: { lat?: number; lng?: number } } }>
+        }
+        if (cancelled || data.status !== "OK") return
+        const loc = data.results?.[0]?.geometry?.location
+        const lat = Number(loc?.lat)
+        const lng = Number(loc?.lng)
         if (Number.isFinite(lat) && Number.isFinite(lng)) {
           setZipCoords({ lat, lng })
         }

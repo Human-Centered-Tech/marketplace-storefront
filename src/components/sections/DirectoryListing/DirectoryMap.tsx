@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react"
 import { DirectoryListing } from "@/types/directory"
 import dynamic from "next/dynamic"
-import type { MapBbox } from "./LeafletMap"
+import type { MapBbox } from "./GoogleDirectoryMap"
+import { GoogleMapsProvider } from "./GoogleMapsProvider"
 
 type MarkerData = {
   id: string
@@ -20,8 +21,10 @@ type MarkerData = {
 // request on it.
 const MIN_SEARCH_ZOOM = 5
 
-// Lazy-load the actual map to avoid SSR issues with Leaflet
-const LeafletMap = dynamic(() => import("./LeafletMap"), { ssr: false })
+// Lazy-load the actual map client-side (Google JS API needs the browser).
+const GoogleDirectoryMap = dynamic(() => import("./GoogleDirectoryMap"), {
+  ssr: false,
+})
 
 export function DirectoryMapView({
   listings,
@@ -165,7 +168,7 @@ export function DirectoryMapView({
         </div>
       </div>
 
-      {/* Right panel - Leaflet map */}
+      {/* Right panel - Google map */}
       <div className="flex-1 relative bg-gray-100">
         {loading ? (
           <div className="absolute inset-0 flex items-center justify-center">
@@ -177,17 +180,25 @@ export function DirectoryMapView({
             </div>
           </div>
         ) : (
-          <LeafletMap
-            markers={markers}
-            selectedId={selectedId}
-            onSelectMarker={setSelectedId}
-            autoFit={!bboxActive}
-            onBoundsChanged={(bbox, zoom) => {
-              setPendingBbox(bbox)
-              setPendingZoom(zoom)
-              setMovedSinceSearch(true)
-            }}
-          />
+          <GoogleMapsProvider
+            fallback={
+              <div className="absolute inset-0 flex items-center justify-center text-secondary text-sm">
+                Map unavailable
+              </div>
+            }
+          >
+            <GoogleDirectoryMap
+              markers={markers}
+              selectedId={selectedId}
+              onSelectMarker={setSelectedId}
+              autoFit={!bboxActive}
+              onBoundsChanged={(bbox, zoom) => {
+                setPendingBbox(bbox)
+                setPendingZoom(zoom)
+                setMovedSinceSearch(true)
+              }}
+            />
+          </GoogleMapsProvider>
         )}
 
         {/* "Search this area" CTA — sits at the top-center of the map

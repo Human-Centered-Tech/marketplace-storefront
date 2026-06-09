@@ -1,9 +1,9 @@
 "use client"
 
-import { useEffect, useState } from "react"
 import { DirectoryListing } from "@/types/directory"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 import { OWNER_INTERVIEW_QUESTIONS } from "@/lib/owner-interview"
+import { SingleLocationMap } from "@/components/sections/DirectoryListing/SingleLocationMap"
 
 const tierLabels: Record<string, string> = {
   // Canva tier set
@@ -609,10 +609,9 @@ export const DirectoryDetail = ({
   )
 }
 
-// Inline map embed component.
-// Geocodes the listing's address via Nominatim and renders an OSM iframe
-// centered on the result. Was previously hardcoded to a Waco-area bbox,
-// so every listing showed the same Texas map regardless of location.
+// Inline Google map for a single listing. Prefers lat/lng stored on the
+// address (written by the backend geocoder on save); otherwise geocodes the
+// address string client-side. Renders a placeholder when there's no location.
 function LocationEmbed({
   address,
 }: {
@@ -622,6 +621,8 @@ function LocationEmbed({
     zip?: string
     street?: string
     full?: string
+    lat?: number
+    lng?: number
   }
 }) {
   // Prefer the full address string (Bubble-imported listings have only this
@@ -632,48 +633,13 @@ function LocationEmbed({
       .filter(Boolean)
       .join(", ")
 
-  const [bbox, setBbox] = useState<string | null>(null)
-
-  useEffect(() => {
-    let cancelled = false
-    if (!query) {
-      setBbox(null)
-      return
-    }
-    ;(async () => {
-      try {
-        const res = await fetch(
-          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
-            query
-          )}&format=json&limit=1`,
-          { headers: { "Accept-Language": "en" } }
-        )
-        const data = (await res.json()) as Array<{
-          lat: string
-          lon: string
-        }>
-        if (cancelled) return
-        if (data.length > 0) {
-          const lat = parseFloat(data[0].lat)
-          const lon = parseFloat(data[0].lon)
-          // ~0.05° is roughly 5km — comfortable city-block view that still
-          // shows the surrounding neighborhood.
-          const pad = 0.05
-          setBbox(`${lon - pad},${lat - pad},${lon + pad},${lat + pad}`)
-        } else {
-          setBbox(null)
-        }
-      } catch {
-        if (!cancelled) setBbox(null)
-      }
-    })()
-    return () => {
-      cancelled = true
-    }
-  }, [query])
+  const coords =
+    Number.isFinite(address.lat) && Number.isFinite(address.lng)
+      ? { lat: address.lat as number, lng: address.lng as number }
+      : null
 
   // No address at all — render a placeholder rather than a misleading map.
-  if (!query) {
+  if (!query && !coords) {
     return (
       <div className="h-48 relative overflow-hidden bg-gray-100 flex items-center justify-center">
         <p className="text-secondary text-sm">No location provided</p>
@@ -683,29 +649,26 @@ function LocationEmbed({
 
   return (
     <div className="h-48 relative overflow-hidden">
-      {bbox ? (
-        <iframe
-          src={`https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik`}
-          className="w-full border-0"
-          style={{ height: "calc(100% + 30px)" }}
-          title={`Map of ${query}`}
-          loading="lazy"
-        />
-      ) : (
-        <div className="absolute inset-0 bg-gray-100 flex items-center justify-center">
-          <p className="text-secondary text-sm">Locating…</p>
-        </div>
-      )}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <div className="w-12 h-12 bg-navy-dark rounded-full flex items-center justify-center border-4 border-[#FAF9F5] shadow-xl">
-          <span
-            className="material-symbols-outlined text-[#F2CD69]"
-            style={{ fontVariationSettings: "'FILL' 1" }}
-          >
-            location_on
-          </span>
-        </div>
-      </div>
+      <SingleLocationMap
+        coords={coords}
+        query={query || null}
+        className="absolute inset-0"
+        fallback={
+          <div className="absolute inset-0 bg-gray-100 flex items-center justify-center">
+            <p className="text-secondary text-sm">{locationStrFallback(address)}</p>
+          </div>
+        }
+      />
     </div>
   )
+}
+
+// Small label used when the map can't render (no key / geocode miss).
+function locationStrFallback(address: {
+  city?: string
+  state?: string
+  zip?: string
+}): string {
+  const s = [address.city, address.state, address.zip].filter(Boolean).join(", ")
+  return s || "Location"
 }
