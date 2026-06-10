@@ -161,13 +161,33 @@ function MapContents({
     []
   )
 
+  // Stable per-id ref callbacks. An inline `ref={el => setMarkerRef(el, id)}`
+  // changes identity every render, so React (and @vis.gl's imperative handle)
+  // re-invoke it each render — which re-runs setState and loops forever
+  // (React error #185). One cached callback per id keeps the ref identity
+  // stable, so it only fires on real mount/unmount.
+  const refCbCache = useRef<
+    Map<string, (el: google.maps.marker.AdvancedMarkerElement | null) => void>
+  >(new Map())
+  const markerRefCb = useCallback(
+    (id: string) => {
+      let cb = refCbCache.current.get(id)
+      if (!cb) {
+        cb = (el) => setMarkerRef(el, id)
+        refCbCache.current.set(id, cb)
+      }
+      return cb
+    },
+    [setMarkerRef]
+  )
+
   return (
     <>
       {markers.map((m) => (
         <AdvancedMarker
           key={m.id}
           position={{ lat: m.lat, lng: m.lon }}
-          ref={(el) => setMarkerRef(el, m.id)}
+          ref={markerRefCb(m.id)}
           onClick={() => onSelectMarker(m.id)}
           zIndex={m.id === selectedId ? 10 : 1}
         >
