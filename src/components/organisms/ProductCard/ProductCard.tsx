@@ -5,6 +5,8 @@ import { HttpTypes } from "@medusajs/types"
 import { BaseHit, Hit } from "instantsearch.js"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 import { getProductPrice } from "@/lib/helpers/get-product-price"
+import { useWishlist } from "@/lib/context/WishlistContext"
+import { HeartFilledIcon, HeartIcon } from "@/icons"
 
 export const ProductCard = ({
   product,
@@ -28,6 +30,12 @@ export const ProductCard = ({
   // can show the same image the product detail page does.
   const cardImage =
     product.thumbnail || (product as any).images?.[0]?.url || null
+
+  const wishlist = useWishlist()
+  const productId = String(
+    (product as any).id ?? (product as any).objectID ?? ""
+  )
+  const favorited = !!productId && !!wishlist?.isFavorited(productId)
 
   return (
     <article className="flex flex-col group h-full">
@@ -68,6 +76,23 @@ export const ProductCard = ({
           <span className="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 text-[10px] font-bold tracking-widest uppercase text-[#75777f]">
             {categoryName}
           </span>
+        )}
+        {wishlist?.isLoggedIn && productId && (
+          <button
+            type="button"
+            onClick={(e) => {
+              // Inside the card's link — don't navigate.
+              e.preventDefault()
+              e.stopPropagation()
+              wishlist.toggle(productId)
+            }}
+            aria-label={favorited ? "Remove from wishlist" : "Add to wishlist"}
+            className={`absolute top-3 right-3 w-9 h-9 rounded-full bg-white/90 backdrop-blur flex items-center justify-center shadow-sm hover:bg-white transition-colors ${
+              favorited ? "text-[#BE9B32]" : "text-[#75777f]"
+            }`}
+          >
+            {favorited ? <HeartFilledIcon size={18} /> : <HeartIcon size={18} />}
+          </button>
         )}
       </LocalizedClientLink>
 

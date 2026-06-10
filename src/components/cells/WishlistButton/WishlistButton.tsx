@@ -50,7 +50,6 @@ export const WishlistButton = ({
       setIsWishlistAdding(true)
 
       await removeWishlistItem({
-        wishlist_id: wishlist?.[0].id!,
         product_id: productId,
       })
     } catch (error) {
