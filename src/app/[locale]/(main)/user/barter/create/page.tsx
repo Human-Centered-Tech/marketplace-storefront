@@ -23,8 +23,8 @@ export default async function CreateBarterListingPage() {
             Post a Listing
           </h1>
           <p className="text-secondary text-sm">
-            Share something to sell, trade, barter, or give away. Every
-            listing is reviewed by our moderation team before it goes live.
+            Share something to sell, trade, or give away. Your listing goes
+            live in the barter market right away.
           </p>
           <BarterCreateForm categories={categories} />
         </div>
