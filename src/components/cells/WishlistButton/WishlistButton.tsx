@@ -71,9 +71,9 @@ export const WishlistButton = ({
       disabled={isWishlistAdding}
     >
       {isWishlisted ? (
-        <HeartFilledIcon size={20} color="#E0245E" />
+        <HeartFilledIcon size={20} color="#DB2777" />
       ) : (
-        <HeartIcon size={20} color="#E0245E" />
+        <HeartIcon size={20} color="#DB2777" />
       )}
     </Button>
   )

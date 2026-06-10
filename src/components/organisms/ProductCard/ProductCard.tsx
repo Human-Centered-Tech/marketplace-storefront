@@ -90,9 +90,9 @@ export const ProductCard = ({
             className="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/90 backdrop-blur flex items-center justify-center shadow-sm hover:bg-white transition-colors"
           >
             {favorited ? (
-              <HeartFilledIcon size={18} color="#E0245E" />
+              <HeartFilledIcon size={18} color="#DB2777" />
             ) : (
-              <HeartIcon size={18} color="#E0245E" />
+              <HeartIcon size={18} color="#DB2777" />
             )}
           </button>
         )}
