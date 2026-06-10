@@ -3,7 +3,7 @@ import Image from "next/image"
 import { HttpTypes } from "@medusajs/types"
 import { WishlistButton } from "../WishlistButton/WishlistButton"
 import { Wishlist } from "@/types/wishlist"
-import { convertToLocale } from "@/lib/helpers/money"
+import { getProductPrice } from "@/lib/helpers/get-product-price"
 import { Button } from "@/components/atoms"
 import clsx from "clsx"
 
@@ -12,17 +12,17 @@ export const WishlistItem = ({
   wishlist,
   user,
 }: {
-  product: HttpTypes.StoreProduct & {
-    calculated_amount: number
-    currency_code: string
-  }
+  product: HttpTypes.StoreProduct
   wishlist: Wishlist[]
   user?: HttpTypes.StoreCustomer | null
 }) => {
-  const price = convertToLocale({
-    amount: product.calculated_amount,
-    currency_code: product.currency_code,
-  })
+  // Wishlist products carry prices under variants[].calculated_price (when the
+  // endpoint includes them), not as flat fields — compute safely so a missing
+  // price never crashes the page.
+  const { cheapestPrice } = product.variants?.length
+    ? getProductPrice({ product })
+    : { cheapestPrice: null }
+  const price = cheapestPrice?.calculated_price ?? ""
 
   return (
     <div
