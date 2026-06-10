@@ -26,10 +26,11 @@ export const BarterCreateForm = ({
   const [form, setForm] = useState({
     title: "",
     description: "",
-    listing_type: "sell" as "sell" | "trade" | "barter" | "free",
+    listing_type: "sell" as "sell" | "trade" | "free",
     condition: "good" as "new" | "like_new" | "good" | "fair" | "poor",
     category_id: "",
     price: "",
+    estimated_value: "",
     trade_terms: "",
     city: "",
     state: "",
@@ -88,6 +89,16 @@ export const BarterCreateForm = ({
     setSubmitting(true)
     setError(null)
 
+    // Trade/Free listings have no sale price — an estimated value is required
+    // (used to total estimated transaction value across the market).
+    const needsEstimate =
+      form.listing_type === "trade" || form.listing_type === "free"
+    if (needsEstimate && !(parseFloat(form.estimated_value) > 0)) {
+      setSubmitting(false)
+      setError("Please enter an estimated value.")
+      return
+    }
+
     const payload: Record<string, unknown> = {
       title: form.title.trim(),
       description: form.description.trim(),
@@ -107,6 +118,9 @@ export const BarterCreateForm = ({
     if (form.listing_type === "sell" && form.price) {
       const cents = Math.round(parseFloat(form.price) * 100)
       if (!isNaN(cents)) payload.price = cents
+    }
+    if (needsEstimate) {
+      payload.estimated_value = Math.round(parseFloat(form.estimated_value) * 100)
     }
 
     const result = await createBarterListing(payload)
@@ -179,7 +193,6 @@ export const BarterCreateForm = ({
             >
               <option value="sell">For sale</option>
               <option value="trade">Trade</option>
-              <option value="barter">Barter</option>
               <option value="free">Free</option>
             </select>
           </div>
@@ -240,7 +253,24 @@ export const BarterCreateForm = ({
           </div>
         )}
 
-        {(form.listing_type === "trade" || form.listing_type === "barter") && (
+        {(form.listing_type === "trade" || form.listing_type === "free") && (
+          <div>
+            <label className="text-xs font-medium text-secondary block mb-1">
+              Estimated value (USD) *
+            </label>
+            <input
+              name="estimated_value"
+              type="number"
+              step="0.01"
+              min="0"
+              value={form.estimated_value}
+              onChange={handleChange}
+              className="w-full border border-[#d6d0c4]/60 rounded-lg px-3 py-2 text-sm"
+            />
+          </div>
+        )}
+
+        {form.listing_type === "trade" && (
           <div>
             <label className="text-xs font-medium text-secondary block mb-1">
               What are you hoping to trade for?
