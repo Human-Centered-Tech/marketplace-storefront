@@ -37,7 +37,7 @@ const DEFAULT_ZOOM = 4
 // larger size, not a colour change):
 //   • featured  → dark-blue body, white accent
 //   • verified  → white body, dark-blue accent
-//   • otherwise → grey body, dark-blue accent (unclaimed default)
+//   • otherwise → grey body, white accent (unclaimed default)
 function MarkerPin({
   selected,
   featured,
@@ -55,7 +55,7 @@ function MarkerPin({
   const WHITE = "#FFFFFF"
   const GREY = "#9ca3af"
   let fill = GREY
-  let accent = NAVY
+  let accent = WHITE
   if (featured) {
     fill = NAVY
     accent = WHITE
