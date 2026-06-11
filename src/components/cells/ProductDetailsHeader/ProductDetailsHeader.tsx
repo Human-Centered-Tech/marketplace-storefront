@@ -72,6 +72,30 @@ export const ProductDetailsHeader = ({
       }
     : allSearchParams
 
+  // Option-less / imported products carry a placeholder option that isn't a
+  // real buyer choice — Shopify exports it as "Title" / "Default Title", and
+  // Medusa generates "Default option" / "Default value". Filter these out so
+  // the PDP doesn't render a useless "Title: Default Title" selector.
+  const realOptions = (product.options || []).filter(
+    (o: HttpTypes.StoreProductOption) => {
+      const title = (o.title || "").trim().toLowerCase()
+      const values = (o.values || []).map(
+        (v: HttpTypes.StoreProductOptionValue) =>
+          (v.value || "").trim().toLowerCase()
+      )
+      const onlyValue = values.length <= 1 ? values[0] ?? "" : null
+      if (title === "default option") return false
+      if (
+        title === "title" &&
+        (onlyValue === "default title" || values.length === 0)
+      )
+        return false
+      if (onlyValue === "default value" || onlyValue === "default title")
+        return false
+      return true
+    }
+  )
+
   // get selected variant id
   const variantId =
     product.variants?.find(({ options }: { options: any }) =>
@@ -185,10 +209,12 @@ export const ProductDetailsHeader = ({
         )}
       </div>
 
-      {/* Variant selector */}
-      {hasAnyPrice && (
+      {/* Variant selector — only for real options. Placeholder defaults
+          (Shopify "Title"/"Default Title", Medusa "Default option"/"Default
+          value") are filtered out so they don't show as a fake choice. */}
+      {hasAnyPrice && realOptions.length > 0 && (
         <div className="space-y-4">
-          {(product.options || []).map(
+          {realOptions.map(
             ({ id, title, values }: HttpTypes.StoreProductOption) => (
               <div key={id}>
                 <span className="font-sans text-[11px] uppercase tracking-[0.15em] text-[#75777f] font-semibold">

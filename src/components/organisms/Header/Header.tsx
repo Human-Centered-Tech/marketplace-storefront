@@ -84,12 +84,12 @@ export const Header = async () => {
         </div>
       </div>
 
-      {/* Bottom row — Navigation. Keep the top row at py-3 so the
-          search bar / logo / actions stay properly centered, then pull
-          the nav up 6px with -mt-1.5 to halve the gap above the menu
-          (12px → 6px). Match with pb-1.5 below for symmetric spacing
-          without making the header unnecessarily tall. */}
-      <nav className="hidden lg:flex items-center justify-center gap-8 -mt-1.5 pb-1.5 lg:px-8">
+      {/* Bottom row — Navigation. The top row stays at py-3 so the
+          search bar / logo / actions are centered. The logo (70px) is the
+          tallest element, so the (shorter) search bar's bottom sits well
+          above the top row's bottom edge; pull the nav up with -mt-3.5 so the
+          whitespace above the menu matches the pb-1.5 below it. */}
+      <nav className="hidden lg:flex items-center justify-center gap-8 -mt-3.5 pb-1.5 lg:px-8">
         <LocalizedClientLink
           href="/categories"
           className="text-[13px] font-medium uppercase tracking-[0.1em] text-primary hover:text-action transition-colors"
