@@ -4,7 +4,6 @@ import { ReactNode, useEffect, useState } from "react"
 import { AdvancedMarker, Map as GoogleMap } from "@vis.gl/react-google-maps"
 import {
   GoogleMapsProvider,
-  GOOGLE_MAPS_API_KEY,
   GOOGLE_MAPS_MAP_ID,
 } from "./GoogleMapsProvider"
 
@@ -37,29 +36,21 @@ export function SingleLocationMap({
   const [geocoded, setGeocoded] = useState<LatLng | null>(null)
 
   useEffect(() => {
-    if (hasProp || !query || !GOOGLE_MAPS_API_KEY) {
+    if (hasProp || !query) {
       setGeocoded(null)
       return
     }
     let cancelled = false
     ;(async () => {
       try {
-        const res = await fetch(
-          `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
-            query
-          )}&components=country:US&key=${GOOGLE_MAPS_API_KEY}`
-        )
+        // Geocode server-side — the browser maps key is referrer-restricted and
+        // Google's Geocoding REST service rejects those. See /api/geocode.
+        const res = await fetch(`/api/geocode?address=${encodeURIComponent(query)}`)
         if (!res.ok) return
-        const data = (await res.json()) as {
-          status?: string
-          results?: Array<{
-            geometry?: { location?: { lat?: number; lng?: number } }
-          }>
-        }
-        if (cancelled || data.status !== "OK") return
-        const loc = data.results?.[0]?.geometry?.location
-        const lat = Number(loc?.lat)
-        const lng = Number(loc?.lng)
+        const data = (await res.json()) as { lat?: number; lng?: number }
+        if (cancelled) return
+        const lat = Number(data.lat)
+        const lng = Number(data.lng)
         if (Number.isFinite(lat) && Number.isFinite(lng)) {
           setGeocoded({ lat, lng })
         }
