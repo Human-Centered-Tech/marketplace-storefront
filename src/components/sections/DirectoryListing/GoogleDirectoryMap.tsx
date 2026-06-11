@@ -29,24 +29,34 @@ export type MapBbox = {
 const DEFAULT_CENTER = { lat: 39.8, lng: -98.5 }
 const DEFAULT_ZOOM = 4
 
-// Navy/gold dot marker with a hover tooltip. Ports the look of the former
-// Leaflet divIcon + .leaflet-tooltip-custom.
-function MarkerDot({ selected, name }: { selected: boolean; name: string }) {
-  const size = selected ? 20 : 14
+// Traditional teardrop pin (navy with a gold accent; gold when selected) with a
+// hover tooltip. The viewBox tip sits at the bottom-centre, which is where
+// AdvancedMarker anchors content — so the point lands on the location.
+function MarkerPin({ selected, name }: { selected: boolean; name: string }) {
+  const w = selected ? 30 : 24
+  const h = selected ? 45 : 36
+  const fill = selected ? "#BE9B32" : "#17294A"
+  const accent = selected ? "#17294A" : "#BE9B32"
   return (
     <div className="gm-marker">
-      <div
-        className="gm-marker-dot"
+      <svg
+        width={w}
+        height={h}
+        viewBox="0 0 24 36"
         style={{
-          width: size,
-          height: size,
-          background: selected ? "#BE9B32" : "#17294A",
-          border: `3px solid ${selected ? "#17294A" : "#BE9B32"}`,
-          borderRadius: "50%",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+          display: "block",
+          filter: "drop-shadow(0 2px 3px rgba(0,0,0,0.3))",
           transition: "all 0.2s",
         }}
-      />
+      >
+        <path
+          d="M12 0C5.373 0 0 5.373 0 12c0 9 12 24 12 24s12-15 12-24C24 5.373 18.627 0 12 0z"
+          fill={fill}
+          stroke={accent}
+          strokeWidth="1.5"
+        />
+        <circle cx="12" cy="11.5" r="4.5" fill={accent} />
+      </svg>
       <span className="gm-marker-tooltip">{name}</span>
     </div>
   )
@@ -191,7 +201,7 @@ function MapContents({
           onClick={() => onSelectMarker(m.id)}
           zIndex={m.id === selectedId ? 10 : 1}
         >
-          <MarkerDot selected={m.id === selectedId} name={m.name} />
+          <MarkerPin selected={m.id === selectedId} name={m.name} />
         </AdvancedMarker>
       ))}
     </>
