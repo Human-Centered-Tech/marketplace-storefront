@@ -22,6 +22,11 @@ export const ProductGallery = ({
         ? [{ id: "thumbnail", url: thumbnail } as HttpTypes.StoreProductImage]
         : []
   const activeImage = imageList[activeIndex]
+  const hasMultiple = imageList.length > 1
+
+  const goPrev = () =>
+    setActiveIndex((i) => (i - 1 + imageList.length) % imageList.length)
+  const goNext = () => setActiveIndex((i) => (i + 1) % imageList.length)
 
   return (
     <div className="space-y-4">
@@ -63,6 +68,52 @@ export const ProductGallery = ({
             Vetted Merchant
           </span>
         </div>
+
+        {/* Prev / next arrows — only when there's more than one photo.
+            Minimalist, transparent: a faint frosted disc that firms up on
+            hover, with a thin chevron. */}
+        {hasMultiple && (
+          <>
+            <button
+              type="button"
+              onClick={goPrev}
+              aria-label="Previous image"
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/40 hover:bg-white/80 backdrop-blur-sm text-[#001435] flex items-center justify-center transition-colors"
+            >
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              onClick={goNext}
+              aria-label="Next image"
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/40 hover:bg-white/80 backdrop-blur-sm text-[#001435] flex items-center justify-center transition-colors"
+            >
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </button>
+          </>
+        )}
       </div>
 
       {/* Thumbnail strip — up to 5 columns */}
