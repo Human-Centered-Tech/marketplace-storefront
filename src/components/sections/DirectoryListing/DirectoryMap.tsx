@@ -116,7 +116,6 @@ export function DirectoryMapView({
             </p>
           ) : (
             listings.map((listing) => {
-              const hasMarker = markers.some((m) => m.id === listing.id)
               const distanceMi = (listing as { _distance_miles?: number })
                 ._distance_miles
               return (
@@ -156,11 +155,6 @@ export function DirectoryMapView({
                           {[listing.address.city, listing.address.state]
                             .filter(Boolean)
                             .join(", ")}
-                          {!hasMarker && !loading && (
-                            <span className="text-gray-400 ml-1">
-                              (no map pin)
-                            </span>
-                          )}
                         </div>
                       )}
                       {showDistance && typeof distanceMi === "number" && (
