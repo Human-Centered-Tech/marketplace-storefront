@@ -16,6 +16,8 @@ export type MarkerData = {
   name: string
   category: string
   city: string
+  isFeatured?: boolean
+  isVerified?: boolean
 }
 
 export type MapBbox = {
@@ -29,14 +31,41 @@ export type MapBbox = {
 const DEFAULT_CENTER = { lat: 39.8, lng: -98.5 }
 const DEFAULT_ZOOM = 4
 
-// Traditional teardrop pin (navy with a gold accent; gold when selected) with a
-// hover tooltip. The viewBox tip sits at the bottom-centre, which is where
-// AdvancedMarker anchors content — so the point lands on the location.
-function MarkerPin({ selected, name }: { selected: boolean; name: string }) {
+// Traditional teardrop pin with a hover tooltip. The viewBox tip sits at the
+// bottom-centre, which is where AdvancedMarker anchors content — so the point
+// lands on the location. Colour reflects status:
+//   • selected  → gold body (stands out regardless of status)
+//   • featured  → dark-blue body, white accent
+//   • verified  → white body, dark-blue accent
+//   • otherwise → dark-blue body, gold accent (unclaimed default)
+function MarkerPin({
+  selected,
+  featured,
+  verified,
+  name,
+}: {
+  selected: boolean
+  featured?: boolean
+  verified?: boolean
+  name: string
+}) {
   const w = selected ? 30 : 24
   const h = selected ? 45 : 36
-  const fill = selected ? "#BE9B32" : "#17294A"
-  const accent = selected ? "#17294A" : "#BE9B32"
+  const NAVY = "#17294A"
+  const WHITE = "#FFFFFF"
+  const GOLD = "#BE9B32"
+  let fill = NAVY
+  let accent = GOLD
+  if (selected) {
+    fill = GOLD
+    accent = NAVY
+  } else if (featured) {
+    fill = NAVY
+    accent = WHITE
+  } else if (verified) {
+    fill = WHITE
+    accent = NAVY
+  }
   return (
     <div className="gm-marker">
       <svg
@@ -201,7 +230,12 @@ function MapContents({
           onClick={() => onSelectMarker(m.id)}
           zIndex={m.id === selectedId ? 10 : 1}
         >
-          <MarkerPin selected={m.id === selectedId} name={m.name} />
+          <MarkerPin
+            selected={m.id === selectedId}
+            featured={m.isFeatured}
+            verified={m.isVerified}
+            name={m.name}
+          />
         </AdvancedMarker>
       ))}
     </>

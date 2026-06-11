@@ -13,6 +13,8 @@ type MarkerData = {
   name: string
   category: string
   city: string
+  isFeatured?: boolean
+  isVerified?: boolean
 }
 
 // Below this zoom level the visible area is so large (continental
@@ -69,6 +71,15 @@ export function DirectoryMapView({
       const lat = Number(addr?.lat)
       const lng = Number(addr?.lng)
       if (!Number.isFinite(lat) || !Number.isFinite(lng)) continue
+      // Featured = a promoted/paid tier (matches the Enterprise/Featured card
+      // badges); Verified = a claimed listing whose verification is approved
+      // but isn't on a promoted tier. Featured takes precedence.
+      const tier = listing.subscription_tier ?? ""
+      const isFeatured =
+        tier === "featured" ||
+        tier === "enterprise" ||
+        tier === "tier3" ||
+        tier === "tier4"
       results.push({
         id: listing.id,
         lat,
@@ -76,6 +87,8 @@ export function DirectoryMapView({
         name: listing.business_name,
         category: listing.category?.name || "Business",
         city: [addr?.city, addr?.state].filter(Boolean).join(", "),
+        isFeatured,
+        isVerified: !isFeatured && listing.verification_status === "approved",
       })
     }
     setMarkers(results)
