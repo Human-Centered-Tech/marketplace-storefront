@@ -48,6 +48,15 @@ export const DirectoryListingCard = ({
     (listing.subscription_tier === "enterprise" ||
       listing.subscription_tier === "tier3" ||
       listing.subscription_tier === "tier4")
+  // Status icon shown on the card image: a gold star for featured/promoted
+  // members, a navy check-circle for verified (claimed + approved) businesses.
+  // Featured takes precedence. Matches the directory map pin colours.
+  const isFeaturedBiz =
+    !isUnclaimed && (isEnterprise || listing.subscription_tier === "featured")
+  const isVerifiedBiz =
+    !isUnclaimed &&
+    !isFeaturedBiz &&
+    listing.verification_status === "approved"
   // Distance shipped from DirectorySearch's hitToListing — only rendered
   // when showDistance is on (i.e., proximity is from explicit user input,
   // not the silent Denver default).
@@ -164,10 +173,25 @@ export const DirectoryListingCard = ({
   return (
     <LocalizedClientLink
       href={`/directory/${listing.id}`}
-      className={`bg-white rounded-2xl overflow-hidden shadow-sm group hover:shadow-md transition-all border block ${
+      className={`relative bg-white rounded-2xl overflow-hidden shadow-sm group hover:shadow-md transition-all border block ${
         isUnclaimed ? "border-gray-200 opacity-80" : "border-gray-100/50"
       }`}
     >
+      {/* Status icon — gold star (featured) / navy check-circle (verified),
+          on a white chip so it reads on any cover image. */}
+      {(isFeaturedBiz || isVerifiedBiz) && (
+        <span className="absolute top-3 right-3 z-10 w-7 h-7 rounded-full bg-white/95 shadow-md flex items-center justify-center">
+          <span
+            className="material-symbols-outlined text-[18px]"
+            style={{
+              fontVariationSettings: "'FILL' 1",
+              color: isFeaturedBiz ? "#BE9B32" : "#17294A",
+            }}
+          >
+            {isFeaturedBiz ? "star" : "check_circle"}
+          </span>
+        </span>
+      )}
       {listing.cover_image_url ? (
         // Cover-photo variant: hero image with optional logo badge
         <div className="h-48 overflow-hidden relative">
