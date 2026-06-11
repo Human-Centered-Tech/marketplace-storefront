@@ -1,15 +1,6 @@
 "use client"
 
 import { useCallback, useEffect, useState } from "react"
-import { GOOGLE_MAPS_API_KEY } from "@/components/sections/DirectoryListing/GoogleMapsProvider"
-
-type GeoComponent = { short_name?: string; types?: string[] }
-
-function stateFromComponents(comps: GeoComponent[]): string | undefined {
-  const code = comps.find((c) => c.types?.includes("administrative_area_level_1"))
-    ?.short_name
-  return code && code.length === 2 ? code.toUpperCase() : undefined
-}
 
 export type LocationStatus =
   | "idle"
@@ -56,20 +47,13 @@ async function reverseStateCode(
   lat: number,
   lng: number
 ): Promise<string | undefined> {
-  if (!GOOGLE_MAPS_API_KEY) return undefined
   try {
-    const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${GOOGLE_MAPS_API_KEY}`
-    const res = await fetch(url)
+    // Server-side reverse geocode — the browser maps key is referrer-restricted
+    // and Google's Geocoding REST service rejects those. See /api/geocode.
+    const res = await fetch(`/api/geocode?lat=${lat}&lng=${lng}`)
     if (!res.ok) return undefined
-    const data = (await res.json()) as {
-      status?: string
-      results?: Array<{ address_components?: GeoComponent[] }>
-    }
-    if (data.status !== "OK") return undefined
-    const comps = data.results?.[0]?.address_components ?? []
-    const country = comps.find((c) => c.types?.includes("country"))?.short_name
-    if (country !== "US") return undefined
-    return stateFromComponents(comps)
+    const data = (await res.json()) as { state?: string }
+    return data.state || undefined
   } catch {
     return undefined
   }
@@ -182,32 +166,24 @@ export function useUserLocation() {
   const setFromZip = useCallback(async (zip: string): Promise<UserLocation | null> => {
     const trimmed = zip.trim()
     if (!/^\d{5}(-\d{4})?$/.test(trimmed)) return null
-    if (!GOOGLE_MAPS_API_KEY) return null
     try {
-      const url = `https://maps.googleapis.com/maps/api/geocode/json?components=postal_code:${encodeURIComponent(
-        trimmed
-      )}|country:US&key=${GOOGLE_MAPS_API_KEY}`
-      const res = await fetch(url)
+      // Geocode server-side — the browser maps key is referrer-restricted and
+      // Google's Geocoding REST service rejects those. See /api/geocode.
+      const res = await fetch(`/api/geocode?zip=${encodeURIComponent(trimmed)}`)
       if (!res.ok) return null
       const data = (await res.json()) as {
-        status?: string
-        results?: Array<{
-          geometry?: { location?: { lat?: number; lng?: number } }
-          address_components?: GeoComponent[]
-        }>
+        lat?: number
+        lng?: number
+        state?: string
       }
-      if (data.status !== "OK") return null
-      const hit = data.results?.[0]
-      if (!hit) return null
-      const lat = Number(hit.geometry?.location?.lat)
-      const lng = Number(hit.geometry?.location?.lng)
+      const lat = Number(data.lat)
+      const lng = Number(data.lng)
       if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null
-      const state = stateFromComponents(hit.address_components ?? [])
       const next: UserLocation = {
         lat,
         lng,
         source: "zip",
-        ...(state ? { state } : {}),
+        ...(data.state ? { state: data.state } : {}),
         ts: Date.now(),
       }
       writeStorage(next)

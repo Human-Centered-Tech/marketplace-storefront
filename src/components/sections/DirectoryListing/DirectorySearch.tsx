@@ -7,7 +7,6 @@ import { DirectoryListing, DirectoryCategory } from "@/types/directory"
 import { DirectoryListingCard } from "./DirectoryListingCard"
 import { DirectoryMapView } from "./DirectoryMap"
 import type { MapBbox } from "./GoogleDirectoryMap"
-import { GOOGLE_MAPS_API_KEY } from "./GoogleMapsProvider"
 import {
   useUserLocation,
   readRadiusMi,
@@ -290,27 +289,21 @@ export const DirectorySearch = ({
   useEffect(() => {
     const raw = location.trim()
     const isZip = /^\d{5}(-\d{4})?$/.test(raw)
-    if (!isZip || !GOOGLE_MAPS_API_KEY) {
+    if (!isZip) {
       if (zipCoords) setZipCoords(null)
       return
     }
     let cancelled = false
     const t = setTimeout(async () => {
       try {
-        const res = await fetch(
-          `https://maps.googleapis.com/maps/api/geocode/json?components=postal_code:${encodeURIComponent(
-            raw
-          )}|country:US&key=${GOOGLE_MAPS_API_KEY}`
-        )
+        // Geocode server-side — the browser maps key is referrer-restricted and
+        // Google's Geocoding REST service rejects those. See /api/geocode.
+        const res = await fetch(`/api/geocode?zip=${encodeURIComponent(raw)}`)
         if (!res.ok) return
-        const data = (await res.json()) as {
-          status?: string
-          results?: Array<{ geometry?: { location?: { lat?: number; lng?: number } } }>
-        }
-        if (cancelled || data.status !== "OK") return
-        const loc = data.results?.[0]?.geometry?.location
-        const lat = Number(loc?.lat)
-        const lng = Number(loc?.lng)
+        const data = (await res.json()) as { lat?: number; lng?: number }
+        if (cancelled) return
+        const lat = Number(data.lat)
+        const lng = Number(data.lng)
         if (Number.isFinite(lat) && Number.isFinite(lng)) {
           setZipCoords({ lat, lng })
         }
