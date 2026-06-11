@@ -33,11 +33,11 @@ const DEFAULT_ZOOM = 4
 
 // Traditional teardrop pin with a hover tooltip. The viewBox tip sits at the
 // bottom-centre, which is where AdvancedMarker anchors content — so the point
-// lands on the location. Colour reflects status:
-//   • selected  → gold body (stands out regardless of status)
+// lands on the location. Colour reflects status (selection is shown by the
+// larger size, not a colour change):
 //   • featured  → dark-blue body, white accent
 //   • verified  → white body, dark-blue accent
-//   • otherwise → dark-blue body, gold accent (unclaimed default)
+//   • otherwise → grey body, dark-blue accent (unclaimed default)
 function MarkerPin({
   selected,
   featured,
@@ -53,13 +53,10 @@ function MarkerPin({
   const h = selected ? 45 : 36
   const NAVY = "#17294A"
   const WHITE = "#FFFFFF"
-  const GOLD = "#BE9B32"
-  let fill = NAVY
-  let accent = GOLD
-  if (selected) {
-    fill = GOLD
-    accent = NAVY
-  } else if (featured) {
+  const GREY = "#9ca3af"
+  let fill = GREY
+  let accent = NAVY
+  if (featured) {
     fill = NAVY
     accent = WHITE
   } else if (verified) {
