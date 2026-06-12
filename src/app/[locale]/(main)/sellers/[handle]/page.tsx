@@ -2,6 +2,7 @@ import { SellerTabs } from "@/components/organisms"
 import {
   SellerPageHeader,
   SellerCollectionsStrip,
+  VacationNotice,
 } from "@/components/sections"
 import { TrackPageView } from "@/components/sections/Analytics/TrackPageView"
 import { retrieveCustomer } from "@/lib/data/customer"
@@ -48,6 +49,17 @@ export default async function SellerPage({
     notFound()
   }
   if (seller.store_status !== "ACTIVE" && !isOwnerPreview) {
+    // A vendor who turned on vacation mode (paused, not a draft) gets a
+    // friendly "on vacation" page instead of a bare 404. Drafts and
+    // admin-suspended stores still 404.
+    if (seller.is_on_vacation) {
+      return (
+        <>
+          <TrackPageView entity_type="seller" entity_id={seller.id} />
+          <VacationNotice sellerName={seller.name} />
+        </>
+      )
+    }
     notFound()
   }
 

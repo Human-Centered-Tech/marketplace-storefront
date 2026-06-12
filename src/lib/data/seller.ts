@@ -12,13 +12,19 @@ export const getSellerStorefrontByHandle = async (handle: string) => {
     const data = await sdk.client.fetch<{
       cover_image_url: string | null
       refund_policy: string | null
+      is_on_vacation: boolean
     }>(`/store/sellers/${handle}/storefront`, { cache: "no-cache" })
     return {
       cover_image_url: data?.cover_image_url ?? null,
       refund_policy: data?.refund_policy ?? null,
+      is_on_vacation: Boolean(data?.is_on_vacation),
     }
   } catch {
-    return { cover_image_url: null, refund_policy: null }
+    return {
+      cover_image_url: null,
+      refund_policy: null,
+      is_on_vacation: false,
+    }
   }
 }
 
@@ -36,13 +42,14 @@ export const getSellerByHandle = async (handle: string) => {
       // Owned companion module (seller_storefront). Mercur's seller row
       // doesn't carry a cover or a refund policy — both live in our
       // companion table. Helper handles fail-open.
-      const { cover_image_url, refund_policy } =
+      const { cover_image_url, refund_policy, is_on_vacation } =
         await getSellerStorefrontByHandle(handle)
 
       const response = {
         ...seller,
         cover_image_url,
         refund_policy,
+        is_on_vacation,
         reviews:
           seller.reviews
             ?.filter((item) => item !== null)
