@@ -27,4 +27,9 @@ export type SellerProps = SellerAddress & {
   // storefront. Same source as cover_image_url. Null = no policy
   // posted; the storefront simply doesn't render the section.
   refund_policy?: string | null
+  // Vacation mode. True when the vendor has temporarily paused their
+  // shop (store_status is also INACTIVE). Same source as cover_image_url.
+  // Lets the seller page show a friendly "on vacation" notice instead of
+  // a 404 for an intentionally-paused — vs. never-launched — store.
+  is_on_vacation?: boolean
 }
