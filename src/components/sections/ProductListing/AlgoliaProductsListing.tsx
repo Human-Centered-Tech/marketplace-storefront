@@ -15,9 +15,15 @@ import { useSearchParams } from "next/navigation"
 import { getFacedFilters } from "@/lib/helpers/get-faced-filters"
 import { PRODUCT_LIMIT } from "@/const"
 import { ProductListingSkeleton } from "@/components/organisms/ProductListingSkeleton/ProductListingSkeleton"
+import { SellerProductSearch } from "@/components/molecules/SellerProductSearch/SellerProductSearch"
 import { useEffect, useState } from "react"
 import { listProducts } from "@/lib/data/products"
 import { getProductPrice } from "@/lib/helpers/get-product-price"
+
+// On a seller storefront, show a search box once the shop is large enough to
+// warrant it. Based on the seller-scoped Algolia count (nbHits) when no query
+// is active, so it reflects the shop's real catalog size.
+const SELLER_SEARCH_MIN_PRODUCTS = 75
 
 export const AlgoliaProductsListing = ({
   category_id,
@@ -108,6 +114,8 @@ export const AlgoliaProductsListing = ({
         locale={locale}
         currency_code={currency_code}
         page={urlPage}
+        seller_handle={seller_handle}
+        query={query}
       />
     </InstantSearchNext>
   )
@@ -117,10 +125,14 @@ const ProductsListing = ({
   locale,
   currency_code,
   page,
+  seller_handle,
+  query,
 }: {
   locale?: string
   currency_code: string
   page: number
+  seller_handle?: string
+  query?: string
 }) => {
   const [apiProducts, setApiProducts] = useState<
     HttpTypes.StoreProduct[] | null
@@ -181,6 +193,15 @@ const ProductsListing = ({
   const totalHits = results?.nbHits ?? 0
   const pages = Math.max(1, Math.ceil(totalHits / PRODUCT_LIMIT))
 
+  // Seller storefront only: show the in-shop search once the catalog is big
+  // enough. Keep it visible whenever a query is active so it doesn't vanish
+  // mid-search when the filtered count drops below the threshold (without a
+  // query, totalHits is the shop's full catalog size).
+  const hasQuery = Boolean(query && query.length > 0)
+  const showSellerSearch =
+    Boolean(seller_handle) &&
+    (hasQuery || totalHits >= SELLER_SEARCH_MIN_PRODUCTS)
+
   // Algolia has already scoped `items` to the current page. We still
   // filter the in-page list to the products we successfully resolved
   // via the Medusa products API, so cards without a calculated price
@@ -234,6 +255,7 @@ const ProductsListing = ({
 
   return (
     <div className="min-h-[70vh]">
+      {showSellerSearch && <SellerProductSearch initialQuery={query ?? ""} />}
       <ProductListingHeader
         total={totalHits}
         page={page}
