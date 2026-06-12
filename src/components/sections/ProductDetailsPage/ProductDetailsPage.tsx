@@ -1,4 +1,6 @@
 import { ProductDetails, ProductGallery } from "@/components/organisms"
+import { SocialProofBadges } from "@/components/cells/SocialProofBadges/SocialProofBadges"
+import { getProductSocialCounts } from "@/lib/data/social-counts"
 import { listProducts } from "@/lib/data/products"
 import { listProductVendorTags } from "@/lib/data/vendor-tags"
 import { retrieveVendorStatus } from "@/lib/data/vendor"
@@ -73,6 +75,10 @@ export const ProductDetailsPage = async ({
 
   const categoryName = (prod as any).categories?.[0]?.name || "Shop"
 
+  // Social-proof engagement counts (active carts / wishlists / registries).
+  // Fails open to zeros; the badge row hides itself when nothing qualifies.
+  const socialCounts = await getProductSocialCounts(prod.id)
+
   return (
     <>
       {isOwnerPreview && (
@@ -119,6 +125,9 @@ export const ProductDetailsPage = async ({
 
         {/* Right column: Details (5 cols) */}
         <div className="lg:col-span-5">
+          <div className="mb-4">
+            <SocialProofBadges counts={socialCounts} />
+          </div>
           <ProductDetails product={prod} locale={locale} />
         </div>
       </div>
