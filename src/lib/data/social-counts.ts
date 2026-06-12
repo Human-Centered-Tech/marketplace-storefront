@@ -22,9 +22,10 @@ export const getProductSocialCounts = async (
   try {
     const data = await sdk.client.fetch<ProductSocialCounts>(
       `/store/products/${productId}/social-counts`,
-      // Short revalidate — the badges don't need second-level accuracy and
-      // this keeps the count queries off the hot path.
-      { cache: "force-cache", next: { revalidate: 60 } }
+      // No caching — fetch the live count on every page load so the badge
+      // reflects the current cart/wishlist/registry state (matches mobile,
+      // which fetches fresh each time the screen opens).
+      { cache: "no-store" }
     )
     return {
       cart_count: data?.cart_count ?? 0,
