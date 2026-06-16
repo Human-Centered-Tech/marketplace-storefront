@@ -19,6 +19,10 @@ export const registerFormSchema = z.object({
       message: "Mobile phone must contain digits only",
     }),
   businessName: z.string().optional(),
+  // "How did you hear about us?" — optional to keep signup friction low; the
+  // free-text subsource is a follow-up detail (e.g. which podcast / influencer).
+  marketingSource: z.string().optional(),
+  marketingSubsource: z.string().optional(),
   agreedToTos: z.boolean().refine((v) => v === true, {
     message: "You must agree to the Terms of Service to continue",
   }),

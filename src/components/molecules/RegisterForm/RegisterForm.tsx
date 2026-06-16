@@ -10,6 +10,7 @@ import { Button } from "@/components/atoms"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { LabeledInput } from "@/components/cells"
 import { registerFormSchema, vendorRegisterFormSchema, RegisterFormData } from "./schema"
+import { MARKETING_SOURCES } from "./marketing-sources"
 import { signup } from "@/lib/data/customer"
 import { becomeVendor } from "@/lib/data/vendor"
 import { useState } from "react"
@@ -43,6 +44,8 @@ export const RegisterForm = ({
       email: "",
       password: "",
       businessName: defaultBusinessName ?? "",
+      marketingSource: "",
+      marketingSubsource: "",
       agreedToTos: false,
     },
   })
@@ -97,6 +100,14 @@ const Form = ({
     formData.append("phone", data.phone)
     if (recommendedTier) {
       formData.append("recommended_tier", recommendedTier)
+    }
+    // "How did you hear about us?" — stored on customer.metadata for the
+    // Freshworks CRM sync. Optional; only sent when filled.
+    if (data.marketingSource) {
+      formData.append("marketing_source", data.marketingSource)
+    }
+    if (data.marketingSubsource) {
+      formData.append("marketing_subsource", data.marketingSubsource)
     }
 
     const res = passwordError.isValid && (await signup(formData))
@@ -219,6 +230,35 @@ const Form = ({
               password={watch("password")}
               setError={setPasswordError}
             />
+
+            <div className="flex flex-col gap-1">
+              <label
+                htmlFor="marketing_source"
+                className="label-sm text-secondary"
+              >
+                How did you hear about us? (optional)
+              </label>
+              <select
+                id="marketing_source"
+                className="border border-[rgba(var(--neutral-100))] rounded-sm px-3 py-2.5 bg-[rgba(var(--neutral-0))] text-[14px] text-primary"
+                {...register("marketingSource")}
+              >
+                <option value="">Select an option…</option>
+                {MARKETING_SOURCES.map((source) => (
+                  <option key={source} value={source}>
+                    {source}
+                  </option>
+                ))}
+              </select>
+              {watch("marketingSource") && (
+                <LabeledInput
+                  label="Where, specifically? (optional)"
+                  placeholder="e.g. Instagram, a friend, EWTN…"
+                  error={errors.marketingSubsource as FieldError}
+                  {...register("marketingSubsource")}
+                />
+              )}
+            </div>
 
             {error && <p className="label-md text-negative">{error}</p>}
 
