@@ -85,6 +85,9 @@ export type DirectoryListing = {
     state?: string
     zip?: string
     country?: string
+    // Comma-separated 2-letter codes the business serves; drives the
+    // directory state filter. Stored as a string; the picker works in arrays.
+    serviced_states?: string
   } | null
   social_links: {
     facebook?: string
