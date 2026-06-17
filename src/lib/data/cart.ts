@@ -326,20 +326,41 @@ export async function applyPromotions(codes: string[]) {
 
   const headers = {
     ...(await getAuthHeaders()),
+    "Content-Type": "application/json",
+    "x-publishable-api-key": process.env
+      .NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY as string,
   }
 
-  return sdk.store.cart
-    .update(cartId, { promo_codes: codes }, {}, headers)
-    .then(async ({ cart }) => {
-      const cartCacheTag = await getCacheTag("carts")
-      revalidateTag(cartCacheTag)
-      // @ts-ignore
-      const applied = cart.promotions?.some((promotion: any) =>
-        codes.includes(promotion.code)
-      )
-      return applied
-    })
-    .catch(medusaError)
+  // Mercur is a multi-vendor marketplace: promotions are seller-scoped and
+  // must go through the dedicated, seller-aware endpoint. The generic cart
+  // update (POST /store/carts/:id with promo_codes) bypasses Mercur's
+  // validateSellersPromotions guard and 500s. Mirror the existing
+  // deletePromotionCode() path, which already targets this endpoint.
+  const res = await fetch(
+    `${process.env.MEDUSA_BACKEND_URL}/store/carts/${cartId}/promotions`,
+    {
+      method: "POST",
+      body: JSON.stringify({ promo_codes: codes }),
+      headers,
+    }
+  )
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}))
+    throw new Error(
+      body?.message ||
+        "We couldn't apply that promotion code. Please check the code and try again."
+    )
+  }
+
+  const { cart } = await res.json()
+  const cartCacheTag = await getCacheTag("carts")
+  revalidateTag(cartCacheTag)
+
+  const applied = cart?.promotions?.some((promotion: any) =>
+    codes.includes(promotion.code)
+  )
+  return applied
 }
 
 export async function removeShippingMethod(shippingMethodId: string) {

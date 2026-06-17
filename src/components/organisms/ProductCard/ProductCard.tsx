@@ -24,12 +24,17 @@ export const ProductCard = ({
 
   const priceLabel = cheapestPrice?.calculated_price ?? "View Price"
 
-  // Fall back to the first gallery image when no thumbnail is set. Vendors
-  // often upload product images without explicitly marking one as the
-  // thumbnail; the Algolia hit already carries the images array, so the card
-  // can show the same image the product detail page does.
+  // Prefer the live Medusa product image (the same source the product detail
+  // page renders, which is known-good) and fall back to the Algolia hit's
+  // image data only if the API product carries none. Vendors often upload
+  // product images without explicitly marking one as the thumbnail, so fall
+  // back to the first gallery image in either source.
   const cardImage =
-    product.thumbnail || (product as any).images?.[0]?.url || null
+    (api_product as any)?.thumbnail ||
+    (api_product as any)?.images?.[0]?.url ||
+    product.thumbnail ||
+    (product as any).images?.[0]?.url ||
+    null
 
   const wishlist = useWishlist()
   const productId = String(

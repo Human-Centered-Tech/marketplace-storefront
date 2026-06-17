@@ -5,7 +5,7 @@ import { setAddresses } from "@/lib/data/cart"
 import compareAddresses from "@/lib/helpers/compare-addresses"
 import { HttpTypes } from "@medusajs/types"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
-import { useActionState, useEffect } from "react"
+import { useActionState, useCallback, useEffect } from "react"
 import { Button } from "@/components/atoms"
 import ErrorMessage from "@/components/molecules/ErrorMessage/ErrorMessage"
 import Spinner from "@/icons/spinner"
@@ -49,8 +49,23 @@ export const CartAddressSection = ({
     }
   }, [isAddress])
 
+  const createQueryString = useCallback(
+    (name: string, value: string) => {
+      const params = new URLSearchParams(searchParams)
+      params.set(name, value)
+      return params.toString()
+    },
+    [searchParams]
+  )
+
+  // Mirror the working Payment-section Edit: a query-only router.replace does
+  // not reliably re-render the step view, so the page would stay on
+  // ?step=payment. router.push (preserving existing params, no scroll) flips
+  // the step back to the editable address form.
   const handleEdit = () => {
-    router.replace(pathname + "?step=address")
+    router.push(pathname + "?" + createQueryString("step", "address"), {
+      scroll: false,
+    })
   }
 
   return (
@@ -64,7 +79,7 @@ export const CartAddressSection = ({
         </Heading>
         {!isOpen && isAddress && (
           <Text>
-            <Button onClick={handleEdit} variant="tonal">
+            <Button type="button" onClick={handleEdit} variant="tonal">
               Edit
             </Button>
           </Text>
