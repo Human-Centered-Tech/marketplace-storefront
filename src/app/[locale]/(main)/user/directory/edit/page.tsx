@@ -103,6 +103,11 @@ export default function EditDirectoryListingPage() {
             city: addr?.city || "",
             state: addr?.state || "",
             zip: addr?.zip || "",
+            // Stored as a comma-separated string; the picker works in codes.
+            serviced_states: (addr?.serviced_states || "")
+              .split(",")
+              .map((s: string) => s.trim().toUpperCase())
+              .filter((s: string) => s.length === 2),
             facebook: social?.facebook || "",
             instagram: social?.instagram || "",
             twitter: social?.twitter || "",

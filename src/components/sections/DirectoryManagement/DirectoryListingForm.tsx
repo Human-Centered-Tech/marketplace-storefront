@@ -9,6 +9,7 @@ import {
 import { ParishAffiliationsSection } from "./ParishAffiliationsSection"
 import { OWNER_INTERVIEW_QUESTIONS } from "@/lib/owner-interview"
 import { ImageUploadField } from "./ImageUploadField"
+import { US_STATES, US_STATE_CODES } from "@/lib/us-states"
 
 type DirectoryFormData = {
   business_name: string
@@ -23,6 +24,9 @@ type DirectoryFormData = {
   city: string
   state: string
   zip: string
+  // States the business serves (2-letter codes). Drives the public
+  // directory state filter; stored as a comma-separated string server-side.
+  serviced_states: string[]
   facebook: string
   instagram: string
   twitter: string
@@ -97,6 +101,7 @@ export const DirectoryListingForm = ({
     city: initialData?.city || "",
     state: initialData?.state || "",
     zip: initialData?.zip || "",
+    serviced_states: initialData?.serviced_states || [],
     facebook: initialData?.facebook || "",
     instagram: initialData?.instagram || "",
     twitter: initialData?.twitter || "",
@@ -132,6 +137,20 @@ export const DirectoryListingForm = ({
   const setField = (name: string, value: string) =>
     setForm((prev) => ({ ...prev, [name]: value }))
 
+  const toggleServicedState = (code: string) =>
+    setForm((prev) => {
+      const has = prev.serviced_states.includes(code)
+      return {
+        ...prev,
+        serviced_states: has
+          ? prev.serviced_states.filter((c) => c !== code)
+          : [...prev.serviced_states, code],
+      }
+    })
+
+  const setServicedStates = (codes: string[]) =>
+    setForm((prev) => ({ ...prev, serviced_states: codes }))
+
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -157,6 +176,18 @@ export const DirectoryListingForm = ({
     setSubmitting(true)
     setError("")
 
+    // On a NEW listing, fall back to the business's home state when no service
+    // states were picked, so an address alone keeps them filterable instead of
+    // invisible. In edit mode we respect the picker exactly — an empty set is
+    // treated as a deliberate clear, not re-seeded.
+    const homeState = form.state.trim().toUpperCase()
+    const servicedStatesForSubmit =
+      form.serviced_states.length > 0
+        ? form.serviced_states
+        : !listingId && US_STATE_CODES.includes(homeState)
+          ? [homeState]
+          : []
+
     try {
       await onSubmit({
         business_name: form.business_name,
@@ -175,6 +206,10 @@ export const DirectoryListingForm = ({
           city: form.city || undefined,
           state: form.state || undefined,
           zip: form.zip || undefined,
+          // Default to the business's own state if they didn't pick any,
+          // so setting an address alone makes them visible under that
+          // state's directory filter rather than invisible everywhere.
+          serviced_states: servicedStatesForSubmit,
         },
         social_links: {
           facebook: form.facebook || undefined,
@@ -400,6 +435,60 @@ export const DirectoryListingForm = ({
               Always open (skip hours of operation)
             </label>
           </div>
+        </div>
+      </div>
+
+      {/* Service area — which states this business serves. Drives the
+          public directory state filter. */}
+      <div>
+        <div className="flex items-center justify-between mb-1">
+          <h3 className="heading-sm text-primary">States You Serve</h3>
+          <div className="flex gap-3 text-xs">
+            <button
+              type="button"
+              onClick={() => setServicedStates(US_STATE_CODES)}
+              className="text-secondary underline hover:no-underline"
+            >
+              Nationwide
+            </button>
+            <button
+              type="button"
+              onClick={() => setServicedStates([])}
+              className="text-secondary underline hover:no-underline"
+            >
+              Clear
+            </button>
+          </div>
+        </div>
+        <p className="text-xs text-secondary mb-3">
+          Pick every state you serve so customers there can find you in the
+          directory. Leave blank to default to your business&apos;s state
+          {form.serviced_states.length > 0
+            ? ` — ${form.serviced_states.length} selected`
+            : ""}
+          .
+        </p>
+        <div className="grid grid-cols-6 sm:grid-cols-10 gap-2">
+          {US_STATES.map(({ code, name }) => {
+            const on = form.serviced_states.includes(code)
+            return (
+              <button
+                key={code}
+                type="button"
+                title={name}
+                aria-pressed={on}
+                onClick={() => toggleServicedState(code)}
+                className={`px-2 py-1 text-xs rounded-sm border transition-colors ${
+                  on
+                    ? "border-transparent text-white"
+                    : "border-gray-300 text-secondary hover:bg-gray-50"
+                }`}
+                style={on ? { backgroundColor: "#17294A" } : undefined}
+              >
+                {code}
+              </button>
+            )
+          })}
         </div>
       </div>
 
