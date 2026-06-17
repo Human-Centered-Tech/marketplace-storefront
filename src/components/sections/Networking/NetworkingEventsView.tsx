@@ -29,17 +29,22 @@ function getMonthGrid(year: number, month: number) {
 
 export const NetworkingEventsView = ({
   events,
+  now: nowMs,
 }: {
   events: NetworkingEvent[]
+  now: number
 }) => {
   const [view, setView] = useState<ViewMode>("list")
   const [timeFilter, setTimeFilter] = useState<TimeFilter>("upcoming")
   const [calMonth, setCalMonth] = useState(() => {
-    const now = new Date()
+    const now = new Date(nowMs)
     return { year: now.getFullYear(), month: now.getMonth() }
   })
 
-  const now = new Date()
+  // Derived from the server-provided timestamp (not a fresh client clock) so
+  // the upcoming/past filter and "today" highlight render identically on the
+  // server and on hydration.
+  const now = new Date(nowMs)
 
   const filteredEvents = useMemo(() => {
     return events.filter((e) => {
@@ -167,7 +172,7 @@ export const NetworkingEventsView = ({
             <div className="space-y-6">
               {filteredEvents.map((event, i) => (
                 <div key={event.id}>
-                  <NetworkingEventCard event={event} />
+                  <NetworkingEventCard event={event} now={nowMs} />
                   {i < filteredEvents.length - 1 && (
                     <div className="h-px w-full bg-gold/20 mt-6" />
                   )}

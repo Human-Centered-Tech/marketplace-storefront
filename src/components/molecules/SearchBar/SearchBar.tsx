@@ -66,9 +66,11 @@ export function SearchBar({
         />
         <button
           type="submit"
+          aria-label="Search"
           className="absolute right-[19px] top-1/2 -translate-y-1/2 text-[#75777f] hover:text-[#755b00] transition-colors"
         >
           <svg
+            aria-hidden="true"
             width="21"
             height="21"
             viewBox="0 0 24 24"
@@ -101,9 +103,11 @@ export function SearchBar({
       />
       <button
         type="submit"
+        aria-label="Search"
         className="absolute right-8 top-1/2 -translate-y-1/2 bg-[#001435] text-white p-3 rounded-lg flex items-center justify-center hover:bg-[#17294a] transition-colors"
       >
         <svg
+          aria-hidden="true"
           width="20"
           height="20"
           viewBox="0 0 24 24"

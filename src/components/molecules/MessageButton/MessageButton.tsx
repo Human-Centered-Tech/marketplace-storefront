@@ -9,7 +9,11 @@ export const MessageButton = () => {
   const unreads = useUnreads()
 
   return (
-    <LocalizedClientLink href="/user/messages" className="relative">
+    <LocalizedClientLink
+      href="/user/messages"
+      aria-label="Messages"
+      className="relative"
+    >
       <MessageIcon size={20} />
       {Boolean(unreads?.length) && (
         <Badge className="absolute -top-2 -right-2 w-4 h-4 p-0">

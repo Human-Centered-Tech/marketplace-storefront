@@ -35,8 +35,11 @@ export default async function NetworkingPage() {
         <div className="absolute bottom-0 left-0 w-full h-px bg-gold/30" />
       </section>
 
-      {/* Events View (list/calendar + filters) */}
-      <NetworkingEventsView events={events} />
+      {/* Events View (list/calendar + filters). Pass a single server
+          timestamp so the client hydrates against the same "now" the server
+          rendered with — otherwise upcoming/past + isPast computed from a
+          fresh client `new Date()` diverge from the SSR markup (React #418). */}
+      <NetworkingEventsView events={events} now={Date.now()} />
 
       {/* Decorative vertical accent */}
       <div className="flex justify-center py-16">

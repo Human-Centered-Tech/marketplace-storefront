@@ -3,30 +3,42 @@
 import { NetworkingEvent } from "@/types/networking"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 
+// Pin the timezone so the formatted date/time is identical on the server and
+// on the client. Without an explicit `timeZone`, the server (UTC) and the
+// browser (local zone) format differently, producing a hydration mismatch
+// (React #418) on every card. Events are scheduled in US Eastern.
+const EVENT_TIME_ZONE = "America/New_York"
+
 function formatEventDate(dateStr: string) {
   const date = new Date(dateStr)
   return {
     monthDay: date.toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
+      timeZone: EVENT_TIME_ZONE,
     }),
     time: date.toLocaleTimeString("en-US", {
       hour: "numeric",
       minute: "2-digit",
       timeZoneName: "short",
+      timeZone: EVENT_TIME_ZONE,
     }),
   }
 }
 
 export const NetworkingEventCard = ({
   event,
+  now,
 }: {
   event: NetworkingEvent
+  now: number
 }) => {
   const date = formatEventDate(event.event_date)
   const rsvpCount =
     event.rsvps?.filter((r) => r.status === "confirmed").length ?? 0
-  const isPast = new Date(event.event_date) < new Date()
+  // Compare against the server-provided timestamp so "Past" renders the same
+  // server-side and on hydration.
+  const isPast = new Date(event.event_date).getTime() < now
 
   return (
     <LocalizedClientLink

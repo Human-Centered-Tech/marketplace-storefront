@@ -216,6 +216,8 @@ function PriceFilter({ defaultOpen = true }: { defaultOpen?: boolean }) {
           onMouseUp={commit}
           onTouchEnd={commit}
           onKeyUp={commit}
+          aria-label="Maximum price"
+          aria-valuetext={value >= PRICE_MAX ? `$${PRICE_MAX}+` : `$${value}`}
           className="w-full accent-[#755b00] cursor-pointer"
         />
         <div className="flex justify-between text-xs font-bold text-[#44474e]">
