@@ -282,13 +282,14 @@ const ProductsListing = ({
                 {products.map(
                   (hit) =>
                     apiProducts?.find((p: any) => p.id === hit.objectID) && (
-                      <ProductCard
-                        api_product={apiProducts?.find(
-                          (p: any) => p.id === hit.objectID
-                        )}
-                        key={hit.objectID}
-                        product={hit}
-                      />
+                      <li key={hit.objectID}>
+                        <ProductCard
+                          api_product={apiProducts?.find(
+                            (p: any) => p.id === hit.objectID
+                          )}
+                          product={hit}
+                        />
+                      </li>
                     )
                 )}
               </ul>

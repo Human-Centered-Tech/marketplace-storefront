@@ -69,7 +69,11 @@ export const Header = async () => {
         <div className="flex items-center justify-end gap-3 lg:gap-4">
           <CartDropdown />
           {user && (
-            <LocalizedClientLink href="/user/wishlist" className="relative">
+            <LocalizedClientLink
+              href="/user/wishlist"
+              aria-label="Wishlist"
+              className="relative"
+            >
               <HeartIcon size={20} />
               {Boolean(wishlistCount) && (
                 <Badge className="absolute -top-2 -right-2 w-4 h-4 p-0">

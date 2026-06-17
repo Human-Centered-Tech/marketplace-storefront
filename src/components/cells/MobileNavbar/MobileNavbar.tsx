@@ -24,15 +24,31 @@ export const MobileNavbar = ({
 
   return (
     <div className='lg:hidden'>
-      <div onClick={() => setOpenMenu(true)}>
+      <button
+        type='button'
+        aria-label='Open menu'
+        aria-expanded={openMenu}
+        aria-controls='mobile-menu'
+        onClick={() => setOpenMenu(true)}
+      >
         <HamburgerMenuIcon />
-      </div>
+      </button>
       {openMenu && (
-        <div className='fixed w-full h-full bg-primary p-2 top-0 left-0 z-20'>
+        <div
+          id='mobile-menu'
+          role='dialog'
+          aria-modal='true'
+          aria-label='Menu'
+          className='fixed w-full h-full bg-primary p-2 top-0 left-0 z-20'
+        >
           <div className='flex justify-end'>
-            <div onClick={() => closeMenuHandler()}>
+            <button
+              type='button'
+              aria-label='Close menu'
+              onClick={() => closeMenuHandler()}
+            >
               <CloseIcon size={20} />
-            </div>
+            </button>
           </div>
           {/* Main nav links */}
           <nav className='flex flex-col gap-1 mt-4 mb-4'>
