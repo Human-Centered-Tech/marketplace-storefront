@@ -90,14 +90,25 @@ export async function signup(formData: FormData) {
   // /vendor/store/go-live can read it later and build subscribe_url
   // for the right tier without re-asking the quiz questions.
   const recommendedTier = formData.get("recommended_tier") as string | null
+  // "How did you hear about us?" — captured at signup and stored on
+  // customer.metadata so the Freshworks CRM sync can read marketing_source /
+  // marketing_subsource (it already looks for these keys).
+  const marketingSource = formData.get("marketing_source") as string | null
+  const marketingSubsource = formData.get("marketing_subsource") as
+    | string
+    | null
   const customerForm: Record<string, unknown> = {
     email: formData.get("email") as string,
     first_name: formData.get("first_name") as string,
     last_name: formData.get("last_name") as string,
     phone: formData.get("phone") as string,
   }
-  if (recommendedTier) {
-    customerForm.metadata = { recommended_tier: recommendedTier }
+  const metadata: Record<string, unknown> = {}
+  if (recommendedTier) metadata.recommended_tier = recommendedTier
+  if (marketingSource) metadata.marketing_source = marketingSource
+  if (marketingSubsource) metadata.marketing_subsource = marketingSubsource
+  if (Object.keys(metadata).length) {
+    customerForm.metadata = metadata
   }
 
   try {
