@@ -317,11 +317,13 @@ export async function initiatePaymentSession(
     .catch(medusaError)
 }
 
-export async function applyPromotions(codes: string[]) {
+export async function applyPromotions(
+  codes: string[]
+): Promise<{ success: boolean; message?: string }> {
   const cartId = await getCartId()
 
   if (!cartId) {
-    throw new Error("No existing cart found")
+    return { success: false, message: "No existing cart found" }
   }
 
   const headers = {
@@ -331,11 +333,13 @@ export async function applyPromotions(codes: string[]) {
       .NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY as string,
   }
 
-  // Mercur is a multi-vendor marketplace: promotions are seller-scoped and
-  // must go through the dedicated, seller-aware endpoint. The generic cart
-  // update (POST /store/carts/:id with promo_codes) bypasses Mercur's
-  // validateSellersPromotions guard and 500s. Mirror the existing
-  // deletePromotionCode() path, which already targets this endpoint.
+  // Mercur promotions are seller-scoped, so apply via the dedicated
+  // seller-aware endpoint (the same one deletePromotionCode uses). For an
+  // unknown/invalid code the backend returns a clean 400 with a message —
+  // return that as a structured result instead of throwing. Throwing here
+  // crosses the server-action boundary, which Next masks in production as a
+  // generic "An error occurred in the Server Components render" 500 with no
+  // usable message, so the user never sees why the code failed.
   const res = await fetch(
     `${process.env.MEDUSA_BACKEND_URL}/store/carts/${cartId}/promotions`,
     {
@@ -347,10 +351,12 @@ export async function applyPromotions(codes: string[]) {
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({}))
-    throw new Error(
-      body?.message ||
-        "We couldn't apply that promotion code. Please check the code and try again."
-    )
+    return {
+      success: false,
+      message:
+        body?.message ||
+        "We couldn't apply that promotion code. Please check the code and try again.",
+    }
   }
 
   const { cart } = await res.json()
@@ -361,6 +367,11 @@ export async function applyPromotions(codes: string[]) {
     codes.includes(promotion.code)
   )
   return applied
+    ? { success: true }
+    : {
+        success: false,
+        message: "That promotion code couldn't be applied to your cart.",
+      }
 }
 
 export async function removeShippingMethod(shippingMethodId: string) {

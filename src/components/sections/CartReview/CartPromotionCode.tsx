@@ -20,12 +20,13 @@ export default function CartPromotionCode({
     setIsLoading(true)
     try {
       const res = await applyPromotions([promotionCode])
-      if (res) {
+      if (res.success) {
         toast.success({ title: "Promotion code applied" })
+        setPromotionCode("")
       } else {
-        toast.error({ title: "Promotion code not found" })
+        // Keep the entered code so the user can correct it.
+        toast.error({ title: res.message || "Promotion code not found" })
       }
-      setPromotionCode("")
     } catch (err) {
       toast.error({
         title:
