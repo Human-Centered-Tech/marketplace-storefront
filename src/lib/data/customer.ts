@@ -222,6 +222,39 @@ export async function signout() {
   redirect(`/`)
 }
 
+/**
+ * Initiate account deletion (Apple/Google/GDPR). On success the account is
+ * deactivated server-side and we clear the local session. Returns the blocking
+ * reasons (e.g. pending seller payout balance) instead of throwing on a 409 so
+ * the page can explain them.
+ */
+export async function deleteAccount(): Promise<{
+  success?: boolean
+  blocked?: boolean
+  reasons?: { code: string; message: string }[]
+}> {
+  const headers = { ...(await getAuthHeaders()) }
+  try {
+    await sdk.client.fetch("/store/customers/me/account", {
+      method: "DELETE",
+      body: { confirm: true },
+      headers,
+    })
+  } catch (e: any) {
+    const data = e?.response?.data ?? e?.data ?? e?.body
+    if (data?.blocked) return { blocked: true, reasons: data.reasons ?? [] }
+    throw e
+  }
+
+  await removeAuthToken()
+  await removeVendorToken()
+  await removeVendorFlag()
+  const customerCacheTag = await getCacheTag("customers")
+  revalidateTag(customerCacheTag)
+  await removeCartId()
+  return { success: true }
+}
+
 export async function transferCart() {
   const cartId = await getCartId()
 
