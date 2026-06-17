@@ -17,19 +17,30 @@ export const getUserWishlists = async () => {
       .NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY as string,
   }
 
-  const res = await sdk.client.fetch<{
-    products?: HttpTypes.StoreProduct[]
-    count?: number
-  }>(`/store/wishlist`, {
-    cache: "no-cache",
-    headers,
-    method: "GET",
-  })
+  try {
+    const res = await sdk.client.fetch<{
+      products?: HttpTypes.StoreProduct[]
+      count?: number
+    }>(`/store/wishlist`, {
+      cache: "no-cache",
+      headers,
+      method: "GET",
+    })
 
-  const products = res.products ?? []
-  return {
-    wishlists: [{ id: "", products }] as Wishlist[],
-    count: res.count ?? products.length,
+    const products = res.products ?? []
+    return {
+      wishlists: [{ id: "", products }] as Wishlist[],
+      count: res.count ?? products.length,
+    }
+  } catch {
+    // The backend currently 500s for customers who have never added a
+    // wishlist item (the wishlist row is created lazily on first add). Treat
+    // any fetch failure as an empty wishlist so the page renders its empty
+    // state instead of crashing the whole Server Components render.
+    return {
+      wishlists: [{ id: "", products: [] }] as Wishlist[],
+      count: 0,
+    }
   }
 }
 

@@ -27,7 +27,12 @@ export default function CartPromotionCode({
       }
       setPromotionCode("")
     } catch (err) {
-      console.log(err)
+      toast.error({
+        title:
+          err instanceof Error
+            ? err.message
+            : "Could not apply promotion code",
+      })
     } finally {
       setIsLoading(false)
     }

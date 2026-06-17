@@ -154,7 +154,7 @@ const ProductsListing = ({
           // and drops the entire page. *seller.reviews alone expands the
           // reviews relation but does not populate the seller's own columns.
           fields:
-            "*variants.calculated_price,*seller,*seller.reviews,-thumbnail,-images,-type,-tags,-variants.options,-options,-collection,-collection_id",
+            "*variants.calculated_price,*seller,*seller.reviews,-type,-tags,-variants.options,-options,-collection,-collection_id",
           handle: items.map((item) => item.handle),
           limit: items.length,
         },
