@@ -24,7 +24,6 @@ export const ProfilePasswordForm = ({ token }: { token?: string }) => {
   const form = useForm<ProfilePasswordFormData>({
     resolver: zodResolver(profilePasswordSchema),
     defaultValues: {
-      currentPassword: "",
       newPassword: "",
       confirmPassword: "",
     },
@@ -65,7 +64,7 @@ const Form = ({
   const updatePassword = async (data: FieldValues) => {
     if (form.getValues("confirmPassword") !== form.getValues("newPassword")) {
       setConfirmPasswordError({
-        message: "New password and old password cannot be identical",
+        message: "New password and confirmation do not match",
         type: "custom",
       } as FieldError)
       return
@@ -112,14 +111,15 @@ const Form = ({
     </div>
   ) : (
     <form
-      className="flex flex-col gap-4 px-4"
+      className="flex flex-col gap-4 p-4"
       onSubmit={handleSubmit(updatePassword)}
     >
-      <PasswordInput
-        label="Current password"
-        error={errors.currentPassword as FieldError}
-        {...register("currentPassword")}
-      />
+      <Heading
+        level="h1"
+        className="uppercase heading-md text-primary text-center"
+      >
+        Set a new password
+      </Heading>
       <PasswordInput
         label="New password"
         error={errors.newPassword as FieldError}
@@ -134,7 +134,7 @@ const Form = ({
         error={confirmPasswordError as FieldError}
         {...register("confirmPassword")}
       />
-      <Button className="w-full my-4">Change password</Button>
+      <Button className="w-full my-4">Set new password</Button>
     </form>
   )
 }
