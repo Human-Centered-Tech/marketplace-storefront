@@ -16,7 +16,7 @@ export const HomeFeaturedGiftGuides = async () => {
       href={`/gifts/${g.slug}`}
       className="group block bg-white rounded-xl overflow-hidden shadow-sm border border-[#d6d0c4]/40 hover:shadow-xl transition-all h-full"
     >
-      <div className="aspect-[4/5] overflow-hidden relative">
+      <div className="aspect-[5/3] sm:aspect-[4/5] overflow-hidden relative">
         <img
           src={g.hero_image}
           alt={g.title}
@@ -39,24 +39,24 @@ export const HomeFeaturedGiftGuides = async () => {
   ))
 
   return (
-    <section className="py-12 lg:py-16 w-full bg-white px-4 lg:px-8">
+    <section className="pt-5 pb-10 lg:py-16 w-full bg-white px-4 lg:px-8">
       <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="font-serif text-3xl md:text-4xl font-bold text-[#001435] whitespace-nowrap">
+        <div className="flex items-baseline justify-between gap-4 mb-4 lg:mb-8">
+          <h2 className="font-serif text-xl md:text-4xl font-bold text-[#001435] whitespace-nowrap">
             Catholic Owned<sup className="text-[0.5em] top-[-0.8em] relative ml-[2px]">&reg;</sup> Guides
           </h2>
           <div className="h-[1px] flex-grow mx-8 bg-[#BE9B32]/30 hidden sm:block" />
           <LocalizedClientLink
             href="/gifts"
-            className="font-sans text-[11px] font-bold uppercase tracking-[0.15em] text-[#001435] hover:text-[#755b00] transition-colors whitespace-nowrap underline decoration-[#BE9B32] underline-offset-8"
+            className="font-sans text-[11px] font-bold uppercase tracking-[0.15em] text-[#BE9B32] hover:text-[#001435] transition-colors whitespace-nowrap shrink-0"
           >
-            View All Guides
+            View all →
           </LocalizedClientLink>
         </div>
         <AutoCarousel
           items={slides}
           ariaLabel="Catholic Owned Guides"
-          slideWidthClass="flex-[0_0_82%] sm:flex-[0_0_46%] lg:flex-[0_0_30%] xl:flex-[0_0_28%]"
+          slideWidthClass="flex-[0_0_66%] sm:flex-[0_0_46%] lg:flex-[0_0_30%] xl:flex-[0_0_28%]"
           fadeColor="#ffffff"
         />
       </div>

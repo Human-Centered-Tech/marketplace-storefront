@@ -49,9 +49,9 @@ const TileCard = ({ tile, priority }: { tile: Tile; priority?: boolean }) => (
   <LocalizedClientLink
     href={tile.href}
     className={`group relative block overflow-hidden rounded-lg sm:rounded-xl shadow-sm border border-[#d6d0c4]/40 hover:shadow-xl transition-all ${
-      // Compact on mobile so all five tiles sit above the fold; full
-      // height from sm: upward.
-      tile.feature ? "h-32 sm:h-60 lg:h-80" : "h-24 sm:h-48 lg:h-64"
+      // Mobile: fill the row (rows grow to fill the hero). From sm: upward,
+      // fixed heights — the desktop layout is unchanged.
+      tile.feature ? "h-full sm:h-60 lg:h-80" : "h-full sm:h-48 lg:h-64"
     }`}
   >
     <Image
@@ -65,7 +65,7 @@ const TileCard = ({ tile, priority }: { tile: Tile; priority?: boolean }) => (
     {/* Dark→gold overlay, heavier at the bottom for label legibility */}
     <div className="absolute inset-0 bg-gradient-to-t from-[#17294A]/90 via-[#17294A]/30 to-transparent" />
     <div className="absolute bottom-0 left-0 right-0 p-2.5 sm:p-5 lg:p-6">
-      <h3 className="font-serif text-sm leading-tight sm:text-2xl lg:text-3xl font-bold text-white drop-shadow">
+      <h3 className="font-serif text-lg leading-tight sm:text-2xl lg:text-3xl font-bold text-white drop-shadow">
         {tile.label}
       </h3>
       {/* Subtitle: web only (and only once tiles are tall enough), per Brooke's note */}
@@ -80,15 +80,18 @@ export const HomeHeroTiles = () => {
   const [shop, directory, ...rest] = TILES
 
   return (
-    <section className="w-full bg-catholic-lace px-3 sm:px-4 lg:px-8 py-4 lg:py-10">
-      <div className="max-w-7xl mx-auto flex flex-col gap-3 lg:gap-6">
+    <section className="w-full bg-catholic-lace px-3 sm:px-4 lg:px-8 py-3 lg:py-10">
+      {/* On mobile the grid grows to fill most of the viewport so the tiles
+          dominate the fold and the guides rail peeks in below; from sm: up
+          it reverts to the fixed-height desktop layout. */}
+      <div className="max-w-7xl mx-auto flex flex-col gap-3 lg:gap-6 min-h-[64svh] sm:min-h-0">
         {/* Top row — two feature tiles (2-up on every breakpoint) */}
-        <div className="grid grid-cols-2 gap-3 lg:gap-6">
+        <div className="grid grid-cols-2 gap-3 lg:gap-6 flex-[1.2] sm:flex-none">
           <TileCard tile={shop} priority />
           <TileCard tile={directory} priority />
         </div>
         {/* Bottom row — three tiles (3-up on every breakpoint) */}
-        <div className="grid grid-cols-3 gap-3 lg:gap-6">
+        <div className="grid grid-cols-3 gap-3 lg:gap-6 flex-1 sm:flex-none">
           {rest.map((tile) => (
             <TileCard key={tile.href} tile={tile} />
           ))}
