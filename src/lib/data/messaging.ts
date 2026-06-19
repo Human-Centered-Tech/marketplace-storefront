@@ -68,7 +68,12 @@ export async function getConversation(id: string) {
 }
 
 export async function startConversation(args: {
-  recipient_id: string
+  // Provide exactly one of: recipient_id (a customer), seller_id, or
+  // product_id. seller_id/product_id are resolved to the owning customer
+  // server-side (the storefront can't see a seller's customer id).
+  recipient_id?: string
+  seller_id?: string
+  product_id?: string
   context_type?: "product" | "barter_listing" | "storefront" | "general"
   context_id?: string
   initial_message?: string
@@ -80,6 +85,13 @@ export async function startConversation(args: {
       body: JSON.stringify(args),
     }
   )
+}
+
+export async function getUnreadCount() {
+  return authedFetch<{
+    unread_messages: number
+    unread_conversations: number
+  }>("/store/messaging/unread-count")
 }
 
 export async function sendMessage(conversationId: string, body: string) {
@@ -95,6 +107,13 @@ export async function sendMessage(conversationId: string, body: string) {
 export async function markConversationRead(conversationId: string) {
   return authedFetch<{ marked_read: number }>(
     `/store/messaging/conversations/${conversationId}/read`,
+    { method: "POST" }
+  )
+}
+
+export async function notifyTyping(conversationId: string) {
+  return authedFetch<unknown>(
+    `/store/messaging/conversations/${conversationId}/typing`,
     { method: "POST" }
   )
 }

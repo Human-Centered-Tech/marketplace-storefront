@@ -10,7 +10,9 @@ import {
   listConversations,
   markConversationRead,
   sendMessage,
+  notifyTyping,
 } from "@/lib/data/messaging"
+import { useMessagingStream } from "@/lib/hooks/useMessagingStream"
 
 type ConversationWithMessages = Conversation & { messages: Message[] }
 
@@ -31,7 +33,10 @@ export const UserMessagesSection = ({
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
   const [draft, setDraft] = useState("")
+  const [typingFrom, setTypingFrom] = useState<string | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
+  const typingTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const lastTypingSent = useRef(0)
 
   useEffect(() => {
     listConversations()
@@ -56,7 +61,63 @@ export const UserMessagesSection = ({
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight
     }
-  }, [selected?.messages?.length])
+  }, [selected?.messages?.length, typingFrom])
+
+  // Realtime: live messages, read receipts, typing. Handlers read the latest
+  // selectedId/selected via closure (the hook re-reads handlers each event).
+  useMessagingStream({
+    onMessage: (e) => {
+      if (e.conversation_id === selectedId) {
+        setSelected((prev) => {
+          if (!prev || prev.id !== e.conversation_id) return prev
+          if (prev.messages.some((m) => m.id === e.message.id)) return prev
+          return {
+            ...prev,
+            messages: [...prev.messages, { ...e.message, read_at: null }],
+          }
+        })
+        if (e.sender_id !== currentUserId) {
+          markConversationRead(e.conversation_id)
+        }
+      }
+      // Keep the sidebar fresh (preview, ordering, brand-new conversations).
+      listConversations().then((data) =>
+        setConversations(data?.conversations || [])
+      )
+    },
+    onRead: (e) => {
+      if (e.conversation_id === selectedId && e.reader_id !== currentUserId) {
+        setSelected((prev) => {
+          if (!prev || prev.id !== e.conversation_id) return prev
+          return {
+            ...prev,
+            messages: prev.messages.map((m) =>
+              m.sender_id === currentUserId && !m.read_at
+                ? { ...m, read_at: new Date().toISOString() }
+                : m
+            ),
+          }
+        })
+      }
+    },
+    onTyping: (e) => {
+      if (e.conversation_id === selectedId && e.sender_id !== currentUserId) {
+        setTypingFrom(e.sender_id)
+        if (typingTimer.current) clearTimeout(typingTimer.current)
+        typingTimer.current = setTimeout(() => setTypingFrom(null), 4000)
+      }
+    },
+  })
+
+  const handleDraftChange = (value: string) => {
+    setDraft(value)
+    if (!selectedId) return
+    const now = Date.now()
+    if (now - lastTypingSent.current > 2000) {
+      lastTypingSent.current = now
+      notifyTyping(selectedId)
+    }
+  }
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -201,11 +262,19 @@ export const UserMessagesSection = ({
                             hour: "numeric",
                             minute: "2-digit",
                           })}
+                          {mine && m.read_at ? " · Read" : ""}
                         </p>
                       </div>
                     </div>
                   )
                 })
+              )}
+              {typingFrom && (
+                <div className="flex justify-start">
+                  <div className="rounded-xl px-4 py-2 text-sm bg-[#faf9f5] text-secondary border border-[#d6d0c4]/40 italic">
+                    typing…
+                  </div>
+                </div>
               )}
             </div>
 
@@ -216,7 +285,7 @@ export const UserMessagesSection = ({
               <input
                 type="text"
                 value={draft}
-                onChange={(e) => setDraft(e.target.value)}
+                onChange={(e) => handleDraftChange(e.target.value)}
                 placeholder="Type a message..."
                 disabled={sending}
                 className="flex-1 border border-[#d6d0c4]/60 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#BE9B32]"
