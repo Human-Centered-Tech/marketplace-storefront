@@ -148,7 +148,7 @@ export const UserMessagesSection = ({
       case "product":
         return "Product inquiry"
       case "barter_listing":
-        return "Barter listing"
+        return "Trade listing"
       case "storefront":
         return "Storefront"
       default:

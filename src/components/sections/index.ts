@@ -26,6 +26,7 @@ import { SellerCollectionsStrip } from "./SellerCollectionsStrip/SellerCollectio
 import { HomeFeaturedGiftGuides } from "./HomeFeaturedGiftGuides/HomeFeaturedGiftGuides"
 import { HomeFeaturedProducts } from "./HomeFeaturedProducts/HomeFeaturedProducts"
 import { HomeFeaturedServices } from "./HomeFeaturedServices/HomeFeaturedServices"
+import { HomeHeroTiles } from "./HomeHeroTiles/HomeHeroTiles"
 import { VacationNotice } from "./VacationNotice/VacationNotice"
 
 export {
@@ -57,5 +58,6 @@ export {
   HomeFeaturedGiftGuides,
   HomeFeaturedProducts,
   HomeFeaturedServices,
+  HomeHeroTiles,
   VacationNotice,
 }

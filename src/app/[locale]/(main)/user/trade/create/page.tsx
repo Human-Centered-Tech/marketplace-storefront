@@ -5,7 +5,7 @@ import { BarterCreateForm } from "@/components/sections/Barter/BarterCreateForm"
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Post a Listing — Barter & Trade",
+  title: "Post a Listing — Trade",
 }
 
 export default async function CreateBarterListingPage() {
@@ -24,7 +24,7 @@ export default async function CreateBarterListingPage() {
           </h1>
           <p className="text-secondary text-sm">
             Share something to sell, trade, or give away. Your listing goes
-            live in the barter market right away.
+            live in the trade market right away.
           </p>
           <BarterCreateForm categories={categories} />
         </div>

@@ -91,10 +91,10 @@ export const MyBarterListings = ({
     return (
       <div className="border border-[#d6d0c4]/40 rounded-xl bg-white p-8 text-center">
         <p className="text-sm text-secondary mb-3">
-          You haven&rsquo;t posted any barter listings yet.
+          You haven&rsquo;t posted any trade listings yet.
         </p>
         <LocalizedClientLink
-          href="/user/barter/create"
+          href="/user/trade/create"
           className="inline-flex text-sm text-[#BE9B32] font-semibold underline"
         >
           Post your first listing →
@@ -147,7 +147,7 @@ export const MyBarterListings = ({
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-3 mb-1 flex-wrap">
                 <LocalizedClientLink
-                  href={`/barter/${listing.id}`}
+                  href={`/trade/${listing.id}`}
                   className="font-serif text-lg text-[#17294A] font-semibold hover:text-[#BE9B32] transition-colors"
                 >
                   {listing.title}
@@ -174,7 +174,7 @@ export const MyBarterListings = ({
               <div className="flex items-center gap-3 flex-wrap">
                 {!isClosed && !isPending && (
                   <LocalizedClientLink
-                    href={`/user/barter/edit/${listing.id}`}
+                    href={`/user/trade/edit/${listing.id}`}
                     className="text-xs font-semibold text-[#17294A] border border-[#d6d0c4] px-3 py-1.5 rounded-lg hover:bg-[#faf9f5] transition-colors"
                   >
                     Edit

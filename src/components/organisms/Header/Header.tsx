@@ -113,10 +113,10 @@ export const Header = async () => {
           Events
         </LocalizedClientLink>
         <LocalizedClientLink
-          href="/barter"
+          href="/trade"
           className="text-[13px] font-medium uppercase tracking-[0.1em] text-primary hover:text-action transition-colors"
         >
-          Barter
+          Trade
         </LocalizedClientLink>
       </nav>
     </header>

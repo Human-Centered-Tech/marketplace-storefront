@@ -103,7 +103,7 @@ export default async function GiftGuidePage({ params }: Props) {
             href="/gifts"
             className="text-[#F2CD69] text-xs uppercase tracking-widest mb-4 inline-flex items-center gap-1 hover:text-white"
           >
-            ← All Gift Guides
+            ← All Guides
           </LocalizedClientLink>
           <p className="text-[#F2CD69] text-[12px] font-semibold uppercase tracking-[0.2em] mb-3 mt-2">
             {guide.subtitle}

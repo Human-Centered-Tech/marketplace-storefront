@@ -6,7 +6,7 @@ const STATIC_PATHS = [
   { path: "/", priority: 1.0, changefreq: "daily" as const },
   { path: "/categories", priority: 0.9, changefreq: "daily" as const },
   { path: "/directory", priority: 0.9, changefreq: "daily" as const },
-  { path: "/barter", priority: 0.7, changefreq: "daily" as const },
+  { path: "/trade", priority: 0.7, changefreq: "daily" as const },
   { path: "/networking", priority: 0.7, changefreq: "weekly" as const },
   { path: "/sell", priority: 0.8, changefreq: "weekly" as const },
   { path: "/for-business", priority: 0.8, changefreq: "weekly" as const },
@@ -137,7 +137,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       for (const locale of locales) {
         for (const listing of listings || []) {
           entries.push({
-            url: `${base}/${locale}/barter/${listing.id}`,
+            url: `${base}/${locale}/trade/${listing.id}`,
             lastModified: listing.updated_at
               ? new Date(listing.updated_at)
               : now,

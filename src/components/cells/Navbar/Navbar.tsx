@@ -30,10 +30,10 @@ export const Navbar = ({
           Networking
         </LocalizedClientLink>
         <LocalizedClientLink
-          href="/barter"
+          href="/trade"
           className="label-md uppercase px-4 flex items-center"
         >
-          Barter
+          Trade
         </LocalizedClientLink>
         <LocalizedClientLink
           href="/user/registry"

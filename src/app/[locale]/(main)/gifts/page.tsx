@@ -3,9 +3,9 @@ import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedL
 import { listActiveGiftGuides } from "@/lib/data/gift-guides"
 
 export const metadata: Metadata = {
-  title: "Gift Guides — Catholic Owned",
+  title: "Catholic Owned® Guides",
   description:
-    "Curated Catholic gift collections for every occasion — Easter, sacraments, Christmas, and more.",
+    "Curated Catholic collections for every occasion — sacraments, seasons, new beginnings, and more.",
 }
 
 export default async function GiftsHubPage() {
@@ -15,14 +15,14 @@ export default async function GiftsHubPage() {
     <main className="bg-catholic-lace min-h-screen">
       <section className="max-w-5xl mx-auto px-6 lg:px-8 py-16 lg:py-24 text-center">
         <p className="text-[#BE9B32] text-[11px] font-semibold uppercase tracking-[0.2em] mb-4">
-          Gift Guides
+          Catholic Owned<sup className="text-[0.6em] top-[-0.7em] relative ml-[1px]">&reg;</sup> Guides
         </p>
         <h1 className="font-serif text-4xl lg:text-5xl font-bold text-[#17294A] uppercase mb-4">
-          Gifts with Meaning
+          Curated with Meaning
         </h1>
         <p className="font-serif text-lg italic text-[#44474e] max-w-2xl mx-auto leading-relaxed">
-          Hand-picked Catholic gifts from verified artisans and businesses — for
-          every sacrament, season, and saint day.
+          Hand-picked picks from verified Catholic artisans and businesses — for
+          every sacrament, season, and life's milestones.
         </p>
       </section>
 

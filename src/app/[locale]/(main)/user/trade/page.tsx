@@ -6,7 +6,7 @@ import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedL
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "My Barter Listings — Catholic Owned",
+  title: "My Trade Listings — Catholic Owned",
 }
 
 export default async function MyBarterPage() {
@@ -23,10 +23,10 @@ export default async function MyBarterPage() {
         <div className="md:col-span-3 space-y-6">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <h1 className="heading-xl text-primary uppercase">
-              My Barter Listings
+              My Trade Listings
             </h1>
             <LocalizedClientLink
-              href="/user/barter/create"
+              href="/user/trade/create"
               className="bg-[#17294A] text-white px-5 py-2 rounded-lg text-sm font-semibold uppercase tracking-wider hover:bg-[#0d1a38] transition-colors"
             >
               + Post a Listing

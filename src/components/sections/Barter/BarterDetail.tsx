@@ -18,7 +18,7 @@ const conditionLabels: Record<string, string> = {
 const typeLabels: Record<string, string> = {
   sell: "For Sale",
   trade: "Trade",
-  barter: "Barter/Trade",
+  barter: "Trade",
   free: "Free",
 }
 
@@ -66,7 +66,7 @@ export const BarterDetail = ({
     setMessageError(null)
     if (!currentUserId) {
       // Not logged in — bounce through login with a return path back here
-      router.push(`/user/messages?return_to=/barter/${listing.id}`)
+      router.push(`/user/messages?return_to=/trade/${listing.id}`)
       return
     }
     if (isOwnListing) return
@@ -92,10 +92,10 @@ export const BarterDetail = ({
       <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-2 label-sm text-secondary">
           <LocalizedClientLink
-            href="/barter"
+            href="/trade"
             className="hover:text-navy-dark transition-colors"
           >
-            Barter Market
+            Trade Market
           </LocalizedClientLink>
           <span className="material-symbols-outlined text-xs">
             chevron_right
@@ -105,7 +105,7 @@ export const BarterDetail = ({
               ? "For Sale"
               : listing.listing_type === "free"
                 ? "Free Items"
-                : "Trade & Barter"}
+                : "Trade"}
           </span>
         </div>
         <div className="text-navy-dark font-serif italic text-lg border-l-2 border-gold pl-4">
@@ -221,11 +221,11 @@ export const BarterDetail = ({
           {/* Divider */}
           <div className="h-px w-full bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
 
-          {/* Barter Terms */}
+          {/* Trade Terms */}
           {listing.trade_terms && (
             <section className="bg-navy-dark p-8 rounded-xl shadow-lg border-l-4 border-gold">
               <h3 className="label-sm text-[10px] font-bold tracking-[0.2em] text-white/60 mb-4">
-                Barter Request
+                Trade Request
               </h3>
               <p className="font-serif text-xl md:text-2xl italic text-[#F2CD69]">
                 &ldquo;{listing.trade_terms}&rdquo;
@@ -304,7 +304,7 @@ export const BarterDetail = ({
                   <span className="material-symbols-outlined text-lg">
                     handshake
                   </span>
-                  Make Barter Offer
+                  Make Trade Offer
                 </button>
               )}
               {listing.listing_type === "sell" && listing.price && (

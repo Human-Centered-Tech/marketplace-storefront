@@ -43,7 +43,7 @@ export const HomeFeaturedGiftGuides = async () => {
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <h2 className="font-serif text-3xl md:text-4xl font-bold text-[#001435] whitespace-nowrap">
-            Featured Gift Guides
+            Catholic Owned<sup className="text-[0.5em] top-[-0.8em] relative ml-[2px]">&reg;</sup> Guides
           </h2>
           <div className="h-[1px] flex-grow mx-8 bg-[#BE9B32]/30 hidden sm:block" />
           <LocalizedClientLink
@@ -55,7 +55,7 @@ export const HomeFeaturedGiftGuides = async () => {
         </div>
         <AutoCarousel
           items={slides}
-          ariaLabel="Featured gift guides"
+          ariaLabel="Catholic Owned Guides"
           slideWidthClass="flex-[0_0_82%] sm:flex-[0_0_46%] lg:flex-[0_0_30%] xl:flex-[0_0_28%]"
           fadeColor="#ffffff"
         />

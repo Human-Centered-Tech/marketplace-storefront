@@ -7,7 +7,7 @@ import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedL
 export const metadata: Metadata = {
   title: "Sacred Exchange",
   description:
-    "Strengthening our community through faithful barter and trade. List your liturgical goods, artisan crafts, or vocational services.",
+    "Strengthening our community through faithful trade. List your liturgical goods, artisan crafts, or vocational services.",
 }
 
 export default async function BarterPage() {
@@ -43,11 +43,10 @@ export default async function BarterPage() {
             Sacred Exchange
           </h1>
           <p className="font-serif text-xl lg:text-2xl italic text-white/80 max-w-2xl mx-auto leading-relaxed drop-shadow mb-8">
-            &ldquo;Strengthening our community through faithful barter
-            and trade.&rdquo;
+            &ldquo;Strengthening our community through faithful trade.&rdquo;
           </p>
           <LocalizedClientLink
-            href="/user/barter/create"
+            href="/user/trade/create"
             className="inline-flex items-center px-6 py-3 bg-[#F2CD69] text-[#001435] text-[13px] font-semibold uppercase tracking-[0.1em] rounded-xs hover:bg-[#e8be4a] transition-colors"
           >
             + Post a Listing

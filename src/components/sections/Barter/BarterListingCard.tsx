@@ -13,7 +13,7 @@ const typeBadgeStyles: Record<string, string> = {
 const typeLabels: Record<string, string> = {
   sell: "For Sale",
   trade: "Trade",
-  barter: "Barter",
+  barter: "Trade",
   free: "Free",
 }
 
@@ -52,7 +52,7 @@ export const BarterListingCard = ({
 
   return (
     <LocalizedClientLink
-      href={`/barter/${listing.id}`}
+      href={`/trade/${listing.id}`}
       className="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 flex flex-col"
     >
       {/* Image */}

@@ -128,7 +128,6 @@ export const BarterSearch = ({
                 <option value="">Listing Type</option>
                 <option value="sell">Sell</option>
                 <option value="trade">Trade</option>
-                <option value="barter">Barter</option>
                 <option value="free">Free</option>
               </select>
             </div>

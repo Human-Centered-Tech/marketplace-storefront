@@ -12,7 +12,7 @@ const links = {
     { label: "Shop", path: "/categories" },
     { label: "Directory", path: "/directory" },
     { label: "Events", path: "/networking" },
-    { label: "Barter", path: "/barter" },
+    { label: "Trade", path: "/trade" },
   ],
   legal: [
     { label: "Privacy Policy", path: "/privacy" },

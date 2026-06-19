@@ -1,6 +1,6 @@
 import {
   BannerSection,
-  Hero,
+  HomeHeroTiles,
   HomeCategories,
   HomeFeaturedGiftGuides,
   HomeFeaturedProducts,
@@ -144,13 +144,6 @@ export default async function Home({
 
   return (
     <main className="flex flex-col items-center text-[#1b1c1a]">
-      <link
-        rel="preload"
-        as="image"
-        href="/images/hero/stpeters-v2.webp"
-        imageSrcSet="/images/hero/stpeters-v2.webp 1672w"
-        imageSizes="(min-width: 1024px) 50vw, 100vw"
-      />
       {/* Organization JSON-LD */}
       <Script
         id="ld-org"
@@ -180,19 +173,11 @@ export default async function Home({
         }}
       />
 
-      {/* 1. Hero Section */}
-      <Hero
-        image="/images/hero/stpeters-v2.webp"
-        heading="Building the New Catholic Economy"
-        paragraph="Discover and support faithful Catholic businesses. Shop artisan goods, browse the professional directory, or connect at networking events."
-        buttons={[
-          { label: "Shop Marketplace", path: "/categories" },
-          { label: "Gift Guides", path: "/gifts" },
-          { label: "Browse Directory", path: "/directory" },
-        ]}
-      />
+      {/* 1. Hero — 5 navigation tiles (Shop, Directory, Events, Sacred
+              Exchange, About) per Brooke's homepage layout */}
+      <HomeHeroTiles />
 
-      {/* 2. Featured Gift Guides — admin-curated via the gift-guide module */}
+      {/* 2. Featured Catholic Owned® Guides — admin-curated via the gift-guide module */}
       <HomeFeaturedGiftGuides />
 
       {/* 3. Featured Products — products tagged "homepage-featured", with
@@ -209,7 +194,7 @@ export default async function Home({
       {/* 5. Upcoming Networking Events */}
       <UpcomingEvents />
 
-      {/* 6. Community Trade & Barter */}
+      {/* 6. Community Trade */}
       <BannerSection />
 
       {/* 7. How It Works */}

@@ -56,7 +56,7 @@ export const MobileNavbar = ({
               { href: '/categories', label: 'Shop' },
               { href: '/directory', label: 'Directory' },
               { href: '/networking', label: 'Events' },
-              { href: '/barter', label: 'Barter' },
+              { href: '/trade', label: 'Trade' },
             ].map(({ href, label }) => (
               <LocalizedClientLink
                 key={href}

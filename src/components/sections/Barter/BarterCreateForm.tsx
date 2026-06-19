@@ -142,7 +142,7 @@ export const BarterCreateForm = ({
       }
     }
 
-    router.push(`/barter/${listingId}`)
+    router.push(`/trade/${listingId}`)
   }
 
   return (
