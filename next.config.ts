@@ -25,6 +25,17 @@ const nextConfig: NextConfig = {
   },
   trailingSlash: false,
   reactStrictMode: true,
+  experimental: {
+    serverActions: {
+      // Directory-listing images are uploaded through a server action
+      // (uploadDirectoryImage), and Next's default body cap is 1MB — which
+      // rejects ordinary phone photos with a 413 before they ever reach the
+      // backend. Raise to 10MB to match the backend route's own MAX_BYTES.
+      // Images are resized/compressed server-side before storage, so this
+      // gate does not translate into 10MB objects in the bucket.
+      bodySizeLimit: "10mb",
+    },
+  },
   logging: {
     fetches: {
       fullUrl: true,
