@@ -6,6 +6,40 @@ import { uploadDirectoryImage } from "@/lib/data/directory-actions"
 const normalize = (u?: string | null) =>
   u && u.startsWith("//") ? `https:${u}` : u || ""
 
+const MAX_UPLOAD_MB = 10
+const ACCEPTED_TYPES = [
+  "image/png",
+  "image/jpeg",
+  "image/webp",
+  "image/gif",
+  "image/avif",
+]
+
+// Turn the various technical upload failures into something a merchant can
+// act on. In production Next.js REDACTS thrown server-action errors (e.g. the
+// body-size rejection) to a generic "omitted for security" message with only
+// a digest — so a raw message is useless and we fall back to clear guidance.
+const friendlyUploadError = (raw?: string): string => {
+  const m = (raw || "").toLowerCase()
+  if (
+    /body exceeded|body size|content too large|payload too large|413|too large|exceeds the 10/.test(
+      m
+    )
+  ) {
+    return `That image is too large. Please upload a file under ${MAX_UPLOAD_MB} MB — most phones can export or share a smaller version.`
+  }
+  if (/unsupported image type|content[- ]?type|not.*(an )?image|invalid.*image/.test(m)) {
+    return "That file type isn't supported. Please upload a JPG, PNG, or WebP image."
+  }
+  if (/no file|empty image/.test(m)) {
+    return "Please choose an image to upload."
+  }
+  if (!raw || /server|digest|omitted|security|unexpected/.test(m)) {
+    return `Sorry, that image couldn't be uploaded. Please try a different image under ${MAX_UPLOAD_MB} MB (JPG, PNG, or WebP).`
+  }
+  return raw
+}
+
 type ImageUploadFieldProps = {
   label: string
   value: string
@@ -33,6 +67,26 @@ export const ImageUploadField = ({
   const handleFile = async (file: File | undefined) => {
     if (!file) return
     setError("")
+
+    // Validate client-side BEFORE calling the server action. An oversized
+    // file would otherwise be rejected at the Next.js server-action body
+    // boundary, which surfaces to the merchant as a redacted, unhelpful
+    // "an error occurred (omitted for security)" message. Catching it here
+    // lets us tell them exactly what's wrong.
+    if (file.size > MAX_UPLOAD_MB * 1024 * 1024) {
+      const mb = (file.size / (1024 * 1024)).toFixed(1)
+      setError(
+        `This image is ${mb} MB, over the ${MAX_UPLOAD_MB} MB limit. Please upload a smaller image (JPG, PNG, or WebP) — most phones can export or share a smaller version.`
+      )
+      return
+    }
+    if (file.type && !ACCEPTED_TYPES.includes(file.type)) {
+      setError(
+        "That file type isn't supported. Please upload a JPG, PNG, or WebP image."
+      )
+      return
+    }
+
     setUploading(true)
     try {
       const fd = new FormData()
@@ -41,10 +95,10 @@ export const ImageUploadField = ({
       if (res.ok) {
         onChange(res.url)
       } else {
-        setError(res.error)
+        setError(friendlyUploadError(res.error))
       }
     } catch (e: any) {
-      setError(e?.message || "Upload failed")
+      setError(friendlyUploadError(e?.message))
     } finally {
       setUploading(false)
       if (inputRef.current) inputRef.current.value = ""
