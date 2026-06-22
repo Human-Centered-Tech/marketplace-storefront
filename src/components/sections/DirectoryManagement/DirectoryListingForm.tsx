@@ -547,6 +547,7 @@ export const DirectoryListingForm = ({
             label="Owner Photo"
             value={form.owner_photo_url}
             onChange={(url) => setField("owner_photo_url", url)}
+            hint="Square photo works best (around 1000×1000px) — it's shown as a square. JPG, PNG, or WebP, up to 10 MB. Larger images are resized automatically."
           />
           {([1, 2, 3, 4] as const).map((n) => (
             <div key={n} className="border rounded-sm p-3 space-y-2">
@@ -601,6 +602,7 @@ export const DirectoryListingForm = ({
             label="Devotional Image"
             value={form.devotional_image_url}
             onChange={(url) => setField("devotional_image_url", url)}
+            hint="Square image works best (around 1000×1000px) — it's shown as a square. JPG, PNG, or WebP, up to 10 MB. Larger images are resized automatically."
           />
           <div>
             <label className="label-sm text-secondary block mb-1">
