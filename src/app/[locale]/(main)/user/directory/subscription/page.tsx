@@ -40,7 +40,13 @@ export default function DirectorySubscriptionPage() {
       return
     }
 
-    fetch(`${backendUrl}/store/directory/listings?limit=1`, {
+    // Load THIS customer's own listing — not the public browse list.
+    // `/store/directory/listings` is the unscoped public-browse endpoint
+    // (returns the newest active/unclaimed listing globally), so `?limit=1`
+    // there surfaced an unrelated merchant's name + tier. `/me` is
+    // auth-scoped to the logged-in customer and returns their own record
+    // even while subscription_status is still `pending`.
+    fetch(`${backendUrl}/store/directory/listings/me`, {
       headers: {
         "x-publishable-api-key":
           process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "",
@@ -49,8 +55,8 @@ export default function DirectorySubscriptionPage() {
     })
       .then((r) => r.json())
       .then((data) => {
-        if (data.listings?.length) {
-          setListing(data.listings[0])
+        if (data.listing) {
+          setListing(data.listing)
         }
       })
       .catch(() => {})
