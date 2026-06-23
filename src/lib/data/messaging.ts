@@ -46,13 +46,62 @@ export type Conversation = {
   updated_at: string
 }
 
+export type MessageAttachment = {
+  url: string
+  type: string
+  name?: string
+  size?: number
+}
+
 export type Message = {
   id: string
   conversation_id: string
   sender_id: string
   body: string
+  attachments?: MessageAttachment[] | null
   read_at: string | null
   created_at: string
+}
+
+const ATTACHMENT_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+  "image/avif",
+  "application/pdf",
+]
+const ATTACHMENT_MAX_BYTES = 10 * 1024 * 1024
+
+// Upload a single message attachment (image/PDF). Reuses the customer-authed
+// /store/directory/uploads endpoint (base64). Returns the stored URL + meta.
+export async function uploadMessageAttachment(
+  formData: FormData
+): Promise<
+  { ok: true; attachment: MessageAttachment } | { ok: false; error: string }
+> {
+  const file = formData.get("file") as File | null
+  if (!file) return { ok: false, error: "No file selected" }
+  if (!ATTACHMENT_TYPES.includes(file.type)) {
+    return { ok: false, error: "Only images or PDFs are allowed" }
+  }
+  if (file.size > ATTACHMENT_MAX_BYTES) {
+    return { ok: false, error: "File too large (max 10MB)" }
+  }
+  const data_base64 = Buffer.from(await file.arrayBuffer()).toString("base64")
+  const res = await authedFetch<{ url: string }>("/store/directory/uploads", {
+    method: "POST",
+    body: JSON.stringify({
+      filename: file.name,
+      content_type: file.type,
+      data_base64,
+    }),
+  })
+  if (!res?.url) return { ok: false, error: "Upload failed" }
+  return {
+    ok: true,
+    attachment: { url: res.url, type: file.type, name: file.name, size: file.size },
+  }
 }
 
 export async function listConversations() {
@@ -94,12 +143,16 @@ export async function getUnreadCount() {
   }>("/store/messaging/unread-count")
 }
 
-export async function sendMessage(conversationId: string, body: string) {
+export async function sendMessage(
+  conversationId: string,
+  body: string,
+  attachments?: MessageAttachment[]
+) {
   return authedFetch<{ message: Message }>(
     `/store/messaging/conversations/${conversationId}/messages`,
     {
       method: "POST",
-      body: JSON.stringify({ body }),
+      body: JSON.stringify({ body, attachments }),
     }
   )
 }

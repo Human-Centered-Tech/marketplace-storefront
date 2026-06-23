@@ -4,12 +4,14 @@ import { useEffect, useState, useRef } from "react"
 import type {
   Conversation,
   Message,
+  MessageAttachment,
 } from "@/lib/data/messaging"
 import {
   getConversation,
   listConversations,
   markConversationRead,
   sendMessage,
+  uploadMessageAttachment,
   notifyTyping,
 } from "@/lib/data/messaging"
 import { useMessagingStream } from "@/lib/hooks/useMessagingStream"
@@ -33,7 +35,11 @@ export const UserMessagesSection = ({
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
   const [draft, setDraft] = useState("")
+  const [pendingAttachments, setPendingAttachments] = useState<MessageAttachment[]>([])
+  const [uploading, setUploading] = useState(false)
+  const [attachError, setAttachError] = useState("")
   const [typingFrom, setTypingFrom] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
   const typingTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const lastTypingSent = useRef(0)
@@ -119,11 +125,37 @@ export const UserMessagesSection = ({
     }
   }
 
+  const handleAttachFiles = async (files: FileList | null) => {
+    if (!files || !files.length) return
+    setAttachError("")
+    setUploading(true)
+    try {
+      for (const file of Array.from(files).slice(0, 5)) {
+        const fd = new FormData()
+        fd.append("file", file)
+        const res = await uploadMessageAttachment(fd)
+        if (res.ok) {
+          setPendingAttachments((prev) => [...prev, res.attachment])
+        } else {
+          setAttachError(res.error)
+          break
+        }
+      }
+    } finally {
+      setUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ""
+    }
+  }
+
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!selectedId || !draft.trim()) return
+    if (!selectedId || (!draft.trim() && pendingAttachments.length === 0)) return
     setSending(true)
-    const res = await sendMessage(selectedId, draft)
+    const res = await sendMessage(
+      selectedId,
+      draft,
+      pendingAttachments.length ? pendingAttachments : undefined
+    )
     setSending(false)
     if (res?.message && selected) {
       setSelected({
@@ -131,6 +163,7 @@ export const UserMessagesSection = ({
         messages: [...selected.messages, res.message],
       })
       setDraft("")
+      setPendingAttachments([])
       // Refresh list so the latest-activity sort updates
       listConversations().then((data) =>
         setConversations(data?.conversations || [])
@@ -252,7 +285,43 @@ export const UserMessagesSection = ({
                             : "bg-[#faf9f5] text-[#17294A] border border-[#d6d0c4]/40"
                         }`}
                       >
-                        <p className="whitespace-pre-wrap">{m.body}</p>
+                        {m.body && (
+                          <p className="whitespace-pre-wrap">{m.body}</p>
+                        )}
+                        {m.attachments && m.attachments.length > 0 && (
+                          <div className="mt-2 flex flex-col gap-2">
+                            {m.attachments.map((a, i) =>
+                              a.type === "application/pdf" ? (
+                                <a
+                                  key={i}
+                                  href={a.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center gap-1.5 underline text-xs"
+                                >
+                                  <span className="material-symbols-outlined text-base">
+                                    description
+                                  </span>
+                                  {a.name || "Attachment.pdf"}
+                                </a>
+                              ) : (
+                                <a
+                                  key={i}
+                                  href={a.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                                  <img
+                                    src={a.url}
+                                    alt={a.name || "attachment"}
+                                    className="max-w-[220px] max-h-[220px] rounded-lg"
+                                  />
+                                </a>
+                              )
+                            )}
+                          </div>
+                        )}
                         <p
                           className={`text-[10px] mt-1 ${
                             mine ? "text-white/60" : "text-secondary"
@@ -280,23 +349,78 @@ export const UserMessagesSection = ({
 
             <form
               onSubmit={handleSend}
-              className="p-4 border-t border-[#d6d0c4]/40 flex gap-2"
+              className="p-4 border-t border-[#d6d0c4]/40 flex flex-col gap-2"
             >
-              <input
-                type="text"
-                value={draft}
-                onChange={(e) => handleDraftChange(e.target.value)}
-                placeholder="Type a message..."
-                disabled={sending}
-                className="flex-1 border border-[#d6d0c4]/60 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#BE9B32]"
-              />
-              <button
-                type="submit"
-                disabled={sending || !draft.trim()}
-                className="bg-[#17294A] text-white px-5 py-2 rounded-lg text-sm font-semibold uppercase tracking-wider hover:bg-[#0d1a38] transition-colors disabled:opacity-50"
-              >
-                {sending ? "…" : "Send"}
-              </button>
+              {(pendingAttachments.length > 0 || attachError) && (
+                <div className="flex flex-wrap items-center gap-2">
+                  {pendingAttachments.map((a, i) => (
+                    <span
+                      key={i}
+                      className="flex items-center gap-1 bg-[#faf9f5] border border-[#d6d0c4]/60 rounded px-2 py-1 text-xs"
+                    >
+                      {a.type === "application/pdf" ? "📄" : "🖼️"}
+                      <span className="max-w-[120px] truncate">
+                        {a.name || "attachment"}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setPendingAttachments((prev) =>
+                            prev.filter((_, idx) => idx !== i)
+                          )
+                        }
+                        className="text-red-600"
+                        aria-label="Remove attachment"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                  {attachError && (
+                    <span className="text-xs text-red-600">{attachError}</span>
+                  )}
+                </div>
+              )}
+              <div className="flex gap-2">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*,application/pdf"
+                  multiple
+                  className="hidden"
+                  onChange={(e) => handleAttachFiles(e.target.files)}
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading || sending}
+                  aria-label="Attach a file"
+                  className="px-3 rounded-lg border border-[#d6d0c4]/60 text-[#17294A] hover:bg-[#faf9f5] disabled:opacity-50"
+                >
+                  <span className="material-symbols-outlined">
+                    {uploading ? "hourglass_empty" : "attach_file"}
+                  </span>
+                </button>
+                <input
+                  type="text"
+                  value={draft}
+                  onChange={(e) => handleDraftChange(e.target.value)}
+                  placeholder="Type a message..."
+                  disabled={sending}
+                  className="flex-1 border border-[#d6d0c4]/60 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#BE9B32]"
+                />
+                <button
+                  type="submit"
+                  disabled={
+                    sending ||
+                    uploading ||
+                    (!draft.trim() && pendingAttachments.length === 0)
+                  }
+                  className="bg-[#17294A] text-white px-5 py-2 rounded-lg text-sm font-semibold uppercase tracking-wider hover:bg-[#0d1a38] transition-colors disabled:opacity-50"
+                >
+                  {sending ? "…" : "Send"}
+                </button>
+              </div>
             </form>
           </>
         )}
