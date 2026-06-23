@@ -60,6 +60,12 @@ export const DirectoryDetail = ({
     : null
 
   const isUnclaimed = !listing.owner_id
+  // Featured (and Enterprise) tiers get the richer listing: owner-interview
+  // section, multiple parish affiliations, and the gold CTA button. Verified
+  // and lower tiers show none of those + a single parish affiliation.
+  const isFeatured =
+    listing.subscription_tier === "featured" ||
+    listing.subscription_tier === "enterprise"
 
   return (
     <div>
@@ -255,8 +261,9 @@ export const DirectoryDetail = ({
               </div>
             )}
 
-            {/* Owner Interview */}
-            {listing.owner_interview &&
+            {/* Owner Interview — Featured/Enterprise only */}
+            {isFeatured &&
+              listing.owner_interview &&
               ([1, 2, 3, 4] as const).some(
                 (n) => (listing.owner_interview as any)?.[`q${n}_answer`]
               ) && (
@@ -354,7 +361,11 @@ export const DirectoryDetail = ({
                   <p className="label-sm text-[10px] text-secondary tracking-widest">
                     PARISH AFFILIATION
                   </p>
-                  {listing.affiliations.map((aff) => (
+                  {/* Featured/Enterprise can list multiple; lower tiers show one. */}
+                  {(isFeatured
+                    ? listing.affiliations
+                    : listing.affiliations.slice(0, 1)
+                  ).map((aff) => (
                     <p
                       key={aff.id}
                       className="font-serif text-lg text-navy-dark font-bold"
@@ -479,8 +490,8 @@ export const DirectoryDetail = ({
               </div>
             )}
 
-            {/* CTA Card — conditional per 4/1; suppressed when unclaimed */}
-            {!isUnclaimed && (() => {
+            {/* CTA Card — Featured/Enterprise only; suppressed when unclaimed */}
+            {!isUnclaimed && isFeatured && (() => {
               const ctaType = listing.cta_type || "visit_shop"
               const hasShop = Boolean(listing.vendor_id)
               let href: string | null = null
@@ -507,7 +518,7 @@ export const DirectoryDetail = ({
                     href={href}
                     target={external ? "_blank" : undefined}
                     rel={external ? "noopener noreferrer" : undefined}
-                    className="w-full bg-[#F2CD69] text-navy-dark py-4 rounded-xl label-sm text-[10px] font-bold tracking-widest flex items-center justify-center gap-3 hover:brightness-105 transition-all active:scale-95 mb-4"
+                    className="w-full bg-gradient-to-br from-[#F2CD69] to-[#BE9B32] text-navy-dark py-4 rounded-xl label-sm text-[10px] font-bold tracking-widest flex items-center justify-center gap-3 hover:brightness-105 transition-all active:scale-95 mb-4"
                   >
                     <span className="material-symbols-outlined">
                       {ctaType === "book_now" || ctaType === "book_a_call"

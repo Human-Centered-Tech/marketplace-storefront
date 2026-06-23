@@ -10,7 +10,7 @@ export const US_STATES: { code: string; name: string }[] = [
   { code: "AZ", name: "Arizona" }, { code: "AR", name: "Arkansas" },
   { code: "CA", name: "California" }, { code: "CO", name: "Colorado" },
   { code: "CT", name: "Connecticut" }, { code: "DE", name: "Delaware" },
-  { code: "DC", name: "District of Columbia" }, { code: "FL", name: "Florida" },
+  { code: "FL", name: "Florida" },
   { code: "GA", name: "Georgia" }, { code: "HI", name: "Hawaii" },
   { code: "ID", name: "Idaho" }, { code: "IL", name: "Illinois" },
   { code: "IN", name: "Indiana" }, { code: "IA", name: "Iowa" },

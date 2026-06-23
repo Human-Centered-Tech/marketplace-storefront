@@ -34,11 +34,15 @@ export const listCategories = async ({
     ({ name }) => !headingCategories.includes(name.toLowerCase())
   )
 
+  // Alphabetical (per 6/23 meeting) — Medusa returns these by `rank`.
+  const byName = (a: HttpTypes.StoreProductCategory, b: HttpTypes.StoreProductCategory) =>
+    (a.name ?? "").localeCompare(b.name ?? "")
+
   return {
-    categories: childrenCategories.filter(
-      ({ parent_category_id }) => !parent_category_id
-    ),
-    parentCategories: parentCategories,
+    categories: childrenCategories
+      .filter(({ parent_category_id }) => !parent_category_id)
+      .sort(byName),
+    parentCategories: parentCategories.sort(byName),
   }
 }
 

@@ -155,10 +155,26 @@ button:disabled svg path {
   scrollbar-width: none;
 }
 .product-details {
-  @apply text-md;
+  @apply text-base leading-relaxed font-normal;
+  /* Preserve plain-text line breaks/paragraphs entered in the description
+     textarea (it was collapsing into one block). Also styles real HTML if a
+     rich-text editor is added later. */
+  white-space: pre-wrap;
+}
+.product-details p {
+  @apply mb-3;
 }
 .product-details ul {
-  @apply list-disc text-md pl-5;
+  @apply list-disc pl-5 my-2;
+}
+.product-details ol {
+  @apply list-decimal pl-5 my-2;
+}
+.product-details strong {
+  @apply font-semibold;
+}
+.product-details a {
+  @apply text-gold-dark underline;
 }
 .embla__container {
   touch-action: pan-y pinch-zoom;
