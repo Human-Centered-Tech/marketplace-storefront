@@ -98,7 +98,8 @@ export async function signup(formData: FormData) {
     | string
     | null
   const customerForm: Record<string, unknown> = {
-    email: formData.get("email") as string,
+    // Email is case-insensitive — normalize so login always matches.
+    email: ((formData.get("email") as string) || "").trim().toLowerCase(),
     first_name: formData.get("first_name") as string,
     last_name: formData.get("last_name") as string,
     phone: formData.get("phone") as string,
@@ -156,7 +157,8 @@ export async function signup(formData: FormData) {
 }
 
 export async function login(formData: FormData) {
-  const email = formData.get("email") as string
+  // Email is case-insensitive — normalize to match how it's stored.
+  const email = ((formData.get("email") as string) || "").trim().toLowerCase()
   const password = formData.get("password") as string
 
   try {
