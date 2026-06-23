@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { EB_Garamond, Inter } from "next/font/google"
+import { EB_Garamond, DM_Sans } from "next/font/google"
 import "./globals.css"
 import { Toaster } from "@medusajs/ui"
 import { retrieveCart } from "@/lib/data/cart"
@@ -16,12 +16,13 @@ const ebGaramond = EB_Garamond({
   display: "swap",
 })
 
-// Body/UI sans. Inter is the interim stand-in for Nourd (the licensed brand
-// sans) — swap the family here once the Nourd webfont files are added.
-const inter = Inter({
+// Body/UI sans. DM Sans is the free near-match for Nourd (Brooke's licensed
+// brand sans, which we're not buying); it's the single platform sans, shared
+// with mobile. Swap the family here if Nourd is ever licensed.
+const dmSans = DM_Sans({
   variable: "--font-sans",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 })
 
@@ -148,7 +149,7 @@ export default async function RootLayout({
         <link rel="dns-prefetch" href="https://api.mercurjs.com" />
       </head>
       <body
-        className={`${inter.variable} ${ebGaramond.variable} font-sans antialiased bg-primary text-secondary relative`}
+        className={`${dmSans.variable} ${ebGaramond.variable} font-sans antialiased bg-primary text-secondary relative`}
       >
         <Providers cart={cart}>{children}</Providers>
         <Toaster position="top-right" />
