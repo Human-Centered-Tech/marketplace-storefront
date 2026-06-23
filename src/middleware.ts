@@ -138,7 +138,12 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
+  // NOTE: do NOT add bare file-extension tokens (png|svg|gif|...) here — as
+  // unanchored alternatives they match path PREFIXES, so "gif" was excluding
+  // /gifts/* (→ no locale redirect → 404). Real static assets contain a "."
+  // and are already short-circuited at the top of middleware(), and Next
+  // handles _next/static and _next/image, so those tokens were redundant.
   matcher: [
-    "/((?!api|_next/static|_next/image|favicon.ico|images|assets|png|svg|jpg|jpeg|gif|webp).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|images|assets).*)",
   ],
 }
