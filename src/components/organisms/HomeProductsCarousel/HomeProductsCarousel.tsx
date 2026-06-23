@@ -135,7 +135,7 @@ export const HomeProductsCarousel = async ({
                 {product.price}
               </span>
               <span className="bg-[#BE9B32] text-[#001435] px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-[0.15em]">
-                Add to Cart
+                View Product
               </span>
             </div>
           </div>

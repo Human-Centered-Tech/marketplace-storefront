@@ -16,7 +16,7 @@ export const HomeFeaturedGiftGuides = async () => {
       href={`/gifts/${g.slug}`}
       className="group block bg-white rounded-xl overflow-hidden shadow-sm border border-[#d6d0c4]/40 hover:shadow-xl transition-all h-full"
     >
-      <div className="aspect-[5/3] sm:aspect-[4/5] overflow-hidden relative">
+      <div className="aspect-[12/5] overflow-hidden relative">
         <img
           src={g.hero_image}
           alt={g.title}
