@@ -109,10 +109,15 @@ export async function addToCart({
   variantId,
   quantity,
   countryCode,
+  metadata,
 }: {
   variantId: string
   quantity: number
   countryCode: string
+  // Line-item metadata, e.g. { personalization: "..." }. When present the
+  // item is added as its own line (not merged) so distinct personalizations
+  // stay separate.
+  metadata?: Record<string, unknown>
 }) {
   if (!variantId) {
     throw new Error("Missing variant ID when adding to cart")
@@ -130,7 +135,7 @@ export async function addToCart({
 
   const currentItem = cart.items?.find((item) => item.variant_id === variantId)
 
-  if (currentItem) {
+  if (currentItem && !metadata) {
     await sdk.store.cart
       .updateLineItem(
         cart.id,
@@ -151,6 +156,7 @@ export async function addToCart({
         {
           variant_id: variantId,
           quantity,
+          ...(metadata ? { metadata } : {}),
         },
         {},
         headers

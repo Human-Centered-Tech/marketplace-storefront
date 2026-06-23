@@ -53,6 +53,15 @@ export const ProductDetailsHeader = ({
   const { onAddToCart, cart } = useCartContext()
   const [isAdding, setIsAdding] = useState(false)
   const [quantity, setQuantity] = useState(1)
+  // Personalization: merchant enables it per product via metadata. When on, the
+  // buyer's text is saved with the cart line item (and shown on the order).
+  const personalizationEnabled = Boolean(
+    (product.metadata as Record<string, unknown> | null)?.personalization_available
+  )
+  const personalizationLabel =
+    ((product.metadata as Record<string, unknown> | null)
+      ?.personalization_label as string) || "Personalization"
+  const [personalization, setPersonalization] = useState("")
   const [showRefundPolicy, setShowRefundPolicy] = useState(false)
   const { allSearchParams } = useGetAllSearchParams()
   const updateSearchParams = useUpdateSearchParams()
@@ -155,6 +164,9 @@ export const ProductDetailsHeader = ({
         variantId: variantId,
         quantity: quantity,
         countryCode: locale,
+        metadata: personalization.trim()
+          ? { personalization: personalization.trim() }
+          : undefined,
       })
     } catch (error) {
       toast.error({
@@ -268,6 +280,23 @@ export const ProductDetailsHeader = ({
               </div>
             )
           )}
+        </div>
+      )}
+
+      {/* Personalization — shown when the merchant enabled it on this product */}
+      {personalizationEnabled && (
+        <div>
+          <label className="block text-[11px] font-semibold uppercase tracking-widest text-secondary mb-1">
+            {personalizationLabel}
+          </label>
+          <textarea
+            value={personalization}
+            onChange={(e) => setPersonalization(e.target.value)}
+            rows={2}
+            maxLength={500}
+            placeholder="Add your personalization (e.g. name, date, message)…"
+            className="w-full border border-[#75777f]/30 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#BE9B32]"
+          />
         </div>
       )}
 
