@@ -125,6 +125,7 @@ export default function EditDirectoryListingPage() {
             devotional_image_url: devotional?.image_url || "",
             devotional_question: devotional?.question || "",
             devotional_answer: devotional?.answer || "",
+            gallery_urls: listing.gallery_urls || [],
             cta_type: listing.cta_type || "visit_shop",
             cta_url: listing.cta_url || "",
           }}

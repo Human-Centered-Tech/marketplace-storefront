@@ -9,6 +9,7 @@ import {
 import { ParishAffiliationsSection } from "./ParishAffiliationsSection"
 import { OWNER_INTERVIEW_QUESTIONS } from "@/lib/owner-interview"
 import { ImageUploadField } from "./ImageUploadField"
+import { GalleryUploadField } from "./GalleryUploadField"
 import { US_STATES, US_STATE_CODES } from "@/lib/us-states"
 
 type DirectoryFormData = {
@@ -46,6 +47,8 @@ type DirectoryFormData = {
   devotional_image_url: string
   devotional_question: string
   devotional_answer: string
+  // Photo gallery (up to 8 listing images)
+  gallery_urls: string[]
   // CTA
   cta_type: string
   cta_url: string
@@ -119,6 +122,7 @@ export const DirectoryListingForm = ({
     devotional_image_url: initialData?.devotional_image_url || "",
     devotional_question: initialData?.devotional_question || "",
     devotional_answer: initialData?.devotional_answer || "",
+    gallery_urls: initialData?.gallery_urls || [],
     cta_type: initialData?.cta_type || "visit_shop",
     cta_url: initialData?.cta_url || "",
   })
@@ -241,6 +245,7 @@ export const DirectoryListingForm = ({
               answer: form.devotional_answer || undefined,
             }
           : undefined,
+        gallery_urls: form.gallery_urls,
         cta_type: form.cta_type,
         cta_url: form.cta_type === "visit_shop" ? undefined : form.cta_url || undefined,
       })
@@ -533,6 +538,23 @@ export const DirectoryListingForm = ({
             </div>
           )}
         </div>
+      </div>
+
+      {/* Photo Gallery */}
+      <div>
+        <h3 className="heading-sm text-primary mb-3">Photos</h3>
+        <p className="text-xs text-secondary mb-3">
+          Optional — add up to 8 photos of your business, products, or space.
+          Shown as a gallery on your public listing.
+        </p>
+        <GalleryUploadField
+          label="Listing photos"
+          value={form.gallery_urls}
+          onChange={(urls) =>
+            setForm((prev) => ({ ...prev, gallery_urls: urls }))
+          }
+          max={8}
+        />
       </div>
 
       {/* Owner Interview */}

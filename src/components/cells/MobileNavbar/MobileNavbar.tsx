@@ -39,7 +39,12 @@ export const MobileNavbar = ({
           role='dialog'
           aria-modal='true'
           aria-label='Menu'
-          className='fixed w-full h-full bg-primary p-2 top-0 left-0 z-20'
+          /* z-[60] sits ABOVE the sticky header (z-50). The header has a
+             translucent (0.95) blurred background, so a lower z-index let the
+             menu show through it — the "transparency" bug. The panel's own
+             bg-primary is fully opaque; overflow-y-auto keeps long category
+             lists scrollable on short screens. */
+          className='fixed w-full h-full bg-primary p-2 top-0 left-0 z-[60] overflow-y-auto'
         >
           <div className='flex justify-end'>
             <button

@@ -1,17 +1,23 @@
 import type { Metadata } from "next"
-import { Cormorant_Garamond, Inter } from "next/font/google"
+import { EB_Garamond, Inter } from "next/font/google"
 import "./globals.css"
 import { Toaster } from "@medusajs/ui"
 import { retrieveCart } from "@/lib/data/cart"
 import { Providers } from "./providers"
 
-const cormorant = Cormorant_Garamond({
+// Brand title/serif font (Brooke 3/2026 direction): EB Garamond replaces
+// Cormorant Garamond as the platform serif. The --font-serif variable is the
+// single swap point — every `font-serif` class picks this up. Prefer
+// Medium/SemiBold weights for headings (no thin weights).
+const ebGaramond = EB_Garamond({
   variable: "--font-serif",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 })
 
+// Body/UI sans. Inter is the interim stand-in for Nourd (the licensed brand
+// sans) — swap the family here once the Nourd webfont files are added.
 const inter = Inter({
   variable: "--font-sans",
   subsets: ["latin"],
@@ -142,7 +148,7 @@ export default async function RootLayout({
         <link rel="dns-prefetch" href="https://api.mercurjs.com" />
       </head>
       <body
-        className={`${inter.variable} ${cormorant.variable} font-sans antialiased bg-primary text-secondary relative`}
+        className={`${inter.variable} ${ebGaramond.variable} font-sans antialiased bg-primary text-secondary relative`}
       >
         <Providers cart={cart}>{children}</Providers>
         <Toaster position="top-right" />
