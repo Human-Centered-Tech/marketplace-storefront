@@ -96,6 +96,7 @@ export const addRegistryItem = async (
   registryId: string,
   body: {
     product_id?: string
+    variant_id?: string | null
     product_title: string
     product_image?: string | null
     quantity_desired: number

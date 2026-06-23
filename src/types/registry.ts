@@ -32,4 +32,7 @@ export type GiftRegistryItem = {
   priority: number
   note: string | null
   metadata: Record<string, unknown> | null
+  // Enriched by the share route for gift buyers (region-scoped price).
+  unit_price?: number | null
+  currency_code?: string | null
 }

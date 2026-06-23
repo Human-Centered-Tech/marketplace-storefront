@@ -2,9 +2,10 @@ import { getSharedRegistry } from "@/lib/data/registry"
 import type { Metadata } from "next"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 import { MarkPurchasedButton } from "./MarkPurchasedButton"
+import { AddToRegistryCartButton } from "./AddToRegistryCartButton"
 
 type Props = {
-  params: Promise<{ token: string }>
+  params: Promise<{ token: string; locale: string }>
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -25,7 +26,7 @@ const sacramentLabels: Record<string, string> = {
 }
 
 export default async function SharedRegistryPage({ params }: Props) {
-  const { token } = await params
+  const { token, locale } = await params
   const registry = await getSharedRegistry(token)
 
   if (!registry) {
@@ -110,6 +111,11 @@ export default async function SharedRegistryPage({ params }: Props) {
                     <h3 className="text-sm font-medium text-primary">
                       {item.product_title}
                     </h3>
+                    {item.unit_price != null && (
+                      <p className="text-sm font-medium text-navy-dark mt-0.5">
+                        ${item.unit_price.toFixed(2)}
+                      </p>
+                    )}
                     {item.note && (
                       <p className="text-xs text-secondary mt-0.5">
                         {item.note}
@@ -128,13 +134,21 @@ export default async function SharedRegistryPage({ params }: Props) {
                       </span>
                     ) : (
                       <>
-                        {item.product_id && !item.product_id.startsWith("prod_") && (
-                          <LocalizedClientLink
-                            href={`/products/${item.product_id}`}
-                            className="bg-navy-dark text-white px-4 py-2 rounded-sm text-xs uppercase font-medium hover:bg-navy transition-colors text-center"
-                          >
-                            Buy This Gift
-                          </LocalizedClientLink>
+                        {item.variant_id ? (
+                          <AddToRegistryCartButton
+                            variantId={item.variant_id}
+                            countryCode={locale}
+                          />
+                        ) : (
+                          item.product_id &&
+                          !item.product_id.startsWith("prod_") && (
+                            <LocalizedClientLink
+                              href={`/products/${item.product_id}`}
+                              className="bg-navy-dark text-white px-4 py-2 rounded-sm text-xs uppercase font-medium hover:bg-navy transition-colors text-center"
+                            >
+                              Buy This Gift
+                            </LocalizedClientLink>
+                          )
                         )}
                         {registry.status === "active" && (
                           <MarkPurchasedButton

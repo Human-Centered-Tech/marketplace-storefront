@@ -11,10 +11,12 @@ import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedL
 
 export const AddToRegistryButton = ({
   product,
+  variantId,
   user,
   registries,
 }: {
   product: StoreProduct
+  variantId?: string
   user: StoreCustomer
   registries: GiftRegistry[]
 }) => {
@@ -30,7 +32,10 @@ export const AddToRegistryButton = ({
     setAdding(true)
     try {
       await addRegistryItem(registryId, {
+        // Keep the handle as product_id so the shared-page "View" link resolves
+        // to the PDP; variant_id is what powers add-to-cart for gift buyers.
         product_id: product.handle || product.id,
+        variant_id: variantId || null,
         product_title: product.title || "Product",
         product_image: product.thumbnail || null,
         quantity_desired: 1,

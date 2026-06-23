@@ -374,6 +374,7 @@ export const ProductDetailsHeader = ({
         {/* Add to Registry button */}
         <AddToRegistryButton
           product={product}
+          variantId={variantId}
           user={user}
           registries={registries || []}
         />
