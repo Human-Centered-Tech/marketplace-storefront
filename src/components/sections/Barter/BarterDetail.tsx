@@ -192,18 +192,23 @@ export const BarterDetail = ({
                   {formatPrice(listing.price)}
                 </span>
               )}
-              {listing.listing_type !== "sell" &&
-                formatPrice(listing.estimated_value) && (
-                  <span className="bg-[#F2CD69]/15 text-[#17294A] px-3 py-1 rounded-full label-sm text-[10px] font-bold border border-gold/30">
-                    Est. Value {formatPrice(listing.estimated_value)}
-                  </span>
-                )}
             </div>
 
             {/* Title */}
             <h1 className="font-serif text-3xl md:text-4xl lg:text-5xl text-navy-dark tracking-tight leading-tight">
               {listing.title}
             </h1>
+
+            {/* Estimated value — presented like a price for trade/free listings */}
+            {listing.listing_type !== "sell" &&
+              formatPrice(listing.estimated_value) && (
+                <p className="font-serif text-3xl md:text-4xl text-[#3D7A4A] leading-none">
+                  {formatPrice(listing.estimated_value)}
+                  <span className="ml-2 align-middle label-sm text-[10px] font-bold tracking-widest text-secondary">
+                    EST. VALUE
+                  </span>
+                </p>
+              )}
 
             {/* Meta */}
             <div className="flex items-center gap-6 text-secondary label-sm text-xs">
