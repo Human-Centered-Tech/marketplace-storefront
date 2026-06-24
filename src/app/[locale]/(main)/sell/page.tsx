@@ -349,7 +349,7 @@ export default function SellPage() {
             href="/sell/onboarding"
             className="inline-flex items-center px-10 py-4 text-[13px] font-semibold uppercase tracking-[0.1em] rounded-xs bg-[#001435] text-white hover:bg-[#17294a] shadow-lg transition-colors"
           >
-            Create Your Merchant Account
+            Add your business
           </LocalizedClientLink>
         </div>
       </section>
