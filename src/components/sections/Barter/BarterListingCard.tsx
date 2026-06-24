@@ -25,9 +25,11 @@ const conditionLabels: Record<string, string> = {
   poor: "Poor",
 }
 
-function formatPrice(price: number | null) {
-  if (price === null || price === 0) return null
-  return `$${(price / 100).toFixed(2)}`
+function formatPrice(value: number | string | null) {
+  if (value === null) return null
+  const n = Number(value)
+  if (!Number.isFinite(n) || n === 0) return null
+  return `$${(n / 100).toFixed(2)}`
 }
 
 function timeAgo(dateString: string) {
@@ -97,7 +99,9 @@ export const BarterListingCard = ({
           {conditionLabels[listing.condition] || listing.condition}
           {listing.listing_type === "sell" && listing.price
             ? ` · ${formatPrice(listing.price)}`
-            : ""}
+            : formatPrice(listing.estimated_value)
+              ? ` · Est. ${formatPrice(listing.estimated_value)}`
+              : ""}
         </p>
 
         <div className="mt-auto pt-4 flex flex-col gap-1.5 border-t border-gray-100">
