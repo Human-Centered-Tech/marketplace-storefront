@@ -5,6 +5,7 @@ export type BarterListing = {
   description: string
   listing_type: "sell" | "trade" | "barter" | "free"
   price: number | null
+  estimated_value: number | null
   trade_terms: string | null
   condition: "new" | "like_new" | "good" | "fair" | "poor"
   category_id: string | null

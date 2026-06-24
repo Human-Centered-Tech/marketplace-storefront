@@ -29,9 +29,11 @@ const typeIcons: Record<string, string> = {
   free: "volunteer_activism",
 }
 
-function formatPrice(price: number | null) {
-  if (price === null || price === 0) return null
-  return `$${(price / 100).toFixed(2)}`
+function formatPrice(value: number | string | null) {
+  if (value === null) return null
+  const n = Number(value)
+  if (!Number.isFinite(n) || n === 0) return null
+  return `$${(n / 100).toFixed(2)}`
 }
 
 function timeAgo(dateString: string) {
@@ -190,6 +192,12 @@ export const BarterDetail = ({
                   {formatPrice(listing.price)}
                 </span>
               )}
+              {listing.listing_type !== "sell" &&
+                formatPrice(listing.estimated_value) && (
+                  <span className="bg-[#F2CD69]/15 text-[#17294A] px-3 py-1 rounded-full label-sm text-[10px] font-bold border border-gold/30">
+                    Est. Value {formatPrice(listing.estimated_value)}
+                  </span>
+                )}
             </div>
 
             {/* Title */}
