@@ -2,36 +2,7 @@
 
 import { DirectoryListing } from "@/types/directory"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
-
-const tierBadgeStyles: Record<string, string> = {
-  // Canva tier set — visual hierarchy: local/merchant < tier2 < tier3 < tier4
-  local: "bg-white text-navy-dark border border-navy-dark",
-  merchant: "bg-white text-navy-dark border border-navy-dark",
-  tier2_startup: "bg-navy-dark text-white",
-  tier2_nonprofit: "bg-navy-dark text-white",
-  tier2_business: "bg-navy-dark text-white",
-  tier3: "bg-gold text-navy-dark",
-  tier4: "bg-gold text-navy-dark",
-  // Legacy
-  enterprise: "bg-gold text-navy-dark",
-  featured: "bg-navy-dark text-white",
-  verified: "bg-navy-dark text-white",
-}
-
-const tierLabels: Record<string, string> = {
-  // Canva tier set
-  local: "Local",
-  merchant: "Merchant",
-  tier2_startup: "Tier 2",
-  tier2_nonprofit: "Tier 2",
-  tier2_business: "Tier 2",
-  tier3: "Tier 3",
-  tier4: "Tier 4",
-  // Legacy
-  enterprise: "Enterprise",
-  featured: "Featured",
-  verified: "Verified",
-}
+import { getTierBadge, tierBadgeColorClass } from "@/lib/directory-tiers"
 
 export const DirectoryListingCard = ({
   listing,
@@ -57,6 +28,11 @@ export const DirectoryListingCard = ({
     !isUnclaimed &&
     !isFeaturedBiz &&
     listing.verification_status === "approved"
+  // Public tier badge — single source of truth shared with the home preview.
+  const tierBadge = getTierBadge(
+    listing.subscription_tier,
+    listing.verification_status
+  ) ?? { label: "Verified", color: "navy" as const }
   // Distance shipped from DirectorySearch's hitToListing — only rendered
   // when showDistance is on (i.e., proximity is from explicit user input,
   // not the silent Denver default).
@@ -238,12 +214,9 @@ export const DirectoryListingCard = ({
               </span>
             ) : (
               <span
-                className={`text-[9px] font-bold px-2 py-0.5 rounded uppercase ${
-                  tierBadgeStyles[listing.subscription_tier] ||
-                  tierBadgeStyles.verified
-                }`}
+                className={`text-[9px] font-bold px-2 py-0.5 rounded uppercase ${tierBadgeColorClass[tierBadge.color]}`}
               >
-                {tierLabels[listing.subscription_tier] || "Verified"}
+                {tierBadge.label}
               </span>
             )}
             {listing.badges

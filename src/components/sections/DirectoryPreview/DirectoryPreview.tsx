@@ -2,53 +2,18 @@ import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedL
 import Image from "next/image"
 import { listDirectoryListings } from "@/lib/data/directory"
 import { DirectoryListing } from "@/types/directory"
+import { getTierBadge } from "@/lib/directory-tiers"
 
 const NEARBY_RADIUS_KM = 80 // ~50 mi, matches default user-facing radius
 
-const fallbackListings = [
-  {
-    id: "fallback-1",
-    business_name: "St. Joseph Financial",
-    category: { name: "Accounting" },
-    address: { city: "Dallas", state: "TX" },
-    subscription_tier: "featured" as const,
-    verification_status: "approved" as const,
-    cover_image_url: "/images/directory/st-joseph-financial.jpg",
-    badge: "Preferred Merchant",
-    badgeColor: "navy",
-  },
-  {
-    id: "fallback-2",
-    business_name: "Stella Maris Design",
-    category: { name: "Web Design" },
-    address: { city: "St. Louis", state: "MO" },
-    subscription_tier: "enterprise" as const,
-    verification_status: "approved" as const,
-    cover_image_url: "/images/directory/stella-maris.jpg",
-    badge: "Pillar Founding Member",
-    badgeColor: "gold",
-  },
-  {
-    id: "fallback-3",
-    business_name: "Regina Caeli Goods",
-    category: { name: "Sacred Art" },
-    address: { city: "Denver", state: "CO" },
-    subscription_tier: "featured" as const,
-    verification_status: "approved" as const,
-    cover_image_url: "/images/directory/regina-caeli.jpg",
-    badge: "Preferred Merchant",
-    badgeColor: "navy",
-  },
-]
-
 function getBadge(listing: DirectoryListing) {
-  if (listing.subscription_tier === "enterprise")
-    return { text: "Pillar Founding Member", color: "gold" }
-  if (listing.subscription_tier === "featured")
-    return { text: "Featured Merchant", color: "navy" }
-  if (listing.verification_status === "approved")
-    return { text: "Verified", color: "navy" }
-  return null
+  const badge = getTierBadge(
+    listing.subscription_tier,
+    listing.verification_status
+  )
+  if (!badge) return null
+  // The home DirectoryCard pill renders gold or navy only; collapse outline.
+  return { text: badge.label, color: badge.color === "gold" ? "gold" : "navy" }
 }
 
 function StarRating({ count }: { count?: number }) {
@@ -238,6 +203,9 @@ export async function DirectoryPreview({
   }
 
   const hasData = listings.length > 0
+  // No real listings to show — hide the section rather than render placeholder
+  // businesses (the old hardcoded "Pillar Founding Member" demo cards).
+  if (!hasData) return null
 
   return (
     <section className="py-16 lg:py-24 w-full bg-[#f4f4f0] px-4 lg:px-8">
@@ -256,40 +224,26 @@ export async function DirectoryPreview({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {hasData
-            ? listings.map((listing) => {
-                const badge = getBadge(listing)
-                return (
-                  <DirectoryCard
-                    key={listing.id}
-                    name={listing.business_name}
-                    category={listing.category?.name || "Business"}
-                    location={
-                      listing.address
-                        ? `${listing.address.city || ""}${listing.address.city && listing.address.state ? ", " : ""}${listing.address.state || ""}`
-                        : "United States"
-                    }
-                    imageUrl={listing.cover_image_url}
-                    badge={badge?.text || null}
-                    badgeColor={badge?.color || "navy"}
-                    isVerified={listing.verification_status === "approved"}
-                    href={`/directory/${listing.id}`}
-                  />
-                )
-              })
-            : fallbackListings.map((listing) => (
-                <DirectoryCard
-                  key={listing.id}
-                  name={listing.business_name}
-                  category={listing.category.name}
-                  location={`${listing.address.city}, ${listing.address.state}`}
-                  imageUrl={listing.cover_image_url}
-                  badge={listing.badge}
-                  badgeColor={listing.badgeColor}
-                  isVerified={listing.verification_status === "approved"}
-                  href="/directory"
-                />
-              ))}
+          {listings.map((listing) => {
+            const badge = getBadge(listing)
+            return (
+              <DirectoryCard
+                key={listing.id}
+                name={listing.business_name}
+                category={listing.category?.name || "Business"}
+                location={
+                  listing.address
+                    ? `${listing.address.city || ""}${listing.address.city && listing.address.state ? ", " : ""}${listing.address.state || ""}`
+                    : "United States"
+                }
+                imageUrl={listing.cover_image_url}
+                badge={badge?.text || null}
+                badgeColor={badge?.color || "navy"}
+                isVerified={listing.verification_status === "approved"}
+                href={`/directory/${listing.id}`}
+              />
+            )
+          })}
         </div>
       </div>
     </section>
