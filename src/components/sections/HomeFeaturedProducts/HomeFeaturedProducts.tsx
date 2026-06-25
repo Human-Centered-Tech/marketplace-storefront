@@ -62,6 +62,34 @@ async function fetchProductsByIds(
   }
 }
 
+// Fallback when nothing is curated: the most recent products, so the home
+// "From the Marketplace" rail is never empty (Brooke noted it was missing —
+// that was this section returning null with no featured products set).
+async function fetchRecentProducts(
+  regionId: string,
+  countryCode: string,
+  limit: number
+): Promise<HttpTypes.StoreProduct[]> {
+  const params = new URLSearchParams()
+  params.set("country_code", countryCode)
+  params.set("region_id", regionId)
+  params.set("limit", String(limit))
+  params.set("order", "-created_at")
+  params.set("fields", PRODUCT_FIELDS)
+
+  try {
+    const res = await fetch(`${backendUrl()}/store/products?${params.toString()}`, {
+      headers: { "x-publishable-api-key": publishableKey() },
+      next: { revalidate: 60, tags: ["featured-products"] },
+    })
+    if (!res.ok) return []
+    const data = await res.json()
+    return (data.products || []) as HttpTypes.StoreProduct[]
+  } catch {
+    return []
+  }
+}
+
 // Compact product card mirroring the Featured Services layout: fixed h-44,
 // h-24 image, h-20 content. Two stack inside the same section height.
 const CompactProductCard = ({
@@ -114,23 +142,27 @@ export const HomeFeaturedProducts = async ({
   // Pull the ordered product_ids from the featured-product table, then ask
   // Medusa for full product data for those IDs. The carousel shows only
   // products the admin has explicitly toggled on; section hides when none.
-  const curated = await fetchFeaturedProductIds()
-  if (!curated.length) return null
-
   const region = await getRegion(locale)
   if (!region) return null
 
-  const ids = curated.map((c) => c.product_id)
-  const fetched = await fetchProductsByIds(ids, region.id, locale)
-
-  // Preserve admin-defined sort order — /store/products doesn't honor the id-list order.
-  const order = new Map(curated.map((c, i) => [c.product_id, i]))
-  const products = fetched.slice().sort((a, b) => {
-    const ai = order.get(a.id) ?? Number.MAX_SAFE_INTEGER
-    const bi = order.get(b.id) ?? Number.MAX_SAFE_INTEGER
-    return ai - bi
-  })
-
+  // Curated products first; if the admin hasn't featured any, fall back to the
+  // most recent products so the rail is always present.
+  const curated = await fetchFeaturedProductIds()
+  let products: HttpTypes.StoreProduct[] = []
+  if (curated.length) {
+    const ids = curated.map((c) => c.product_id)
+    const fetched = await fetchProductsByIds(ids, region.id, locale)
+    // Preserve admin-defined sort order — /store/products doesn't honor the id-list order.
+    const order = new Map(curated.map((c, i) => [c.product_id, i]))
+    products = fetched.slice().sort((a, b) => {
+      const ai = order.get(a.id) ?? Number.MAX_SAFE_INTEGER
+      const bi = order.get(b.id) ?? Number.MAX_SAFE_INTEGER
+      return ai - bi
+    })
+  }
+  if (!products.length) {
+    products = await fetchRecentProducts(region.id, locale, 12)
+  }
   if (!products.length) return null
 
   // Double-row layout kicks in at 10+ curated items. Below that the carousel
@@ -159,8 +191,8 @@ export const HomeFeaturedProducts = async ({
     <section className="py-12 lg:py-16 w-full bg-[#faf9f5] px-4 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-8">
-          <h2 className="font-serif text-3xl md:text-4xl font-bold text-[#001435] whitespace-nowrap">
-            Featured Products
+          <h2 className="font-serif text-3xl md:text-4xl font-semibold text-[#001435] whitespace-nowrap">
+            From the Marketplace
           </h2>
           <div className="h-[1px] flex-grow mx-8 bg-[#BE9B32]/30 hidden sm:block" />
           <LocalizedClientLink

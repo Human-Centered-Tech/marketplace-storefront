@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import Image from "next/image"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 
 export const metadata: Metadata = {
@@ -114,7 +115,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Story — placeholder; client to supply */}
+      {/* Story */}
       <section className="py-16 lg:py-24 bg-[#faf9f5]">
         <div className="max-w-3xl mx-auto px-6 lg:px-8">
           <p className="text-[#BE9B32] text-[11px] font-semibold uppercase tracking-[0.2em] mb-3 text-center">
@@ -123,22 +124,75 @@ export default function AboutPage() {
           <h2 className="font-serif text-3xl lg:text-4xl font-bold text-[#17294A] uppercase text-center mb-8">
             How We Got Here
           </h2>
+          <div className="flex justify-center mb-10">
+            <Image
+              src="/images/founders/onori-family.jpg"
+              alt="Matteo Onori and Brooke Joiner, founders of Catholic Owned"
+              width={440}
+              height={440}
+              className="rounded-2xl shadow-lg w-full max-w-sm h-auto object-cover"
+            />
+          </div>
           <div className="space-y-5 text-[16px] leading-relaxed text-[#44474e]">
             <p>
-              Catholic Owned began with a simple observation: Catholic business
-              owners were struggling to reach the very people who&rsquo;d most
-              want to support them. Meanwhile, faithful shoppers had no
-              reliable way to find merchants who shared their values.
+              Matteo Onori &amp; Brooke Joiner are first and foremost Slaves of
+              Jesus in Mary. They met in the slums of Calcutta in 2012, while
+              serving the poorest of the poor with the Missionaries of Charity.
             </p>
             <p>
-              Today Catholic Owned brings together hundreds of verified
-              Catholic businesses in one place — from sacred art and liturgical
-              goods to everyday services and consumer products. Each merchant is
-              part of a community; each purchase strengthens the whole.
+              With professional backgrounds in technology and business, they were
+              called to start Catholic Owned&reg; and bring a vision of Building
+              the New Catholic Economy&reg; to life.
             </p>
-            <p className="italic text-[#17294A]">
-              <strong>Note:</strong> Client to supply founder story and team
-              photos in this section.
+            <p>
+              Matteo is from central Italy, while Brooke grew up in Colorado.
+              Called separately to Calcutta in August 2012, they did not speak a
+              common language at the time, but found each other when a group of
+              seminarians introduced them. Interestingly, the American
+              seminarians were studying at the PNAC in Rome, which meant they
+              spoke enough Italian to cobble together an introduction.
+            </p>
+            <p>
+              Matteo and Brooke were married the following year, and spent the
+              first four years of their marriage in Matteo&rsquo;s native Le
+              Marche, Italy.
+            </p>
+            <p>
+              After moving to Colorado in 2017, a surprising opportunity arose:
+              Matteo&rsquo;s former employer in Italy invited them to launch the
+              group&rsquo;s U.S. office in Fort Lauderdale, FL. They said yes,
+              moved across the country, and built the company from the ground up,
+              growing it to seven figures in revenue.
+            </p>
+            <p>
+              As the couple grew in devotion to the Immaculate Heart of Mary,
+              things began to change. A chasm developed between the work they
+              were doing and the people they ultimately wanted to become, and God
+              asked them to do something about it.
+            </p>
+            <p>
+              That&rsquo;s why in 2023, one month after their fourth baby was
+              born, Matteo and Brooke walked into the office and gave their
+              notice, quitting their jobs together. Leaving behind careers,
+              worldly comfort and all material security, they went all in on
+              Catholic Owned from that moment on.
+            </p>
+            <p>
+              Devout Catholic spouses and parents to four homeschooled children,
+              their story is marked by a persistent, radical obedience to the
+              perfect will of the Father, no matter what He asks, and regardless
+              of the personal cost.
+            </p>
+            <p>
+              The couple, their family and the business are all consecrated to
+              the Immaculate Heart of Mary. Their favorite prayers include the
+              Rosary and the Divine Mercy chaplet, with favored devotions being
+              the Nine First Fridays and Five First Saturdays devotions.
+            </p>
+            <p>
+              Today, they have been married 12 years, share four children, and
+              have devoted their life&rsquo;s work to building Catholic
+              Owned&reg;.
             </p>
           </div>
         </div>
