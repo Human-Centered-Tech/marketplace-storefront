@@ -104,16 +104,17 @@ const TileCard = ({ tile }: { tile: Tile }) => {
       } ${v.wrap}`}
     >
       <div
-        className={`flex h-full w-full flex-col justify-end rounded-lg sm:rounded-xl p-3 sm:p-5 lg:p-6 ${v.inner}`}
+        className={`flex h-full w-full flex-col items-center justify-center text-center rounded-lg sm:rounded-xl p-4 sm:p-6 ${v.inner}`}
       >
         <h3
-          className={`font-serif text-xl leading-tight sm:text-2xl lg:text-3xl font-bold ${v.title}`}
+          className={`font-serif text-2xl leading-tight sm:text-3xl lg:text-4xl font-bold ${v.title}`}
         >
           {tile.label}
         </h3>
-        {/* Subtitle: web only (and only once tiles are tall enough), per Brooke's note */}
+        {/* Subtitle centered under the label — the text is the focus now that
+            tiles are solid. Hidden on the narrowest mobile tiles to avoid crowding. */}
         <p
-          className={`hidden sm:block mt-1.5 text-xs font-semibold uppercase tracking-widest ${v.subtitle}`}
+          className={`hidden sm:block mt-2 max-w-[26ch] text-[11px] sm:text-sm font-semibold uppercase tracking-widest ${v.subtitle}`}
         >
           {tile.subtitle}
         </p>
