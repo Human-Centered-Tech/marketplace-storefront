@@ -116,10 +116,7 @@ export const ParishAffiliationsSection = ({
       // The backend returns the bare affiliation without the parish
       // relation eagerly loaded; attach it locally so the UI can render
       // city/diocese without a refetch.
-      setAffiliations((prev) => [
-        ...prev,
-        { ...res.affiliation, parish },
-      ])
+      setAffiliations((prev) => [...prev, { ...res.affiliation, parish }])
       setQuery("")
       setResults([])
     } finally {
@@ -197,17 +194,25 @@ export const ParishAffiliationsSection = ({
 
       {atCap ? (
         <div className="text-xs text-secondary border rounded-sm px-3 py-2 bg-[rgba(190,155,50,0.06)]">
-          You've reached your plan's limit of {limit} parish
-          affiliation{limit === 1 ? "" : "s"}. Remove one to add a different
-          parish, or upgrade your plan.
+          You've reached your plan's limit of {limit} parish affiliation
+          {limit === 1 ? "" : "s"}. Remove one to add a different parish, or
+          upgrade your plan.
         </div>
       ) : (
         <div className="relative">
+          <p className="text-xs text-secondary mb-2">
+            Search by parish <span className="text-primary">name</span>,{" "}
+            <span className="text-primary">city</span>,{" "}
+            <span className="text-primary">ZIP code</span>, or{" "}
+            <span className="text-primary">diocese</span>. Combine terms to
+            narrow same-named parishes — e.g. “St. Mary Springfield” or “St.
+            Mary 62701”.
+          </p>
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by parish name, city, or diocese…"
+            placeholder="Search by name, city, ZIP, or diocese…"
             className="w-full border rounded-sm px-3 py-2 text-sm"
             autoComplete="off"
           />
