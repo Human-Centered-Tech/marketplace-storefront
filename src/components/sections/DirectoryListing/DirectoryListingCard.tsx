@@ -49,8 +49,9 @@ export const DirectoryListingCard = ({
         href={`/directory/${listing.id}`}
         className="col-span-1 lg:col-span-2 bg-white rounded-2xl overflow-hidden shadow-sm group hover:shadow-xl transition-all border border-gold/20 relative block"
       >
-        {/* Enterprise badge */}
-        <div className="absolute top-4 right-4 z-10 bg-gold text-navy-dark px-3 py-1 rounded-full flex items-center gap-1 shadow-lg">
+        {/* Tier badge — top-left corner over the image, so it doesn't overlap
+            the business name / "Verified Merchant" text on the right. */}
+        <div className="absolute top-4 left-4 z-10 bg-gold text-navy-dark px-3 py-1 rounded-full flex items-center gap-1 shadow-lg">
           <span
             className="material-symbols-outlined text-xs"
             style={{ fontVariationSettings: "'FILL' 1" }}
