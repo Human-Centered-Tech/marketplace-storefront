@@ -47,8 +47,8 @@ export default function TermsPage() {
           <p>
             You&rsquo;re responsible for keeping your login credentials secure
             and for all activity under your account. Notify us immediately at{" "}
-            <a href="mailto:security@catholicowned.com">
-              security@catholicowned.com
+            <a href="mailto:support@catholicowned.com">
+              support@catholicowned.com
             </a>{" "}
             if you suspect unauthorized use.
           </p>
@@ -191,8 +191,8 @@ export default function TermsPage() {
         <Section title="14. Contact">
           <p>
             Questions about these Terms? Email{" "}
-            <a href="mailto:legal@catholicowned.com">
-              legal@catholicowned.com
+            <a href="mailto:support@catholicowned.com">
+              support@catholicowned.com
             </a>
             .
           </p>

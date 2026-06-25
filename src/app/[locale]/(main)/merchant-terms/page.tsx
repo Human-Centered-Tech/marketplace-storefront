@@ -237,7 +237,7 @@ const SECTIONS: TermsSection[] = [
       "Step 1 — Merchant Notification: Catholic Owned® will notify the Merchant of the reported issue by email or through the Catholic Owned® platform.",
       "Step 2 — Merchant Response: The Merchant shall respond to the reported issue within forty-eight (48) hours of notification (or such shorter period as Catholic Owned® may specify in urgent cases), providing tracking information, proof of shipment, or other relevant documentation.",
       "Step 3 — Resolution: If the Merchant responds and proposes a resolution (such as replacement, refund, or re-shipment), Catholic Owned® will review and may approve or require an alternative resolution. If the Merchant fails to respond within the required timeframe, Catholic Owned® may resolve the issue in favor of the Buyer and offset related costs against Merchant payouts.",
-      "Step 4 — Merchant Review Request: If a Merchant believes a dispute resolution was made in error, the Merchant may submit a written review request to merchants@catholicowned.com within seven (7) days of the resolution. Catholic Owned® will review the request and respond within a reasonable time. Catholic Owned®'s determination following internal review is final.",
+      "Step 4 — Merchant Review Request: If a Merchant believes a dispute resolution was made in error, the Merchant may submit a written review request to support@catholicowned.com within seven (7) days of the resolution. Catholic Owned® will review the request and respond within a reasonable time. Catholic Owned®'s determination following internal review is final.",
       "Order issues may include, but are not limited to, products that do not arrive, arrive late, arrive damaged, materially differ from the listing description, are missing items, are defective, or otherwise fail to meet the expectations reasonably created by the listing.",
     ],
   },
@@ -276,7 +276,7 @@ const SECTIONS: TermsSection[] = [
       "To the extent a Merchant determines the purposes or means of processing buyer personal information outside the Catholic Owned® platform, the Merchant is responsible for complying with applicable privacy and data protection laws and for honoring any legally required access, correction, deletion, portability, objection, opt-out, or similar consumer rights requests.",
       "This includes, without limitation, compliance with the California Consumer Privacy Act (CCPA) and its regulations, the General Data Protection Regulation (GDPR) to the extent applicable to the Merchant's processing of EU residents' personal data, and any other applicable federal, state, or international privacy laws. Merchants who sell to buyers in the European Union or European Economic Area should be aware that they may be considered independent data controllers under the GDPR and may have additional legal obligations, including maintaining their own privacy policy and honoring data subject rights requests.",
       "Merchants must use reasonable administrative, technical, and physical safeguards to protect buyer information from unauthorized access, use, disclosure, alteration, loss, or destruction.",
-      "Merchants must promptly notify Catholic Owned® at merchants@catholicowned.com of any actual or suspected unauthorized access, disclosure, loss, misuse, breach, or compromise involving buyer information.",
+      "Merchants must promptly notify Catholic Owned® at support@catholicowned.com of any actual or suspected unauthorized access, disclosure, loss, misuse, breach, or compromise involving buyer information.",
       "If a Merchant discloses, misuses, loses, improperly retains, or improperly processes buyer information, the Merchant is responsible for any resulting claims, losses, costs, penalties, investigations, notices, remediation, damages, or expenses, including any costs incurred by Catholic Owned®.",
     ],
   },
@@ -332,7 +332,7 @@ const SECTIONS: TermsSection[] = [
     title: "28A. Copyright Infringement and DMCA Policy",
     blocks: [
       "Catholic Owned® respects intellectual property rights and complies with the Digital Millennium Copyright Act (DMCA), 17 U.S.C. § 512. Catholic Owned® maintains a designated agent to receive notices of claimed copyright infringement and will respond to valid takedown notices in accordance with applicable law.",
-      "If you believe that content on the Catholic Owned® Marketplace infringes your copyright, please send a written notice to Catholic Owned®'s designated copyright agent at merchants@catholicowned.com containing the following: (1) identification of the copyrighted work claimed to be infringed; (2) identification of the allegedly infringing material and its location on the Marketplace; (3) your contact information; (4) a statement that you have a good faith belief that the use is not authorized by the copyright owner; (5) a statement that the information in the notice is accurate and, under penalty of perjury, that you are authorized to act on behalf of the copyright owner; and (6) your physical or electronic signature.",
+      "If you believe that content on the Catholic Owned® Marketplace infringes your copyright, please send a written notice to Catholic Owned®'s designated copyright agent at support@catholicowned.com containing the following: (1) identification of the copyrighted work claimed to be infringed; (2) identification of the allegedly infringing material and its location on the Marketplace; (3) your contact information; (4) a statement that you have a good faith belief that the use is not authorized by the copyright owner; (5) a statement that the information in the notice is accurate and, under penalty of perjury, that you are authorized to act on behalf of the copyright owner; and (6) your physical or electronic signature.",
       "Merchants whose content is removed pursuant to a DMCA takedown notice may submit a counter-notification to Catholic Owned® if they believe the removal was made in error. Catholic Owned® will process counter-notifications in accordance with applicable law.",
       "Merchants who repeatedly infringe third-party intellectual property rights are subject to account suspension or termination.",
     ],
@@ -422,7 +422,7 @@ const SECTIONS: TermsSection[] = [
     blocks: [
       "Catholic Owned® may provide notices to Merchants by email to the address associated with the Merchant account, through the Catholic Owned® platform, by posting on the Catholic Owned® website, or by any other reasonable method.",
       "Unless otherwise required by law, notices sent by email or platform notification are effective when sent, and notices posted to the Catholic Owned® website are effective when posted.",
-      "Merchants must send legal notices to Catholic Owned® by email at merchants@catholicowned.com, unless Catholic Owned® provides another method for a particular type of notice.",
+      "Merchants must send legal notices to Catholic Owned® by email at support@catholicowned.com, unless Catholic Owned® provides another method for a particular type of notice.",
       "Merchants are responsible for keeping account contact information accurate and up to date.",
     ],
   },
@@ -443,7 +443,7 @@ const SECTIONS: TermsSection[] = [
       "The arbitration shall be conducted on an individual basis. Merchants and Catholic Owned® waive the right to participate in a class action, collective action, representative action, private attorney general action, or consolidated proceeding to the fullest extent permitted by law.",
       "To the fullest extent permitted by law, Merchants and Catholic Owned® waive the right to a jury trial for any dispute arising out of or relating to these Merchant Terms or the Catholic Owned® Marketplace.",
       "Catholic Owned® may seek injunctive or equitable relief in any court of competent jurisdiction to protect intellectual property, confidential information, buyer data, marketplace integrity, payment systems, platform security, Catholic Owned®'s mission and standards, or to prevent misuse of the Catholic Owned® Marketplace.",
-      "Arbitration Opt-Out: A Merchant who does not wish to be bound by the arbitration and class action waiver provisions of this Section 39 may opt out by sending written notice to Catholic Owned® at merchants@catholicowned.com within thirty (30) days of first accepting these Merchant Terms. The opt-out notice must include the Merchant's name, business name, and email address associated with the Merchant account. If a Merchant opts out, disputes will be resolved in the state or federal courts located in Wilmington, Delaware, and the Merchant consents to personal jurisdiction and venue in those courts. Opting out of arbitration does not affect any other provision of these Merchant Terms.",
+      "Arbitration Opt-Out: A Merchant who does not wish to be bound by the arbitration and class action waiver provisions of this Section 39 may opt out by sending written notice to Catholic Owned® at support@catholicowned.com within thirty (30) days of first accepting these Merchant Terms. The opt-out notice must include the Merchant's name, business name, and email address associated with the Merchant account. If a Merchant opts out, disputes will be resolved in the state or federal courts located in Wilmington, Delaware, and the Merchant consents to personal jurisdiction and venue in those courts. Opting out of arbitration does not affect any other provision of these Merchant Terms.",
     ],
   },
   {
@@ -509,7 +509,7 @@ const SECTIONS: TermsSection[] = [
     blocks: [
       "Questions about these Merchant Terms may be directed to:",
       "Catholic Owned, PBC",
-      "Email: merchants@catholicowned.com",
+      "Email: support@catholicowned.com",
       "Website: www.catholicowned.com",
     ],
   },

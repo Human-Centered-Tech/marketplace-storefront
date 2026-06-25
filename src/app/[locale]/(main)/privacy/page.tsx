@@ -115,8 +115,8 @@ export default function PrivacyPage() {
           </ul>
           <p>
             To exercise any of these rights, email us at{" "}
-            <a href="mailto:privacy@catholicowned.com" className="text-[#BE9B32] underline">
-              privacy@catholicowned.com
+            <a href="mailto:support@catholicowned.com" className="text-[#BE9B32] underline">
+              support@catholicowned.com
             </a>
             .
           </p>
@@ -138,8 +138,8 @@ export default function PrivacyPage() {
             access. No system is perfectly secure, and we cannot guarantee
             absolute protection against unauthorized access. If you believe
             your account has been compromised, email{" "}
-            <a href="mailto:security@catholicowned.com" className="text-[#BE9B32] underline">
-              security@catholicowned.com
+            <a href="mailto:support@catholicowned.com" className="text-[#BE9B32] underline">
+              support@catholicowned.com
             </a>{" "}
             immediately.
           </p>
@@ -166,8 +166,8 @@ export default function PrivacyPage() {
         <Section title="11. Contact Us">
           <p>
             Questions about this Privacy Policy? Email{" "}
-            <a href="mailto:privacy@catholicowned.com" className="text-[#BE9B32] underline">
-              privacy@catholicowned.com
+            <a href="mailto:support@catholicowned.com" className="text-[#BE9B32] underline">
+              support@catholicowned.com
             </a>
             .
           </p>
