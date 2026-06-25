@@ -13,7 +13,7 @@ export const HomeFeaturedGiftGuides = async () => {
   const slides = guides.map((g) => (
     <LocalizedClientLink
       key={g.slug}
-      href={`/gifts/${g.slug}`}
+      href={`/guides/${g.slug}`}
       className="group block bg-white rounded-xl overflow-hidden shadow-sm border border-[#d6d0c4]/40 hover:shadow-xl transition-all h-full"
     >
       <div className="aspect-[12/5] overflow-hidden relative">
@@ -47,7 +47,7 @@ export const HomeFeaturedGiftGuides = async () => {
           </h2>
           <div className="h-[1px] flex-grow mx-8 bg-[#BE9B32]/30 hidden sm:block" />
           <LocalizedClientLink
-            href="/gifts"
+            href="/guides"
             className="font-sans text-[11px] font-bold uppercase tracking-[0.15em] text-[#BE9B32] hover:text-[#001435] transition-colors whitespace-nowrap shrink-0"
           >
             View all →

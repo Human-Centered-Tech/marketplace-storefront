@@ -31,7 +31,7 @@ export default async function GiftsHubPage() {
           {guides.map((g) => (
             <LocalizedClientLink
               key={g.slug}
-              href={`/gifts/${g.slug}`}
+              href={`/guides/${g.slug}`}
               className="group block bg-white rounded-xl overflow-hidden shadow-sm border border-[#d6d0c4]/40 hover:shadow-xl transition-all"
             >
               <div className="aspect-[12/5] overflow-hidden relative">

@@ -100,7 +100,7 @@ export default async function GiftGuidePage({ params }: Props) {
         <div className="absolute inset-0 bg-gradient-to-tr from-[#17294A]/80 via-[#17294A]/50 to-transparent" />
         <div className="relative z-10 max-w-4xl px-6 lg:px-16">
           <LocalizedClientLink
-            href="/gifts"
+            href="/guides"
             className="text-[#F2CD69] text-xs uppercase tracking-widest mb-4 inline-flex items-center gap-1 hover:text-white"
           >
             ← All Guides

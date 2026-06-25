@@ -22,7 +22,7 @@ const TIER_DETAILS: Record<
       "Edit your listing",
       "Verified badge",
       "Higher search ranking than unclaimed listings",
-      "Eligible for promotions and gift guides",
+      "Eligible for promotions and guides",
       "Community networking access",
     ],
   },

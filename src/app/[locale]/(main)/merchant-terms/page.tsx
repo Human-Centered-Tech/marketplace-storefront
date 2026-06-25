@@ -299,7 +299,7 @@ const SECTIONS: TermsSection[] = [
   {
     title: "25. Search Ranking, Visibility, and Marketplace Placement",
     blocks: [
-      "Catholic Owned® may determine, modify, limit, boost, suppress, reorder, or remove the visibility of Merchants, products, categories, or listings in search results, category pages, recommendations, gift guides, advertisements, emails, app features, website features, or other placements at its sole discretion.",
+      "Catholic Owned® may determine, modify, limit, boost, suppress, reorder, or remove the visibility of Merchants, products, categories, or listings in search results, category pages, recommendations, guides, advertisements, emails, app features, website features, or other placements at its sole discretion.",
       "Catholic Owned® does not guarantee any particular search ranking, placement, visibility, traffic, exposure, promotion, or sales result.",
       "Catholic Owned® may consider various factors when determining visibility or placement, including product quality, listing completeness, buyer demand, fulfillment performance, Merchant tier, Catholic Owned® priorities, category relevance, seasonal relevance, policy compliance, risk concerns, buyer experience, and other factors Catholic Owned® deems relevant.",
     ],
@@ -308,14 +308,14 @@ const SECTIONS: TermsSection[] = [
     title: "26. No Guarantee of Sales or Promotion",
     blocks: [
       "Catholic Owned® does not guarantee sales, traffic, exposure, search placement, featured placement, promotion, revenue, profit, or any specific business result.",
-      "Catholic Owned® may choose to promote certain Merchants, products, categories, gift guides, collections, or listings through emails, social media, website features, app features, advertisements, livestreams, or other marketing channels. No Merchant is guaranteed promotion.",
+      "Catholic Owned® may choose to promote certain Merchants, products, categories, guides, collections, or listings through emails, social media, website features, app features, advertisements, livestreams, or other marketing channels. No Merchant is guaranteed promotion.",
     ],
   },
   {
     title: "27. License to Use Merchant Content",
     blocks: [
       "By submitting product listings, photos, descriptions, logos, trademarks, business names, images, videos, or other content to Catholic Owned®, you grant Catholic Owned® a worldwide, non-exclusive, royalty-free license to use, display, reproduce, distribute, modify, resize, crop, publish, promote, and create derivative works from that content for purposes related to operating, marketing, promoting, and improving Catholic Owned® and the Catholic Owned® Marketplace.",
-      "This includes use in product pages, search results, category pages, gift guides, emails, social media, advertisements, app features, website features, livestreams, press materials, and other promotional or operational materials.",
+      "This includes use in product pages, search results, category pages, guides, emails, social media, advertisements, app features, website features, livestreams, press materials, and other promotional or operational materials.",
       "Derivative works created under this license will not be used in a manner that materially misrepresents the original product or the Merchant's brand. Upon termination of a Merchant's account, this license shall continue only with respect to content already published or incorporated into existing promotional materials. Catholic Owned® will make commercially reasonable efforts to remove Merchant content from active marketing materials following account termination upon the Merchant's written request.",
       "You represent that you have all rights necessary to grant this license.",
     ],

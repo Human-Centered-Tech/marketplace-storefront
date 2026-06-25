@@ -25,6 +25,21 @@ const nextConfig: NextConfig = {
   },
   trailingSlash: false,
   reactStrictMode: true,
+  // "Gift Guides" feature renamed to "Guides" (2026-06-24). Keep old /gifts
+  // links alive (old app builds open the web guide, plus shared URLs / SEO)
+  // by redirecting them to the new /guides path.
+  async redirects() {
+    return [
+      { source: "/gifts", destination: "/guides", permanent: true },
+      { source: "/gifts/:path*", destination: "/guides/:path*", permanent: true },
+      { source: "/:locale/gifts", destination: "/:locale/guides", permanent: true },
+      {
+        source: "/:locale/gifts/:path*",
+        destination: "/:locale/guides/:path*",
+        permanent: true,
+      },
+    ]
+  },
   experimental: {
     serverActions: {
       // Directory-listing images are uploaded through a server action

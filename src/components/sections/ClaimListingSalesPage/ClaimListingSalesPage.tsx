@@ -24,7 +24,7 @@ const BENEFITS: { icon: string; title: string; body: string }[] = [
     icon: "campaign",
     title: "Eligible for promotions",
     body:
-      "Get featured in our community newsletters, social posts, and seasonal gift guides.",
+      "Get featured in our community newsletters, social posts, and seasonal guides.",
   },
   {
     icon: "groups",

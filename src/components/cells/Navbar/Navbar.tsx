@@ -12,7 +12,7 @@ export const Navbar = ({
       <div className="hidden md:flex items-center">
         <CategoryNavbar categories={categories} />
         <LocalizedClientLink
-          href="/gifts"
+          href="/guides"
           className="label-md uppercase px-4 flex items-center text-[#BE9B32] font-semibold"
         >
           Gifts
