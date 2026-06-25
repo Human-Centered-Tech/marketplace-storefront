@@ -1,75 +1,100 @@
-import Image from "next/image"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 
 type Tile = {
   label: string
   subtitle: string
   href: string
-  image: string
-  /** Larger tiles (top row) get priority loading + a taller aspect. */
+  /** Larger tiles (top row) get a taller aspect. */
   feature?: boolean
+  /** Outline ring — a gold gradient or a solid color, rendered as the wrapper
+      background behind a 2–3px inset so we get a true gradient outline. */
+  ring: string
+  /** Inner fill — solid, kept light so the label stays the focus. */
+  fill: string
+  /** Label text color. */
+  text: string
+  /** Subtitle text color. */
+  subtitleColor: string
 }
+
+// Gold gradient ring, reused on the two "anchor" tiles (Marketplace + About Us)
+const GOLD_RING = "bg-gradient-to-br from-[#E7C360] via-[#BE9B32] to-[#D2AF37]"
+const NAVY_RING = "bg-[#17294A]"
 
 const TILES: Tile[] = [
   {
-    label: "Shop Marketplace",
-    subtitle: "Handcrafted goods from faithful artisans",
+    label: "Marketplace",
+    subtitle: "Shop quality goods from faithful merchants",
     href: "/categories",
-    image: "/images/hero/st-joseph-workshop.png",
     feature: true,
+    ring: GOLD_RING,
+    fill: "bg-[#FAF9F5]",
+    text: "text-[#17294A]",
+    subtitleColor: "text-[#8A6D1A]",
   },
   {
-    label: "Browse Directory",
+    label: "Directory",
     subtitle: "Find Catholic businesses and professionals",
     href: "/directory",
-    image: "/images/hero/cathedral.jpg",
     feature: true,
+    ring: NAVY_RING,
+    fill: "bg-[#FAF9F5]",
+    text: "text-[#17294A]",
+    subtitleColor: "text-[#17294A]/65",
   },
   {
     label: "Events",
-    subtitle: "Connect at Catholic networking gatherings",
+    subtitle: "Attend Upcoming Gatherings",
     href: "/networking",
-    image: "/images/hero/stpeters-square.webp",
+    ring: NAVY_RING,
+    fill: "bg-[#E1E5F0]", // lighter blue
+    text: "text-[#17294A]",
+    subtitleColor: "text-[#17294A]/65",
   },
   {
     label: "Sacred Exchange",
-    subtitle: "Trade goods within the Catholic community",
+    subtitle: "Trade goods within the community",
     href: "/trade",
-    image: "/images/hero/barter-hero.jpg",
+    ring: NAVY_RING,
+    fill: "bg-white",
+    text: "text-[#17294A]",
+    subtitleColor: "text-[#17294A]/65",
   },
   {
     label: "About Us",
-    subtitle: "Our mission for the Catholic economy",
+    subtitle: "Building the New Catholic Economy®",
     href: "/about",
-    image: "/images/the-angelus.jpg",
+    ring: GOLD_RING,
+    fill: "bg-[#2D3A6E]", // medium blue
+    text: "text-white",
+    subtitleColor: "text-[#E7C360]",
   },
 ]
 
-const TileCard = ({ tile, priority }: { tile: Tile; priority?: boolean }) => (
+const TileCard = ({ tile }: { tile: Tile }) => (
   <LocalizedClientLink
     href={tile.href}
-    className={`group relative block overflow-hidden rounded-lg sm:rounded-xl shadow-sm border border-[#d6d0c4]/40 hover:shadow-xl transition-all ${
+    className={`group block rounded-lg sm:rounded-xl p-[2px] sm:p-[3px] shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all ${
+      tile.ring
+    } ${
       // Mobile: fill the row (rows grow to fill the hero). From sm: upward,
       // fixed heights — the desktop layout is unchanged.
       tile.feature ? "h-full sm:h-60 lg:h-80" : "h-full sm:h-48 lg:h-64"
     }`}
   >
-    <Image
-      src={tile.image}
-      alt={tile.label}
-      fill
-      className="object-cover group-hover:scale-105 transition-transform duration-500"
-      sizes={tile.feature ? "(min-width: 640px) 50vw, 50vw" : "(min-width: 640px) 33vw, 33vw"}
-      priority={priority}
-    />
-    {/* Dark→gold overlay, heavier at the bottom for label legibility */}
-    <div className="absolute inset-0 bg-gradient-to-t from-[#17294A]/90 via-[#17294A]/30 to-transparent" />
-    <div className="absolute bottom-0 left-0 right-0 p-2.5 sm:p-5 lg:p-6">
-      <h3 className="font-serif text-lg leading-tight sm:text-2xl lg:text-3xl font-bold text-white drop-shadow">
+    {/* Inner fill — the inset that reveals the ring around it */}
+    <div
+      className={`flex h-full flex-col justify-end rounded-[6px] sm:rounded-[10px] p-2.5 sm:p-5 lg:p-6 ${tile.fill}`}
+    >
+      <h3
+        className={`font-serif text-lg leading-tight sm:text-2xl lg:text-3xl font-bold ${tile.text}`}
+      >
         {tile.label}
       </h3>
       {/* Subtitle: web only (and only once tiles are tall enough), per Brooke's note */}
-      <p className="hidden sm:block mt-1.5 text-[#F2CD69] text-xs font-semibold uppercase tracking-widest">
+      <p
+        className={`hidden sm:block mt-1.5 text-xs font-semibold uppercase tracking-widest ${tile.subtitleColor}`}
+      >
         {tile.subtitle}
       </p>
     </div>
@@ -87,8 +112,8 @@ export const HomeHeroTiles = () => {
       <div className="max-w-7xl mx-auto flex flex-col gap-3 lg:gap-6 min-h-[64svh] sm:min-h-0">
         {/* Top row — two feature tiles (2-up on every breakpoint) */}
         <div className="grid grid-cols-2 gap-3 lg:gap-6 flex-[1.2] sm:flex-none">
-          <TileCard tile={shop} priority />
-          <TileCard tile={directory} priority />
+          <TileCard tile={shop} />
+          <TileCard tile={directory} />
         </div>
         {/* Bottom row — three tiles (3-up on every breakpoint) */}
         <div className="grid grid-cols-3 gap-3 lg:gap-6 flex-1 sm:flex-none">
