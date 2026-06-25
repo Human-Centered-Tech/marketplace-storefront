@@ -9,6 +9,16 @@ const FIELD_BASE =
 const LABEL_BASE =
   "text-[13px] font-semibold text-[#001435] mb-1 block tracking-wide"
 
+const CLAIM_DAYS = [
+  "monday",
+  "tuesday",
+  "wednesday",
+  "thursday",
+  "friday",
+  "saturday",
+  "sunday",
+] as const
+
 type ClaimEdits = {
   business_name: string
   description: string
@@ -22,6 +32,7 @@ type ClaimEdits = {
     zip?: string
   }
   always_open: boolean
+  hours_of_operation: Record<string, { open: string; close: string }>
 }
 
 export const ClaimListingForm = ({
@@ -42,7 +53,18 @@ export const ClaimListingForm = ({
       zip: listing.address?.zip || "",
     },
     always_open: Boolean(listing.always_open),
+    hours_of_operation: listing.hours_of_operation || {},
   })
+  // Per-day hours editor: blanking both open + close drops the day (= Closed).
+  const setHours = (day: string, field: "open" | "close", value: string) =>
+    setEdits((prev) => {
+      const cur = prev.hours_of_operation[day] || { open: "", close: "" }
+      const next = { ...cur, [field]: value }
+      const updated = { ...prev.hours_of_operation }
+      if (!next.open && !next.close) delete updated[day]
+      else updated[day] = next
+      return { ...prev, hours_of_operation: updated }
+    })
   const [includeLocalBoost, setIncludeLocalBoost] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState("")
@@ -278,6 +300,40 @@ export const ClaimListingForm = ({
             />
             We&apos;re always open (24/7)
           </label>
+          {!edits.always_open && (
+            <div className="mt-4">
+              <p className="text-[13px] text-[#44474e] mb-2">
+                Hours of operation — leave a day blank to show it as Closed.
+              </p>
+              <div className="space-y-2">
+                {CLAIM_DAYS.map((day) => {
+                  const h = edits.hours_of_operation[day]
+                  return (
+                    <div key={day} className="flex items-center gap-3">
+                      <span className="w-24 text-[13px] text-[#001435] capitalize">
+                        {day}
+                      </span>
+                      <input
+                        type="time"
+                        value={h?.open || ""}
+                        onChange={(e) => setHours(day, "open", e.target.value)}
+                        aria-label={`${day} opening time`}
+                        className="rounded-lg border border-[#001435]/15 bg-white px-2 py-1 text-[13px]"
+                      />
+                      <span className="text-[13px] text-[#44474e]">to</span>
+                      <input
+                        type="time"
+                        value={h?.close || ""}
+                        onChange={(e) => setHours(day, "close", e.target.value)}
+                        aria-label={`${day} closing time`}
+                        className="rounded-lg border border-[#001435]/15 bg-white px-2 py-1 text-[13px]"
+                      />
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
         </section>
 
         <section className="bg-[#FAF9F5] rounded-2xl p-6 lg:p-8 border border-[#BE9B32]/40">
