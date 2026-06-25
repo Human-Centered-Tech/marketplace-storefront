@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { AdditionalAttributeProps } from "@/types/product"
+import { sanitizeHtml } from "@/lib/util/sanitize-html"
 
 const tabs = ["Description", "Reviews", "Shipping Info"] as const
 type Tab = (typeof tabs)[number]
@@ -52,7 +53,7 @@ export const ProductDetailsTabs = ({
               {description ? (
                 <div
                   className="product-details prose prose-lg max-w-none"
-                  dangerouslySetInnerHTML={{ __html: description }}
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(description) }}
                 />
               ) : (
                 <p className="text-[#75777f] italic">

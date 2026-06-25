@@ -1,4 +1,5 @@
 import { ProductPageAccordion } from "@/components/molecules"
+import { sanitizeHtml } from "@/lib/util/sanitize-html"
 
 export const ProductPageDetails = ({ details }: { details: string }) => {
   if (!details) return null
@@ -8,7 +9,7 @@ export const ProductPageDetails = ({ details }: { details: string }) => {
       <div
         className="product-details"
         dangerouslySetInnerHTML={{
-          __html: details,
+          __html: sanitizeHtml(details),
         }}
       />
     </ProductPageAccordion>

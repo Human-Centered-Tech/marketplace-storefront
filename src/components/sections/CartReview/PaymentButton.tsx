@@ -11,7 +11,7 @@ import {
   CardExpiryElement,
   CardCvcElement,
 } from "@stripe/react-stripe-js"
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { Button } from "@/components/atoms"
 import { orderErrorFormatter } from "@/lib/helpers/order-error-formatter"
 import { toast } from "@/lib/helpers/toast"
@@ -87,6 +87,16 @@ const StripePaymentButton = ({
   const [submitting, setSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [cardComplete, setCardComplete] = useState(false)
+  // Synchronous re-entry guard. `submitting` is React state and doesn't flip
+  // until the next render, so a fast double-click can fire confirmCardPayment
+  // twice — two card authorizations — before the button disables. The ref
+  // blocks the second call in the same frame.
+  const submittingRef = useRef(false)
+
+  const release = () => {
+    submittingRef.current = false
+    setSubmitting(false)
+  }
 
   const onPaymentCompleted = async () => {
     try {
@@ -101,7 +111,7 @@ const StripePaymentButton = ({
         )
       }
     } finally {
-      setSubmitting(false)
+      release()
     }
   }
 
@@ -161,11 +171,13 @@ const StripePaymentButton = ({
   }, [elements])
 
   const handlePayment = async () => {
+    if (submittingRef.current) return
+    submittingRef.current = true
     setSubmitting(true)
 
     const card = elements?.getElement(CardNumberElement)
     if (!stripe || !elements || !card || !cart) {
-      setSubmitting(false)
+      release()
       return
     }
 
@@ -199,10 +211,14 @@ const StripePaymentButton = ({
             (pi && pi.status === "requires_capture") ||
             (pi && pi.status === "succeeded")
           ) {
+            // Already authorized — finish placing the order (releases on done).
             onPaymentCompleted()
+            return
           }
 
           setErrorMessage(error.message || null)
+          // Declined / needs re-entry — release so the buyer can retry.
+          release()
           return
         }
 
@@ -213,7 +229,14 @@ const StripePaymentButton = ({
           return onPaymentCompleted()
         }
 
+        // Any other (non-terminal) status — re-enable the button.
+        release()
         return
+      })
+      .catch((e) => {
+        // Network / Stripe.js failure — surface it and let the buyer retry.
+        setErrorMessage(e?.message || "Payment failed. Please try again.")
+        release()
       })
   }
 
@@ -225,7 +248,12 @@ const StripePaymentButton = ({
   return (
     <>
       {canPlaceOrder && (
-        <Button onClick={handlePayment} loading={submitting} className="w-full">
+        <Button
+          onClick={handlePayment}
+          disabled={submitting}
+          loading={submitting}
+          className="w-full"
+        >
           Place order
         </Button>
       )}
@@ -265,7 +293,7 @@ const ManualTestPaymentButton = ({ notReady }: { notReady: boolean }) => {
   return (
     <>
       <Button
-        disabled={notReady}
+        disabled={notReady || submitting}
         onClick={handlePayment}
         className="w-full"
         loading={submitting}
