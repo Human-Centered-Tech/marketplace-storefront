@@ -1,5 +1,6 @@
 import { convertToLocale } from "@/lib/helpers/money"
 import { getLineItemThumbnail } from "@/lib/helpers/get-line-item-thumbnail"
+import { filterRealVariantOptions } from "@/lib/helpers/variant-options"
 import { HttpTypes } from "@medusajs/types"
 import Image from "next/image"
 
@@ -48,11 +49,13 @@ export const CartDropdownItem = ({
       <div className="py-2">
         <h4 className="heading-xs">{item.product_title}</h4>
         <div className="label-md text-secondary">
-          {item.variant?.options?.map(({ option, id, value }) => (
-            <p key={id}>
-              {option?.title}: <span className="text-primary">{value}</span>
-            </p>
-          ))}
+          {filterRealVariantOptions(item.variant?.options).map(
+            ({ option, id, value }) => (
+              <p key={id}>
+                {option?.title}: <span className="text-primary">{value}</span>
+              </p>
+            )
+          )}
           <p>
             Quantity: <span className="text-primary">{item.quantity}</span>
           </p>

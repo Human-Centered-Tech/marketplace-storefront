@@ -1,6 +1,7 @@
 import { Divider } from "@/components/atoms"
 import { convertToLocale } from "@/lib/helpers/money"
 import { getLineItemThumbnail } from "@/lib/helpers/get-line-item-thumbnail"
+import { isPlaceholderVariantTitle } from "@/lib/helpers/variant-options"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
@@ -48,13 +49,20 @@ export const OrderProductListItem = ({
             {item.variant?.product?.title}
           </LocalizedClientLink>
         </div>
+        {/* Hide the variant line for single-variant products, whose title is a
+            placeholder ("Default variant"). Keep the grid column so the
+            quantity/price columns stay aligned. */}
         <div className="sm:col-span-2 flex items-center">
-          <p className="label-md text-secondary">
-            {`Variant: `}
-            <span className="text-primary">
-              {item?.variant_title || item?.variant?.title}
-            </span>
-          </p>
+          {!isPlaceholderVariantTitle(
+            item?.variant_title || item?.variant?.title
+          ) && (
+            <p className="label-md text-secondary">
+              {`Variant: `}
+              <span className="text-primary">
+                {item?.variant_title || item?.variant?.title}
+              </span>
+            </p>
+          )}
         </div>
         <div className="sm:col-span-2 flex items-center justify-center">
           <p className="label-md text-secondary">

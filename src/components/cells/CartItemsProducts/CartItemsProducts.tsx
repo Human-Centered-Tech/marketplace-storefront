@@ -2,6 +2,7 @@ import Image from "next/image"
 import { HttpTypes } from "@medusajs/types"
 import { convertToLocale } from "@/lib/helpers/money"
 import { filterValidCartItems } from "@/lib/helpers/filter-valid-cart-items"
+import { filterRealVariantOptions } from "@/lib/helpers/variant-options"
 import { getLineItemThumbnail } from "@/lib/helpers/get-line-item-thumbnail"
 import { DeleteCartItemButton } from "@/components/molecules"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
@@ -33,7 +34,10 @@ export const CartItemsProducts = ({
         })
 
         return (
-          <div key={product.id} className="border rounded-sm p-1 pl-3 flex gap-2">
+          <div
+            key={product.id}
+            className="border rounded-sm p-1 pl-3 flex gap-2"
+          >
             <LocalizedClientLink href={`/products/${product.product_handle}`}>
               <div className="w-[100px] h-[132px] flex items-center justify-center">
                 {itemImage ? (
@@ -76,12 +80,14 @@ export const CartItemsProducts = ({
               </div>
               <div className="lg:flex justify-between -mt-4 lg:mt-0">
                 <div className="label-md text-secondary">
-                  {options?.map(({ option, id, value }) => (
-                    <p key={id}>
-                      {option?.title}:{" "}
-                      <span className="text-primary">{value}</span>
-                    </p>
-                  ))}
+                  {filterRealVariantOptions(options).map(
+                    ({ option, id, value }) => (
+                      <p key={id}>
+                        {option?.title}:{" "}
+                        <span className="text-primary">{value}</span>
+                      </p>
+                    )
+                  )}
                   {change_quantity ? (
                     <UpdateCartItemButton
                       quantity={product.quantity}
