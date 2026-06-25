@@ -149,7 +149,14 @@ export default function FAQPage() {
 
         <div className="mt-20 pt-12 border-t border-[#d6d0c4]/40 text-center">
           <p className="text-[15px] text-[#44474e] mb-4">
-            Still have questions?
+            Still have questions? Email our team at{" "}
+            <a
+              href="mailto:support@catholicowned.com"
+              className="text-[#BE9B32] underline"
+            >
+              support@catholicowned.com
+            </a>{" "}
+            and we&rsquo;ll help you out.
           </p>
           <LocalizedClientLink
             href="/about"
