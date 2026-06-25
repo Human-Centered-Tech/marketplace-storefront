@@ -17,6 +17,12 @@ function backendImageHost() {
 }
 
 const nextConfig: NextConfig = {
+  // Keep jsdom (pulled in by isomorphic-dompurify, used to sanitize product
+  // descriptions server-side) OUT of the server bundle. When Next bundles it,
+  // jsdom's relative asset path (browser/default-stylesheet.css) breaks and
+  // `next build` fails during static generation with ENOENT. Loading it from
+  // node_modules keeps its assets intact.
+  serverExternalPackages: ["jsdom", "isomorphic-dompurify"],
   typescript: {
     ignoreBuildErrors: true,
   },
