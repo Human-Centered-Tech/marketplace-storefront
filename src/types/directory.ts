@@ -95,7 +95,7 @@ export type DirectoryListing = {
     twitter?: string
     linkedin?: string
   } | null
-  hours: Record<string, { open: string; close: string }> | null
+  hours_of_operation: Record<string, { open: string; close: string }> | null
   always_open?: boolean
   owner_interview?: {
     photo_url?: string

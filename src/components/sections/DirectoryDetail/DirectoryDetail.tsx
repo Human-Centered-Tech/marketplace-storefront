@@ -490,8 +490,9 @@ export const DirectoryDetail = ({
               </div>
             )}
 
-            {/* CTA Card — Featured/Enterprise only; suppressed when unclaimed */}
-            {!isUnclaimed && isFeatured && (() => {
+            {/* CTA Card — available on all paid tiers (incl. Local); only
+                rendered when claimed and a usable href resolves. */}
+            {!isUnclaimed && (() => {
               const ctaType = listing.cta_type || "visit_shop"
               const hasShop = Boolean(listing.vendor_id)
               let href: string | null = null
@@ -551,14 +552,14 @@ export const DirectoryDetail = ({
                   Open 24 hours, every day.
                 </p>
               </div>
-            ) : listing.hours && Object.keys(listing.hours).length > 0 && (
+            ) : listing.hours_of_operation && Object.keys(listing.hours_of_operation).length > 0 && (
               <div className="bg-gray-50 p-8 rounded-xl">
                 <h3 className="label-sm text-[10px] text-navy-dark font-bold tracking-widest mb-6 border-b border-gray-200 pb-4">
                   HOURS OF OPERATION
                 </h3>
                 <ul className="space-y-3 font-serif text-base">
                   {dayNames.map((day) => {
-                    const h = listing.hours?.[day]
+                    const h = listing.hours_of_operation?.[day]
                     return (
                       <li
                         key={day}

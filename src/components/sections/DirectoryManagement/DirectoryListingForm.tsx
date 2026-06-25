@@ -557,7 +557,11 @@ export const DirectoryListingForm = ({
         />
       </div>
 
-      {/* Owner Interview */}
+      {/* Owner Interview — Featured/Enterprise only (matches the public-listing
+          gate at DirectoryDetail). Local/Verified vendors shouldn't be offered
+          fields/onboarding steps for content that will never display. */}
+      {(subscriptionTier === "featured" ||
+        subscriptionTier === "enterprise") && (
       <div>
         <h3 className="heading-sm text-primary mb-3">Owner Interview</h3>
         <p className="text-xs text-secondary mb-3">
@@ -599,6 +603,7 @@ export const DirectoryListingForm = ({
           ))}
         </div>
       </div>
+      )}
 
       {/* Parish Affiliations — edit mode only (needs a saved listing id).
           Renders regardless of subscription_tier so the section is
