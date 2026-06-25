@@ -128,6 +128,9 @@ export default function EditDirectoryListingPage() {
             gallery_urls: listing.gallery_urls || [],
             cta_type: listing.cta_type || "visit_shop",
             cta_url: listing.cta_url || "",
+            logo_url: listing.logo_url || "",
+            cover_image_url: listing.cover_image_url || "",
+            hours_of_operation: listing.hours_of_operation || {},
           }}
           categories={categories}
           onSubmit={handleSubmit}

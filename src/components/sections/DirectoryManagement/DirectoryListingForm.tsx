@@ -52,6 +52,11 @@ type DirectoryFormData = {
   // CTA
   cta_type: string
   cta_url: string
+  // Logo + banner (cover) — business branding shown on the listing.
+  logo_url: string
+  cover_image_url: string
+  // Per-day hours; a missing day = Closed. Ignored when always_open.
+  hours_of_operation: Record<string, { open: string; close: string }>
 }
 
 const CTA_OPTIONS = [
@@ -61,6 +66,16 @@ const CTA_OPTIONS = [
   { value: "learn_more", label: "Learn More" },
   { value: "book_a_call", label: "Book a Call" },
 ]
+
+const DAYS = [
+  "monday",
+  "tuesday",
+  "wednesday",
+  "thursday",
+  "friday",
+  "saturday",
+  "sunday",
+] as const
 
 type DirectoryListingFormProps = {
   initialData?: Partial<DirectoryFormData>
@@ -125,6 +140,9 @@ export const DirectoryListingForm = ({
     gallery_urls: initialData?.gallery_urls || [],
     cta_type: initialData?.cta_type || "visit_shop",
     cta_url: initialData?.cta_url || "",
+    logo_url: initialData?.logo_url || "",
+    cover_image_url: initialData?.cover_image_url || "",
+    hours_of_operation: initialData?.hours_of_operation || {},
   })
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState("")
@@ -140,6 +158,17 @@ export const DirectoryListingForm = ({
 
   const setField = (name: string, value: string) =>
     setForm((prev) => ({ ...prev, [name]: value }))
+
+  // Per-day hours editor: blanking both open + close drops the day (= Closed).
+  const setHours = (day: string, field: "open" | "close", value: string) =>
+    setForm((prev) => {
+      const cur = prev.hours_of_operation[day] || { open: "", close: "" }
+      const next = { ...cur, [field]: value }
+      const updated = { ...prev.hours_of_operation }
+      if (!next.open && !next.close) delete updated[day]
+      else updated[day] = next
+      return { ...prev, hours_of_operation: updated }
+    })
 
   const toggleServicedState = (code: string) =>
     setForm((prev) => {
@@ -248,6 +277,13 @@ export const DirectoryListingForm = ({
         gallery_urls: form.gallery_urls,
         cta_type: form.cta_type,
         cta_url: form.cta_type === "visit_shop" ? undefined : form.cta_url || undefined,
+        logo_url: form.logo_url || undefined,
+        cover_image_url: form.cover_image_url || undefined,
+        hours_of_operation: form.always_open
+          ? undefined
+          : Object.keys(form.hours_of_operation).length
+            ? form.hours_of_operation
+            : undefined,
       })
     } catch (err: any) {
       setError(err.message || "Something went wrong")
@@ -440,6 +476,64 @@ export const DirectoryListingForm = ({
               Always open (skip hours of operation)
             </label>
           </div>
+        </div>
+      </div>
+
+      {/* Hours of Operation — per-day; leave a day blank to show Closed.
+          Hidden when "Always open" is checked. */}
+      {!form.always_open && (
+        <div>
+          <h3 className="heading-sm text-primary mb-3">Hours of Operation</h3>
+          <p className="text-xs text-secondary mb-3">
+            Set open and close times for each day. Leave a day blank to show it
+            as Closed.
+          </p>
+          <div className="space-y-2">
+            {DAYS.map((day) => {
+              const h = form.hours_of_operation[day]
+              return (
+                <div key={day} className="flex items-center gap-3">
+                  <span className="w-28 text-sm text-primary capitalize">
+                    {day}
+                  </span>
+                  <input
+                    type="time"
+                    value={h?.open || ""}
+                    onChange={(e) => setHours(day, "open", e.target.value)}
+                    aria-label={`${day} opening time`}
+                    className="border rounded-sm px-2 py-1 text-sm"
+                  />
+                  <span className="text-secondary text-sm">to</span>
+                  <input
+                    type="time"
+                    value={h?.close || ""}
+                    onChange={(e) => setHours(day, "close", e.target.value)}
+                    aria-label={`${day} closing time`}
+                    className="border rounded-sm px-2 py-1 text-sm"
+                  />
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Logo & Banner — business branding shown on the public listing. */}
+      <div>
+        <h3 className="heading-sm text-primary mb-3">Logo &amp; Banner</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <ImageUploadField
+            label="Logo"
+            value={form.logo_url}
+            onChange={(url) => setField("logo_url", url)}
+            hint="Square works best (around 500×500px). JPG, PNG, or WebP, up to 10 MB."
+          />
+          <ImageUploadField
+            label="Banner"
+            value={form.cover_image_url}
+            onChange={(url) => setField("cover_image_url", url)}
+            hint="Wide image (around 1600×500px) shown across the top of your listing."
+          />
         </div>
       </div>
 
