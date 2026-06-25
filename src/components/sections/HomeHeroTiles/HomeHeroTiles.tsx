@@ -1,80 +1,126 @@
-import Image from "next/image"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
+
+type Variant =
+  | "goldOutline"
+  | "navyOutline"
+  | "lightBlue"
+  | "white"
+  | "mediumBlue"
 
 type Tile = {
   label: string
   subtitle: string
   href: string
-  image: string
-  /** Larger tiles (top row) get priority loading + a taller aspect. */
+  variant: Variant
+  /** Larger tiles (top row) get a taller aspect. */
   feature?: boolean
 }
 
+// Brooke 6/25: move away from photo backgrounds to a cohesive set of solid
+// surfaces so the WORDS are the focus and visitors grasp each destination with
+// minimal effort. The two feature tiles get button-like outlines (gold gradient
+// / navy); the bottom three are interchangeable light-blue / white / medium-blue.
 const TILES: Tile[] = [
   {
-    label: "Shop Marketplace",
-    subtitle: "Handcrafted goods from faithful artisans",
+    label: "Marketplace",
+    subtitle: "Shop quality goods from faithful merchants",
     href: "/categories",
-    image: "/images/hero/st-joseph-workshop.png",
+    variant: "goldOutline",
     feature: true,
   },
   {
-    label: "Browse Directory",
+    label: "Directory",
     subtitle: "Find Catholic businesses and professionals",
     href: "/directory",
-    image: "/images/hero/cathedral.jpg",
+    variant: "navyOutline",
     feature: true,
   },
   {
     label: "Events",
-    subtitle: "Connect at Catholic networking gatherings",
+    subtitle: "Attend Upcoming Gatherings",
     href: "/networking",
-    image: "/images/hero/stpeters-square.webp",
+    variant: "lightBlue",
   },
   {
     label: "Sacred Exchange",
-    subtitle: "Trade goods within the Catholic community",
+    subtitle: "Trade goods within the community",
     href: "/trade",
-    image: "/images/hero/barter-hero.jpg",
+    variant: "white",
   },
   {
     label: "About Us",
-    subtitle: "Our mission for the Catholic economy",
+    subtitle: "Building the New Catholic Economy®",
     href: "/about",
-    image: "/images/the-angelus.jpg",
+    variant: "mediumBlue",
   },
 ]
 
-const TileCard = ({ tile, priority }: { tile: Tile; priority?: boolean }) => (
-  <LocalizedClientLink
-    href={tile.href}
-    className={`group relative block overflow-hidden rounded-lg sm:rounded-xl shadow-sm border border-[#d6d0c4]/40 hover:shadow-xl transition-all ${
-      // Mobile: fill the row (rows grow to fill the hero). From sm: upward,
-      // fixed heights — the desktop layout is unchanged.
-      tile.feature ? "h-full sm:h-60 lg:h-80" : "h-full sm:h-48 lg:h-64"
-    }`}
-  >
-    <Image
-      src={tile.image}
-      alt={tile.label}
-      fill
-      className="object-cover group-hover:scale-105 transition-transform duration-500"
-      sizes={tile.feature ? "(min-width: 640px) 50vw, 50vw" : "(min-width: 640px) 33vw, 33vw"}
-      priority={priority}
-    />
-    {/* Dark→gold overlay, heavier at the bottom for label legibility */}
-    <div className="absolute inset-0 bg-gradient-to-t from-[#17294A]/90 via-[#17294A]/30 to-transparent" />
-    <div className="absolute bottom-0 left-0 right-0 p-2.5 sm:p-5 lg:p-6">
-      <h3 className="font-serif text-lg leading-tight sm:text-2xl lg:text-3xl font-bold text-white drop-shadow">
-        {tile.label}
-      </h3>
-      {/* Subtitle: web only (and only once tiles are tall enough), per Brooke's note */}
-      <p className="hidden sm:block mt-1.5 text-[#F2CD69] text-xs font-semibold uppercase tracking-widest">
-        {tile.subtitle}
-      </p>
-    </div>
-  </LocalizedClientLink>
-)
+// `wrap` styles the link (the 2px outline for the feature tiles is a gradient/
+// solid background showing through the inner div's padding); `inner` is the
+// surface; `title`/`subtitle` adapt text color to the surface.
+const VARIANTS: Record<
+  Variant,
+  { wrap: string; inner: string; title: string; subtitle: string }
+> = {
+  goldOutline: {
+    wrap: "bg-gradient-to-br from-[#F2CD69] to-[#BE9B32] p-[2px]",
+    inner: "bg-[#FAF9F5]",
+    title: "text-[#17294A]",
+    subtitle: "text-[#BE9B32]",
+  },
+  navyOutline: {
+    wrap: "bg-[#17294A] p-[2px]",
+    inner: "bg-[#FAF9F5]",
+    title: "text-[#17294A]",
+    subtitle: "text-[#17294A]/70",
+  },
+  lightBlue: {
+    wrap: "",
+    inner: "bg-[#E7EEF6] border border-[#17294A]/10",
+    title: "text-[#17294A]",
+    subtitle: "text-[#17294A]/60",
+  },
+  white: {
+    wrap: "",
+    inner: "bg-white border border-[#d6d0c4]/60",
+    title: "text-[#17294A]",
+    subtitle: "text-[#17294A]/60",
+  },
+  mediumBlue: {
+    wrap: "",
+    inner: "bg-[#2E4A78]",
+    title: "text-white",
+    subtitle: "text-[#F2CD69]",
+  },
+}
+
+const TileCard = ({ tile }: { tile: Tile }) => {
+  const v = VARIANTS[tile.variant]
+  return (
+    <LocalizedClientLink
+      href={tile.href}
+      className={`group relative block overflow-hidden rounded-lg sm:rounded-xl shadow-sm hover:shadow-xl transition-all ${
+        tile.feature ? "h-full sm:h-60 lg:h-80" : "h-full sm:h-48 lg:h-64"
+      } ${v.wrap}`}
+    >
+      <div
+        className={`flex h-full w-full flex-col justify-end rounded-lg sm:rounded-xl p-3 sm:p-5 lg:p-6 ${v.inner}`}
+      >
+        <h3
+          className={`font-serif text-xl leading-tight sm:text-2xl lg:text-3xl font-bold ${v.title}`}
+        >
+          {tile.label}
+        </h3>
+        {/* Subtitle: web only (and only once tiles are tall enough), per Brooke's note */}
+        <p
+          className={`hidden sm:block mt-1.5 text-xs font-semibold uppercase tracking-widest ${v.subtitle}`}
+        >
+          {tile.subtitle}
+        </p>
+      </div>
+    </LocalizedClientLink>
+  )
+}
 
 export const HomeHeroTiles = () => {
   const [shop, directory, ...rest] = TILES
@@ -87,8 +133,8 @@ export const HomeHeroTiles = () => {
       <div className="max-w-7xl mx-auto flex flex-col gap-3 lg:gap-6 min-h-[64svh] sm:min-h-0">
         {/* Top row — two feature tiles (2-up on every breakpoint) */}
         <div className="grid grid-cols-2 gap-3 lg:gap-6 flex-[1.2] sm:flex-none">
-          <TileCard tile={shop} priority />
-          <TileCard tile={directory} priority />
+          <TileCard tile={shop} />
+          <TileCard tile={directory} />
         </div>
         {/* Bottom row — three tiles (3-up on every breakpoint) */}
         <div className="grid grid-cols-3 gap-3 lg:gap-6 flex-1 sm:flex-none">

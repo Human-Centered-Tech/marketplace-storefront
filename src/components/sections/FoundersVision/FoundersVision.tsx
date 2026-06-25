@@ -14,10 +14,16 @@ export function FoundersVision() {
             height={500}
             className="relative rounded-[2rem] w-full h-auto max-h-[600px] object-cover shadow-2xl"
           />
-          {/* Gold quote overlay */}
-          <div className="absolute -bottom-8 -right-8 bg-[#BE9B32] p-8 rounded-2xl shadow-xl max-w-xs hidden md:block">
-            <p className="font-serif italic text-[#001435] leading-relaxed">
-              &ldquo;Every transaction is an opportunity for mission.&rdquo;
+          {/* Gold-gradient quote box — Pope Benedict XVI, per Brooke */}
+          <div className="absolute -bottom-8 -right-8 bg-gradient-to-br from-[#F2CD69] to-[#BE9B32] p-6 rounded-2xl shadow-xl max-w-sm hidden md:block">
+            <p className="font-serif italic text-[#001435] text-sm leading-relaxed">
+              &ldquo;It is good for people to realize that purchasing is always a
+              moral &mdash; and not simply economic &mdash; act. Hence the
+              consumer has a specific social responsibility, which goes
+              hand-in-hand with the social responsibility of the enterprise.&rdquo;
+            </p>
+            <p className="font-sans text-[10px] tracking-[0.15em] uppercase text-[#001435]/80 mt-3">
+              &mdash; Pope Benedict XVI, Caritas in Veritate §66
             </p>
           </div>
         </div>
@@ -32,24 +38,26 @@ export function FoundersVision() {
           </h2>
           <div className="space-y-6 text-lg text-[#44474e] leading-relaxed font-serif">
             <p>
-              We founded Catholic Owned Marketplace with a simple yet profound
+              We founded Catholic Owned&reg; with a simple yet profound
               realization: our daily spending is a powerful tool for building the
-              Kingdom. By connecting faithful providers with intentional consumers,
-              we aren&apos;t just transacting business&mdash;we&apos;re reinforcing our shared
-              identity.
+              Kingdom when it is used with intention. By connecting faithful
+              providers with intentional consumers across industries, we are doing
+              more than transacting business. We are reinforcing our shared
+              identity and helping Catholics support one another in everyday life.
             </p>
             <p>
-              We believe that every Catholic business owner is a pioneer in a new
-              era of commerce&mdash;one where integrity, prayer, and excellence are
-              the standard, not the exception.
+              We believe every Catholic business owner is helping pioneer a new
+              era of commerce, where integrity, prayer, and excellence are the
+              standard, not the exception. And we believe empowered consumers can
+              make a difference with every purchase.
             </p>
           </div>
           <div className="pt-8">
             <p className="font-serif text-3xl text-[#755b00] italic">
-              The Thompson Family
+              The Onori Family
             </p>
             <p className="font-sans text-[11px] tracking-[0.2em] uppercase text-[#75777f] mt-2">
-              Founders &amp; Stewards
+              Founders
             </p>
           </div>
         </div>

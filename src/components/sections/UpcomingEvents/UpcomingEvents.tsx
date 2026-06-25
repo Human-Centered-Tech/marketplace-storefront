@@ -119,7 +119,7 @@ export async function UpcomingEvents() {
               Get Involved
             </span>
             <h2 className="font-serif text-3xl md:text-4xl font-bold text-[#001435]">
-              Upcoming Networking Events
+              Upcoming Events
             </h2>
           </div>
           <LocalizedClientLink

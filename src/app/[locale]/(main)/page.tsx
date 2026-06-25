@@ -5,7 +5,6 @@ import {
   HomeFeaturedGiftGuides,
   HomeFeaturedProducts,
   HomeFeaturedServices,
-  ShopByStyleSection,
   DirectoryPreview,
   UpcomingEvents,
   FoundersVision,
@@ -191,14 +190,11 @@ export default async function Home({
       {/* 5. From the Directory */}
       <DirectoryPreview userLoc={userLoc} />
 
-      {/* 5. Upcoming Networking Events */}
+      {/* 6. Upcoming Events */}
       <UpcomingEvents />
 
-      {/* 6. Community Trade */}
+      {/* 7. Sacred Exchange */}
       <BannerSection />
-
-      {/* 7. How It Works */}
-      <ShopByStyleSection />
 
       {/* 8. Founders' Vision */}
       <FoundersVision />

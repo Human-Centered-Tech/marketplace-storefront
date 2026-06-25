@@ -247,6 +247,12 @@ export async function DirectoryPreview({
             {isNearby ? "Near You in the Directory" : "From the Directory"}
           </h2>
           <div className="h-[1px] flex-grow mx-8 bg-[#BE9B32]/30 hidden sm:block" />
+          <LocalizedClientLink
+            href="/directory"
+            className="font-sans text-sm font-semibold text-[#BE9B32] hover:text-[#755b00] whitespace-nowrap"
+          >
+            View all &rarr;
+          </LocalizedClientLink>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

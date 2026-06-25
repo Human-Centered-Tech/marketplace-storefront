@@ -18,7 +18,7 @@ const VALUES = [
   },
   {
     title: "Economic Solidarity",
-    body: "The New Catholic Economy™ means keeping our dollars circulating among businesses that share our values, parishes we care about, and families building a better future.",
+    body: "Building the New Catholic Economy® means keeping our dollars circulating among businesses that share our values, parishes we care about, and families building a better future.",
   },
   {
     title: "Stewardship",
@@ -56,7 +56,7 @@ export default function AboutPage() {
             Our Mission
           </p>
           <h2 className="font-serif text-3xl lg:text-4xl font-bold text-[#17294A] uppercase text-center mb-8">
-            A Marketplace with a Soul
+            A Marketplace with a Mission
           </h2>
           <div className="space-y-5 text-[16px] leading-relaxed text-[#44474e]">
             <p>

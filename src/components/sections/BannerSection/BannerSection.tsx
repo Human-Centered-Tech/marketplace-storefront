@@ -68,7 +68,7 @@ export const BannerSection = async () => {
         {/* Header */}
         <div className="flex items-center gap-4 mb-16">
           <h2 className="font-serif text-3xl md:text-4xl font-bold text-white">
-            Community Trade
+            Sacred Exchange
           </h2>
           <div className="h-[1px] flex-grow bg-white/20" />
         </div>
