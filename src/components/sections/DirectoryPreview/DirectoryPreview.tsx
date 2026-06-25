@@ -79,7 +79,7 @@ function DirectoryCard({
         )}
         {badge && (
           <div
-            className={`absolute top-4 left-4 text-[10px] px-3 py-1 rounded-full tracking-[0.15em] uppercase font-bold ${
+            className={`absolute top-3 left-3 text-[10px] px-3 py-1 rounded-full tracking-[0.15em] uppercase font-bold shadow-md ${
               badgeColor === "gold"
                 ? "bg-[#BE9B32] text-[#001435]"
                 : "bg-[#001435] text-white"
