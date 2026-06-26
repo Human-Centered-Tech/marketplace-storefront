@@ -75,6 +75,11 @@ export type DirectoryListing = {
   verified_at: string | null
   owner_id: string | null
   vendor_id: string | null
+  // Resolved by the GET /store/directory/listings/:id route, present ONLY
+  // when the linked store's store_status === "ACTIVE" (a live storefront).
+  // Use seller.handle to build the storefront link; absence means "no live
+  // shop" and the "Visit Our Shop" CTA should not render.
+  seller?: { id: string; handle: string } | null
   contact_email: string | null
   contact_phone: string | null
   website_url: string | null

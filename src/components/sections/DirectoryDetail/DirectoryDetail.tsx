@@ -462,13 +462,24 @@ export const DirectoryDetail = ({ listing }: { listing: DirectoryListing }) => {
             {!isUnclaimed &&
               (() => {
                 const ctaType = listing.cta_type || "visit_shop"
-                const hasShop = Boolean(listing.vendor_id)
+                // A storefront link is only valid when the backend resolved an
+                // ACTIVE seller for this listing. The GET route populates
+                // `listing.seller` (id + handle) only when the linked store's
+                // store_status === "ACTIVE", so its presence is our "live
+                // storefront exists" signal. Link via seller.handle — NOT
+                // listing.slug, which is the directory listing's own slug and
+                // can diverge from the storefront handle (e.g. an imported
+                // trailing-hyphen slug, or a seller whose store isn't live),
+                // producing a 404. vendor_id alone is too loose: it can be set
+                // while the store is draft/paused.
+                const shopHandle = listing.seller?.handle ?? null
+                const hasShop = Boolean(shopHandle)
                 let href: string | null = null
                 let label = ctaLabels[ctaType] || "Learn More"
 
                 if (ctaType === "visit_shop") {
                   if (hasShop) {
-                    href = `/sellers/${listing.slug}`
+                    href = `/sellers/${shopHandle}`
                     label = "Visit Our Shop"
                   } else if (listing.website_url) {
                     href = listing.website_url
