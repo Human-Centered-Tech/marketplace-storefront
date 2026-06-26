@@ -144,11 +144,23 @@ export const VendorOnboardingFunnel = () => {
           <ScreeningStep
             onSelect={(method) => {
               const preApproved = isPreApprovedScreening(method)
+              if (preApproved) {
+                // Pre-approved financial orgs are shown the $699 tier
+                // (tier2_business) card — buy now or book a call — instead of
+                // going straight to register with no price (which also left
+                // recommended_tier blank, so they defaulted to the "product"
+                // business type). Decided 6/26 with Brooke.
+                setState({
+                  ...state,
+                  step: "recommended_tier",
+                  screeningMethod: method,
+                  recommendedTier: "tier2_business",
+                })
+                return
+              }
               setState({
                 ...state,
-                step: preApproved
-                  ? "financial_preapproved"
-                  : "financial_book_call",
+                step: "financial_book_call",
                 screeningMethod: method,
               })
             }}

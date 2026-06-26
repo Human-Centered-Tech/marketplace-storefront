@@ -74,6 +74,9 @@ const TIER_INFO: Record<RecommendedTierKey, TierInfo> = {
     price: "$699",
     period: "onboarding",
     bookCallOption: true,
+    // Show "Tier 3 ($2,999) also available" on the $699 card — one price up
+    // front, next tier noted, never the full list (Brooke 6/26).
+    upsellTier: "tier3",
     localBoostUpsell: true,
   },
   tier3: {
