@@ -145,7 +145,7 @@ export const NetworkingEventDetail = ({
                   <p className="text-sm mt-2">
                     {rsvpError === "SIGN_IN_REQUIRED" ? (
                       <LocalizedClientLink
-                        href="/user/login"
+                        href="/user"
                         className="text-gold-dark underline hover:text-navy-dark transition-colors"
                       >
                         Sign in to RSVP for this event
