@@ -10,7 +10,10 @@ function validatePassword(password: string) {
     tooShort: password.length < 8,
     noLower: !/[a-z]/.test(password),
     noUpper: !/[A-Z]/.test(password),
-    noDigitOrSymbol: !/[0-9!@#$%^&*(),.?":{}|<>_\-+=\[\]\\\/~`]/.test(password),
+    // Must match the special-character set enforced by the zod schema
+    // (RegisterForm/schema.ts): one of ! @ # $ % ^ & *. A digit alone is
+    // NOT a special character, so this row must not go green for "Password1".
+    noSymbol: !/[!@#$%^&*]/.test(password),
   }
 
   return {
@@ -42,14 +45,14 @@ export const PasswordValidator = ({
       lower: validation.errors.noLower,
       upper: validation.errors.noUpper,
       "8chars": validation.errors.tooShort,
-      symbolOrDigit: validation.errors.noDigitOrSymbol,
+      symbolOrDigit: validation.errors.noSymbol,
     })
     setNewPasswordError({
       isValid: validation.isValid,
       lower: validation.errors.noLower,
       upper: validation.errors.noUpper,
       "8chars": validation.errors.tooShort,
-      symbolOrDigit: validation.errors.noDigitOrSymbol,
+      symbolOrDigit: validation.errors.noSymbol,
     })
   }, [password])
   return (
@@ -84,7 +87,7 @@ export const PasswordValidator = ({
           newPasswordError["symbolOrDigit"] ? "text-red-700" : "text-green-700"
         )}
       >
-        <CheckCircle /> One number or symbol
+        <CheckCircle /> One special character (! @ # $ % ^ &amp; *)
       </p>
     </Card>
   )

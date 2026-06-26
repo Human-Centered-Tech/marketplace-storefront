@@ -22,6 +22,15 @@ import {
 const ARIMATHEA_CALENDLY_URL =
   "https://calendly.com/daren-arimatheainvesting/catholic-owned-discussion"
 
+// Every funnel path starts at the Founding Pillars gate (initialState.step),
+// and its "Agree and continue" button is disabled until all four pillars are
+// affirmed — so reaching any register link below PROVES the vendor affirmed.
+// We forward that affirmation to /user/register so the signup submit can
+// persist it on customer.metadata (see RegisterForm + lib/data/customer
+// signup()). Without this the affirmation was captured nowhere and sent
+// nowhere — it died with the step's local state.
+const PILLARS_AFFIRMED_PARAM = "&pillars_affirmed=1"
+
 const YEARS_OPTIONS: YearsRange[] = ["0-3", "4-7", "8-10", "11+"]
 const REVENUE_OPTIONS: RevenueRange[] = [
   "<$50,000",
@@ -117,6 +126,7 @@ export const VendorOnboardingFunnel = () => {
                 // same way service-provider tiers are captured.
                 window.location.href =
                   "/user/register?vendor=true&recommended_tier=merchant" +
+                  PILLARS_AFFIRMED_PARAM +
                   claimSuffix
                 return
               }
@@ -260,133 +270,197 @@ const ChoiceButton: React.FC<{
   </button>
 )
 
-// Pre-funnel gate. Vendors see the four pillars and must click
-// "Agree and continue" before any onboarding question fires. The card
-// layout is the same one from /sell — 2x2 grid of navy tiles with gold
-// SVG icons — so the gate reads as a continuation of the marketing
-// experience the visitor just clicked through. Intentionally not
-// numbered ("Step 0 of 5") — it's an eligibility affirmation, not a
-// product question. Future server-side persistence (timestamp + copy
-// snapshot, per seller_application.attestations pattern) lands
-// separately once we wire it to the seller record.
+// The four Founding Pillars, in display order. Each is an individual
+// affirmation the vendor must tick — the icon + copy are unchanged from the
+// /sell marketing card so the gate reads as a continuation of that page.
+const FOUNDING_PILLARS: { icon: React.ReactNode; text: React.ReactNode }[] = [
+  {
+    icon: (
+      <svg
+        width="32"
+        height="32"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="#BE9B32"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="mb-4"
+      >
+        <path d="M10 3h4v6h6v4h-6v8h-4v-8H4V9h6V3z" />
+      </svg>
+    ),
+    text: (
+      <>Faithful to the Magisterium &amp; in Full Communion with Rome</>
+    ),
+  },
+  {
+    icon: (
+      <svg
+        width="32"
+        height="32"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="#BE9B32"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="mb-4"
+      >
+        <rect x="3" y="4" width="18" height="17" rx="2" />
+        <line x1="3" y1="9" x2="21" y2="9" />
+        <line x1="8" y1="2" x2="8" y2="6" />
+        <line x1="16" y1="2" x2="16" y2="6" />
+        <path
+          d="M12 17.5l-2.5-2.5a1.7 1.7 0 010-2.4 1.7 1.7 0 012.5 0l0 0a1.7 1.7 0 012.5 0 1.7 1.7 0 010 2.4z"
+          fill="#BE9B32"
+        />
+      </svg>
+    ),
+    text: (
+      <>
+        Regularly practicing, sincere Catholic in good standing (Mass on
+        Sundays + Holydays, regular confession)
+      </>
+    ),
+  },
+  {
+    icon: (
+      // Praying-hands icon from Phosphor Icons (MIT)
+      <svg
+        width="32"
+        height="32"
+        viewBox="0 0 256 256"
+        fill="#BE9B32"
+        className="mb-4"
+      >
+        <path d="M235.32,180l-36.24-36.25L162.62,23.46A21.76,21.76,0,0,0,128,12.93,21.76,21.76,0,0,0,93.38,23.46L56.92,143.76,20.68,180a16,16,0,0,0,0,22.62l32.69,32.69a16,16,0,0,0,22.63,0L124.28,187a40.68,40.68,0,0,0,3.72-4.29,40.68,40.68,0,0,0,3.72,4.29L180,235.32a16,16,0,0,0,22.63,0l32.69-32.69A16,16,0,0,0,235.32,180ZM64.68,224,32,191.32l12.69-12.69,32.69,32.69ZM120,158.75a23.85,23.85,0,0,1-7,17L88.68,200,56,167.32l13.65-13.66a8,8,0,0,0,2-3.34l37-122.22A5.78,5.78,0,0,1,120,29.78Zm23,17a23.85,23.85,0,0,1-7-17v-129a5.78,5.78,0,0,1,11.31-1.68l37,122.22a8,8,0,0,0,2,3.34l14.49,14.49-33.4,32ZM191.32,224l-12.56-12.57,33.39-32L224,191.32Z" />
+      </svg>
+    ),
+    text: <>Prays the Rosary or practices other sincere daily devotion(s)</>,
+  },
+  {
+    icon: (
+      <svg
+        width="32"
+        height="32"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="#BE9B32"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="mb-4"
+      >
+        <line x1="12" y1="3" x2="12" y2="21" />
+        <line x1="5" y1="6" x2="19" y2="6" />
+        <path d="M5 6l-3 7c0 2 1.5 3 3 3s3-1 3-3l-3-7z" />
+        <path d="M19 6l-3 7c0 2 1.5 3 3 3s3-1 3-3l-3-7z" />
+        <line x1="9" y1="21" x2="15" y2="21" />
+      </svg>
+    ),
+    text: (
+      <>
+        Operates business in accordance with the principles of the Catholic
+        faith
+      </>
+    ),
+  },
+]
+
+// One navy pillar tile = one checkable affirmation. The whole tile is a
+// <label> so clicking anywhere toggles its checkbox; the gold check badge in
+// the corner makes the selected/affirmed state obvious.
+const PillarTile: React.FC<{
+  checked: boolean
+  onToggle: () => void
+  icon: React.ReactNode
+  children: React.ReactNode
+}> = ({ checked, onToggle, icon, children }) => (
+  <label
+    className={`relative bg-[#001435] rounded-xl p-6 pt-9 flex flex-col items-center text-center cursor-pointer transition-all ${
+      checked ? "ring-2 ring-[#BE9B32]" : "ring-0 hover:ring-1 hover:ring-[#BE9B32]/50"
+    }`}
+  >
+    <input
+      type="checkbox"
+      checked={checked}
+      onChange={onToggle}
+      className="sr-only"
+    />
+    <span
+      aria-hidden="true"
+      className={`absolute top-3 right-3 w-6 h-6 rounded-md border flex items-center justify-center text-[14px] font-bold transition-colors ${
+        checked
+          ? "bg-[#BE9B32] border-[#BE9B32] text-[#001435]"
+          : "bg-transparent border-white/40 text-transparent"
+      }`}
+    >
+      ✓
+    </span>
+    {icon}
+    <p className="text-[14px] text-white leading-relaxed">{children}</p>
+  </label>
+)
+
+// Pre-funnel gate. Vendors must affirm EACH of the four pillars (tick all
+// four checkboxes) before "Agree and continue" enables and any onboarding
+// question fires. The selections are captured in state here and the
+// affirmation is forwarded to the register submit via PILLARS_AFFIRMED_PARAM,
+// where signup() persists it on customer.metadata. Intentionally not numbered
+// ("Step 0 of 5") — it's an eligibility affirmation, not a product question.
 const FoundingPillarsStep: React.FC<{ onAgree: () => void }> = ({
   onAgree,
-}) => (
-  <div className="bg-[#faf9f5] rounded-2xl border border-[#BE9B32]/40 shadow-sm p-8 lg:p-12">
-    <h2 className="font-serif text-2xl lg:text-3xl font-bold text-[#001435] text-center mb-6">
-      Our Founding Pillars
-    </h2>
-    <p className="text-[15px] lg:text-base text-[#001435] font-medium mb-8">
-      Every Featured &amp; Verified business must align with our signature
-      Founding Pillars:
-    </p>
+}) => {
+  const [checked, setChecked] = useState<boolean[]>(
+    FOUNDING_PILLARS.map(() => false)
+  )
+  const allChecked = checked.every(Boolean)
+  const toggle = (i: number) =>
+    setChecked((prev) => prev.map((c, idx) => (idx === i ? !c : c)))
 
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-      {/* Pillar 1 */}
-      <div className="bg-[#001435] rounded-xl p-6 flex flex-col items-center text-center">
-        <svg
-          width="32"
-          height="32"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="#BE9B32"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="mb-4"
-        >
-          <path d="M10 3h4v6h6v4h-6v8h-4v-8H4V9h6V3z" />
-        </svg>
-        <p className="text-[14px] text-white leading-relaxed">
-          Faithful to the Magisterium &amp; in Full Communion with Rome
-        </p>
+  return (
+    <div className="bg-[#faf9f5] rounded-2xl border border-[#BE9B32]/40 shadow-sm p-8 lg:p-12">
+      <h2 className="font-serif text-2xl lg:text-3xl font-bold text-[#001435] text-center mb-6">
+        Our Founding Pillars
+      </h2>
+      <p className="text-[15px] lg:text-base text-[#001435] font-medium mb-3">
+        Every Featured &amp; Verified business must align with our signature
+        Founding Pillars:
+      </p>
+      <p className="text-[13px] text-[#44474e] mb-8">
+        Check each pillar to affirm that you and your business meet it.
+      </p>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+        {FOUNDING_PILLARS.map((pillar, i) => (
+          <PillarTile
+            key={i}
+            checked={checked[i]}
+            onToggle={() => toggle(i)}
+            icon={pillar.icon}
+          >
+            {pillar.text}
+          </PillarTile>
+        ))}
       </div>
 
-      {/* Pillar 2 */}
-      <div className="bg-[#001435] rounded-xl p-6 flex flex-col items-center text-center">
-        <svg
-          width="32"
-          height="32"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="#BE9B32"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="mb-4"
-        >
-          <rect x="3" y="4" width="18" height="17" rx="2" />
-          <line x1="3" y1="9" x2="21" y2="9" />
-          <line x1="8" y1="2" x2="8" y2="6" />
-          <line x1="16" y1="2" x2="16" y2="6" />
-          <path
-            d="M12 17.5l-2.5-2.5a1.7 1.7 0 010-2.4 1.7 1.7 0 012.5 0l0 0a1.7 1.7 0 012.5 0 1.7 1.7 0 010 2.4z"
-            fill="#BE9B32"
-          />
-        </svg>
-        <p className="text-[14px] text-white leading-relaxed">
-          Regularly practicing, sincere Catholic in good standing (Mass on
-          Sundays + Holydays, regular confession)
-        </p>
-      </div>
+      <p className="text-[13px] text-[#44474e] leading-relaxed text-center italic mb-8">
+        These pillars ensure that Catholic Owned&reg; remains a trusted
+        resource for the faithful—and a powerful witness for Christ in the
+        marketplace.
+      </p>
 
-      {/* Pillar 3 */}
-      <div className="bg-[#001435] rounded-xl p-6 flex flex-col items-center text-center">
-        {/* Praying-hands icon from Phosphor Icons (MIT) */}
-        <svg
-          width="32"
-          height="32"
-          viewBox="0 0 256 256"
-          fill="#BE9B32"
-          className="mb-4"
-        >
-          <path d="M235.32,180l-36.24-36.25L162.62,23.46A21.76,21.76,0,0,0,128,12.93,21.76,21.76,0,0,0,93.38,23.46L56.92,143.76,20.68,180a16,16,0,0,0,0,22.62l32.69,32.69a16,16,0,0,0,22.63,0L124.28,187a40.68,40.68,0,0,0,3.72-4.29,40.68,40.68,0,0,0,3.72,4.29L180,235.32a16,16,0,0,0,22.63,0l32.69-32.69A16,16,0,0,0,235.32,180ZM64.68,224,32,191.32l12.69-12.69,32.69,32.69ZM120,158.75a23.85,23.85,0,0,1-7,17L88.68,200,56,167.32l13.65-13.66a8,8,0,0,0,2-3.34l37-122.22A5.78,5.78,0,0,1,120,29.78Zm23,17a23.85,23.85,0,0,1-7-17v-129a5.78,5.78,0,0,1,11.31-1.68l37,122.22a8,8,0,0,0,2,3.34l14.49,14.49-33.4,32ZM191.32,224l-12.56-12.57,33.39-32L224,191.32Z" />
-        </svg>
-        <p className="text-[14px] text-white leading-relaxed">
-          Prays the Rosary or practices other sincere daily devotion(s)
-        </p>
-      </div>
-
-      {/* Pillar 4 */}
-      <div className="bg-[#001435] rounded-xl p-6 flex flex-col items-center text-center">
-        <svg
-          width="32"
-          height="32"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="#BE9B32"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="mb-4"
-        >
-          <line x1="12" y1="3" x2="12" y2="21" />
-          <line x1="5" y1="6" x2="19" y2="6" />
-          <path d="M5 6l-3 7c0 2 1.5 3 3 3s3-1 3-3l-3-7z" />
-          <path d="M19 6l-3 7c0 2 1.5 3 3 3s3-1 3-3l-3-7z" />
-          <line x1="9" y1="21" x2="15" y2="21" />
-        </svg>
-        <p className="text-[14px] text-white leading-relaxed">
-          Operates business in accordance with the principles of the Catholic
-          faith
-        </p>
-      </div>
+      <button
+        onClick={() => allChecked && onAgree()}
+        disabled={!allChecked}
+        className="w-full bg-[#BE9B32] text-[#001435] font-semibold py-3 rounded-xl hover:bg-[#DECF8F] shadow-lg shadow-[#BE9B32]/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-[#BE9B32]"
+      >
+        {allChecked ? "Agree and continue" : "Affirm all four pillars to continue"}
+      </button>
     </div>
-
-    <p className="text-[13px] text-[#44474e] leading-relaxed text-center italic mb-8">
-      These pillars ensure that Catholic Owned&reg; remains a trusted
-      resource for the faithful—and a powerful witness for Christ in the
-      marketplace.
-    </p>
-
-    <button
-      onClick={onAgree}
-      className="w-full bg-[#BE9B32] text-[#001435] font-semibold py-3 rounded-xl hover:bg-[#DECF8F] shadow-lg shadow-[#BE9B32]/20 transition-all"
-    >
-      Agree and continue
-    </button>
-  </div>
-)
+  )
+}
 
 const ServiceAreaStep: React.FC<{
   onSelect: (isLocalOnly: boolean) => void
@@ -521,7 +595,7 @@ const PreApprovedStep: React.FC<{ claimSuffix?: string }> = ({
       subtitle="Since you're already using pre-approved screening methods aligned with the USCCB, you can proceed with creating your listing right away."
     />
     <LocalizedClientLink
-      href={`/user/register?vendor=true${claimSuffix}`}
+      href={`/user/register?vendor=true${PILLARS_AFFIRMED_PARAM}${claimSuffix}`}
       className="inline-flex items-center px-10 py-4 text-[13px] font-semibold uppercase tracking-[0.1em] rounded-xl bg-[#BE9B32] text-[#001435] hover:bg-[#d4af4c] shadow-lg transition-colors"
     >
       Create your listing
@@ -675,7 +749,7 @@ const RecommendedTierStep: React.FC<{
   // sellers. The price shown here is informational ("you'll pay this
   // when you go live") — actual payment is collected at the /go-live
   // step in the vendor portal, after they've set up their store.
-  const signupHref = `/user/register?vendor=true&recommended_tier=${tier.key}${claimSuffix}`
+  const signupHref = `/user/register?vendor=true&recommended_tier=${tier.key}${PILLARS_AFFIRMED_PARAM}${claimSuffix}`
 
   return (
     <Card>

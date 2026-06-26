@@ -8,6 +8,7 @@ import {
   updateDirectoryListing,
 } from "@/lib/data/directory-actions"
 import { socialLinksToArray } from "@/lib/social"
+import { US_STATE_CODES } from "@/lib/us-states"
 
 export default function EditDirectoryListingPage() {
   const [categories, setCategories] = useState<DirectoryCategory[]>([])
@@ -108,10 +109,14 @@ export default function EditDirectoryListingPage() {
             state: addr?.state || "",
             zip: addr?.zip || "",
             // Stored as a comma-separated string; the picker works in codes.
+            // Restrict to real US state codes (US_STATE_CODES, which excludes
+            // DC) so a legacy/imported value like "DC" is dropped on load —
+            // otherwise it stays in form state (counted as "selected" and
+            // re-saved) even though the picker has no DC button to show it.
             serviced_states: (addr?.serviced_states || "")
               .split(",")
               .map((s: string) => s.trim().toUpperCase())
-              .filter((s: string) => s.length === 2),
+              .filter((s: string) => US_STATE_CODES.includes(s)),
             social_links: socialLinksToArray(listing.social_links),
             always_open: listing.always_open ?? false,
             owner_photo_url: interview?.photo_url || "",

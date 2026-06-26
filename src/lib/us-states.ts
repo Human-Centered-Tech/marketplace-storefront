@@ -1,5 +1,6 @@
-// US states + DC. The 2-letter codes match what's stored in
-// listing.address.serviced_states (uppercased + comma-split in
+// The 50 US states (NO DC — deliberately removed; product decision that the
+// directory serves the 50 states only). The 2-letter codes match what's
+// stored in listing.address.serviced_states (uppercased + comma-split in
 // buildAlgoliaListingRecord on the backend) and what the directory state
 // filter facets on. Single source of truth shared by the directory search
 // filter (DirectorySearch) and the merchant listing form (serviced-states

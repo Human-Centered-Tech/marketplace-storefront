@@ -11,10 +11,11 @@ export default async function Page({
     return_to?: string
     recommended_tier?: string
     claim_listing?: string
+    pillars_affirmed?: string
   }>
 }) {
   const user = await retrieveCustomer()
-  const { vendor, return_to, recommended_tier, claim_listing } =
+  const { vendor, return_to, recommended_tier, claim_listing, pillars_affirmed } =
     await searchParams
 
   if (user) {
@@ -40,6 +41,10 @@ export default async function Page({
       recommendedTier={recommended_tier}
       claimListingId={claim_listing}
       defaultBusinessName={defaultBusinessName}
+      // Forwarded from the /sell/onboarding Founding Pillars gate; persisted
+      // on customer.metadata at signup so we have a record the vendor
+      // affirmed the pillars.
+      pillarsAffirmed={pillars_affirmed === "1"}
     />
   )
 }

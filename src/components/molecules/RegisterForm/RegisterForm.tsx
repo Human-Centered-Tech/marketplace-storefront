@@ -11,8 +11,8 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { LabeledInput } from "@/components/cells"
 import { registerFormSchema, vendorRegisterFormSchema, RegisterFormData } from "./schema"
 import { MARKETING_SOURCES } from "./marketing-sources"
-import { signup } from "@/lib/data/customer"
-import { becomeVendor } from "@/lib/data/vendor"
+import { signup, login, retrieveCustomer } from "@/lib/data/customer"
+import { becomeVendor, becomeMerchant } from "@/lib/data/vendor"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
@@ -24,6 +24,7 @@ export const RegisterForm = ({
   recommendedTier,
   claimListingId,
   defaultBusinessName,
+  pillarsAffirmed = false,
 }: {
   vendorFlow?: boolean
   recommendedTier?: string
@@ -34,6 +35,9 @@ export const RegisterForm = ({
   // Pre-fills the business name from the listing being claimed, so the
   // claimant doesn't retype it (and doesn't drift to a different name).
   defaultBusinessName?: string
+  // True when the vendor reached here through the /sell/onboarding Founding
+  // Pillars gate. Recorded on customer.metadata at signup.
+  pillarsAffirmed?: boolean
 }) => {
   const methods = useForm<RegisterFormData>({
     resolver: zodResolver(vendorFlow ? vendorRegisterFormSchema : registerFormSchema),
@@ -56,6 +60,7 @@ export const RegisterForm = ({
         vendorFlow={vendorFlow}
         recommendedTier={recommendedTier}
         claimListingId={claimListingId}
+        pillarsAffirmed={pillarsAffirmed}
         // Lock the business name when it's pre-filled from a claimed listing
         // so the seller name can't diverge from the listing being claimed.
         businessNameLocked={Boolean(claimListingId && defaultBusinessName)}
@@ -68,11 +73,13 @@ const Form = ({
   vendorFlow,
   recommendedTier,
   claimListingId,
+  pillarsAffirmed = false,
   businessNameLocked = false,
 }: {
   vendorFlow: boolean
   recommendedTier?: string
   claimListingId?: string
+  pillarsAffirmed?: boolean
   businessNameLocked?: boolean
 }) => {
   const router = useRouter()
@@ -109,10 +116,68 @@ const Form = ({
     if (data.marketingSubsource) {
       formData.append("marketing_subsource", data.marketingSubsource)
     }
+    // Founding Pillars affirmation from the /sell/onboarding gate — recorded
+    // on customer.metadata by signup(). Sent as a string because FormData
+    // values are strings.
+    if (pillarsAffirmed) {
+      formData.append("founding_pillars_affirmed", "true")
+    }
 
     const res = passwordError.isValid && (await signup(formData))
 
     if (res && !res?.id) {
+      // Bug #2: an EXISTING customer trying to register as a merchant gets
+      // "Identity with email already exists" from sdk.auth.register and the
+      // form dead-ends. For the merchant (vendorFlow) signup only, this is
+      // NOT a dead end — they already have a customer account, so convert it
+      // into a merchant instead of re-registering. The brand-new-email happy
+      // path below is untouched.
+      const alreadyExists = /already exists|identity with email/i.test(
+        String(res)
+      )
+      if (vendorFlow && data.businessName && alreadyExists) {
+        // 1) Log in as the existing customer with the password they just
+        //    typed (sets the customer auth cookie; also sets the vendor
+        //    cookie if they somehow already had a seller).
+        await login(formData)
+
+        // Confirm the password actually matched THIS account before we try
+        // to convert it. If it didn't, login() left us unauthenticated (or
+        // on a different session), so don't silently do nothing — tell them.
+        const me = await retrieveCustomer()
+        if (
+          !me?.id ||
+          (me.email || "").trim().toLowerCase() !==
+            (data.email || "").trim().toLowerCase()
+        ) {
+          setError(
+            "An account with this email already exists. If it's yours, the password didn't match — please sign in, then use “Become a Merchant.”" as any
+          )
+          return
+        }
+
+        // 2) Convert: create + link a seller for this customer (idempotent).
+        const convertFormData = new FormData()
+        convertFormData.append("name", data.businessName)
+        convertFormData.append("email", data.email)
+        convertFormData.append("password", data.password)
+        if (claimListingId) {
+          convertFormData.append("claim_listing", claimListingId)
+        }
+
+        const convertRes = await becomeMerchant(convertFormData)
+        if (!convertRes.success) {
+          setError(convertRes.error as any)
+          return
+        }
+
+        // 3) Same handoff as a brand-new merchant — drop them into the
+        //    vendor portal. (becomeMerchant already set the vendor cookie
+        //    and attached/created their directory listing.)
+        window.location.assign("/api/vendor-handoff")
+        return
+      }
+
       setError(res)
       return
     }

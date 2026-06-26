@@ -97,6 +97,12 @@ export async function signup(formData: FormData) {
   const marketingSubsource = formData.get("marketing_subsource") as
     | string
     | null
+  // Founding Pillars affirmation, forwarded from the /sell/onboarding gate.
+  // Stored on customer.metadata so there's a record the vendor affirmed the
+  // pillars at signup. (A fuller audit trail — timestamp + copy snapshot on
+  // the seller record — is a backend follow-up.)
+  const foundingPillarsAffirmed =
+    formData.get("founding_pillars_affirmed") as string | null
   const customerForm: Record<string, unknown> = {
     // Email is case-insensitive — normalize so login always matches.
     email: ((formData.get("email") as string) || "").trim().toLowerCase(),
@@ -108,6 +114,10 @@ export async function signup(formData: FormData) {
   if (recommendedTier) metadata.recommended_tier = recommendedTier
   if (marketingSource) metadata.marketing_source = marketingSource
   if (marketingSubsource) metadata.marketing_subsource = marketingSubsource
+  if (foundingPillarsAffirmed === "true") {
+    metadata.founding_pillars_affirmed = true
+    metadata.founding_pillars_affirmed_at = new Date().toISOString()
+  }
   if (Object.keys(metadata).length) {
     customerForm.metadata = metadata
   }

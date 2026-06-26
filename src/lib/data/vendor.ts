@@ -93,7 +93,15 @@ export async function retrieveVendorStatus(): Promise<VendorStatus> {
 
 export async function becomeVendor(formData: FormData) {
   const name = formData.get("name") as string
-  const email = formData.get("email") as string
+  // Normalize the email exactly as signup()/login() do (trim + lowercase).
+  // The customer record is created with a lowercased email, but the seller
+  // identity + member here used the raw-cased input — so a vendor who typed
+  // any uppercase (e.g. "John@Example.com") got a seller member whose email
+  // didn't match their customer email. /store/account/vendor-status matches
+  // the seller member by the customer's (lowercased) email, so the mismatch
+  // made is_vendor return false: the merchant landed back on the /user
+  // dashboard with "Become a Merchant" still showing despite a created seller.
+  const email = ((formData.get("email") as string) || "").trim().toLowerCase()
   const password = formData.get("password") as string
   // When the vendor is claiming an existing directory listing, we must NOT
   // auto-create a draft listing below: the claim attaches them to the
@@ -290,6 +298,167 @@ export async function becomeVendor(formData: FormData) {
   } catch (error: any) {
     return { success: false, error: error.toString() }
   }
+}
+
+/**
+ * Existing-customer → merchant conversion (Bug #2).
+ *
+ * A person who already has a customer account cannot re-register the same
+ * email as a merchant: sdk.auth.register() returns "Identity with email
+ * already exists", which dead-ends the merchant signup form. Instead of
+ * re-registering (the thing that 409s), we convert their EXISTING account.
+ * The caller logs the customer in first; this helper then hits the
+ * idempotent backend endpoint
+ *   POST /store/account/become-merchant
+ * which creates + links a seller onto the customer's existing auth identity
+ * (no second registration → nothing collides) and is a safe no-op if they
+ * are already a merchant. See
+ * marketplace-backend/src/api/store/account/become-merchant/route.ts.
+ *
+ * The backend route only creates the seller — it does not touch storefront
+ * cookies or the directory listing. So after the seller exists we run the
+ * SAME tail becomeVendor() runs for a brand-new merchant:
+ *   - mint + store the seller (vendor) token, so /api/vendor-handoff has a
+ *     cookie to hand to the vendor app (because the seller was linked
+ *     synchronously, /auth/seller/emailpass returns a populated actor_id
+ *     right away), and
+ *   - give them a draft directory listing (or attach the one they're
+ *     claiming), exactly as becomeVendor Step 4 does.
+ * The caller then redirects to /api/vendor-handoff, landing the converted
+ * customer exactly where a fresh merchant lands.
+ *
+ * We deliberately do NOT reuse becomeVendor() here: its Step 2 POSTs
+ * /vendor/sellers to CREATE a seller, which would collide on the unique
+ * seller handle now that become-merchant already created one.
+ *
+ * Requires the customer to already be authenticated (getAuthHeaders() must
+ * carry an authorization bearer — the caller logs them in first).
+ *
+ * FormData: { name, email, password, claim_listing? } — same shape as
+ * becomeVendor().
+ */
+export async function becomeMerchant(formData: FormData) {
+  const name = formData.get("name") as string
+  // Normalize identically to signup()/login()/becomeVendor() (trim + lower).
+  const email = ((formData.get("email") as string) || "").trim().toLowerCase()
+  const password = formData.get("password") as string
+  const claimListingId = formData.get("claim_listing") as string | null
+
+  const customerHeaders = await getAuthHeaders()
+  if (!customerHeaders || !("authorization" in customerHeaders)) {
+    return { success: false, error: "Please sign in first." }
+  }
+
+  const baseHeaders = {
+    "Content-Type": "application/json",
+    "x-publishable-api-key":
+      process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "",
+    ...customerHeaders,
+  }
+
+  // Step 1: create / link the seller onto the customer's auth identity.
+  // Idempotent — a repeat call just returns the existing seller.
+  let sellerId: string | undefined
+  try {
+    const res = await fetch(
+      `${process.env.MEDUSA_BACKEND_URL}/store/account/become-merchant`,
+      {
+        method: "POST",
+        headers: baseHeaders,
+        body: JSON.stringify({ name, business_name: name }),
+      }
+    )
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      return {
+        success: false,
+        error:
+          err?.message ||
+          "Could not convert your account to a merchant. Please try again.",
+      }
+    }
+    const data = await res.json()
+    sellerId = data?.seller_id
+  } catch (error: any) {
+    return { success: false, error: error.toString() }
+  }
+
+  // Step 2: mint a seller (vendor) token and store it, so /api/vendor-handoff
+  // has a cookie to hand to the vendor app. become-merchant links the seller
+  // to the existing auth identity synchronously, so /auth/seller/emailpass
+  // with the same credentials returns a token carrying a populated actor_id
+  // immediately — but poll a couple of times to be safe against any lag.
+  const decodeActor = (jwt: string): string => {
+    try {
+      const body = jwt.split(".")[1]
+      const padded = body + "=".repeat((4 - (body.length % 4)) % 4)
+      const json = JSON.parse(
+        Buffer.from(
+          padded.replace(/-/g, "+").replace(/_/g, "/"),
+          "base64"
+        ).toString()
+      )
+      return json?.actor_id ?? ""
+    } catch {
+      return ""
+    }
+  }
+
+  let vendorToken: string | null = null
+  for (let attempt = 0; attempt < 4; attempt++) {
+    if (attempt > 0) await new Promise((r) => setTimeout(r, 300))
+    const loginRes = await fetch(
+      `${process.env.MEDUSA_BACKEND_URL}/auth/seller/emailpass`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      }
+    )
+    if (!loginRes.ok) continue
+    const token = (await loginRes.json())?.token
+    if (typeof token !== "string") continue
+    vendorToken = token
+    if (decodeActor(token)) break
+  }
+
+  if (vendorToken) {
+    await setVendorToken(vendorToken)
+    await setVendorFlag(true)
+  }
+  // If we never got a token, fall through anyway: the seller exists, and
+  // /api/vendor-handoff routes a missing/stale cookie to a recovery page.
+
+  // Step 3: draft directory listing — mirror becomeVendor Step 4 exactly.
+  //   - Claim flow: ADOPT the listing they came to claim (no duplicate slug).
+  //   - Otherwise: auto-create a fresh draft listing (per the 3/31 decision),
+  //     including vendor_id so floor-enforcement can find it by seller id.
+  // Non-fatal — they can create/claim it from the dashboard.
+  try {
+    if (claimListingId) {
+      await fetch(
+        `${process.env.MEDUSA_BACKEND_URL}/store/directory/listings/${claimListingId}/attach`,
+        { method: "POST", headers: baseHeaders }
+      )
+    } else {
+      await fetch(`${process.env.MEDUSA_BACKEND_URL}/store/directory/listings`, {
+        method: "POST",
+        headers: baseHeaders,
+        body: JSON.stringify({
+          business_name: name,
+          contact_email: email,
+          ...(sellerId ? { vendor_id: sellerId } : {}),
+        }),
+      })
+    }
+  } catch {
+    // Non-fatal.
+  }
+
+  const customerCacheTag = await getCacheTag("customers")
+  revalidateTag(customerCacheTag)
+
+  return { success: true, error: null }
 }
 
 /**
