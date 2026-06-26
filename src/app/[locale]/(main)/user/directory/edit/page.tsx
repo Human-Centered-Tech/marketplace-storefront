@@ -26,8 +26,9 @@ export default function EditDirectoryListingPage() {
 
     Promise.all([
       // Categories are public — fine to fetch unauthenticated.
-      fetch(`${backendUrl}/store/directory/categories`, { headers })
-        .then((r) => r.json()),
+      fetch(`${backendUrl}/store/directory/categories`, { headers }).then((r) =>
+        r.json()
+      ),
       // Listing requires the customer's auth token, which lives in an
       // httpOnly cookie not readable from this client component. Use
       // the server-action helper which reads the cookie via next/headers.
@@ -87,6 +88,9 @@ export default function EditDirectoryListingPage() {
           listingId={listing.id}
           subscriptionTier={listing.subscription_tier}
           initialAffiliations={listing.affiliations ?? []}
+          // listing.seller is populated only when this business is a marketplace
+          // merchant with an ACTIVE shop — lock the CTA to "Visit Our Shop".
+          hasShop={Boolean((listing as any).seller)}
           initialData={{
             business_name: listing.business_name,
             slug: listing.slug,
