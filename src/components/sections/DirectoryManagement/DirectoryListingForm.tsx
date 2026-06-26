@@ -11,6 +11,8 @@ import { OWNER_INTERVIEW_QUESTIONS } from "@/lib/owner-interview"
 import { ImageUploadField } from "./ImageUploadField"
 import { GalleryUploadField } from "./GalleryUploadField"
 import { US_STATES, US_STATE_CODES } from "@/lib/us-states"
+import { SocialIcon } from "./SocialIcon"
+import { socialFromUrl } from "@/lib/social"
 
 type DirectoryFormData = {
   business_name: string
@@ -28,10 +30,8 @@ type DirectoryFormData = {
   // States the business serves (2-letter codes). Drives the public
   // directory state filter; stored as a comma-separated string server-side.
   serviced_states: string[]
-  facebook: string
-  instagram: string
-  twitter: string
-  linkedin: string
+  // Up to 3 free-form social URLs; the platform/logo is detected per URL.
+  social_links: string[]
   always_open: boolean
   // Owner interview
   owner_photo_url: string
@@ -125,10 +125,7 @@ export const DirectoryListingForm = ({
     state: initialData?.state || "",
     zip: initialData?.zip || "",
     serviced_states: initialData?.serviced_states || [],
-    facebook: initialData?.facebook || "",
-    instagram: initialData?.instagram || "",
-    twitter: initialData?.twitter || "",
-    linkedin: initialData?.linkedin || "",
+    social_links: initialData?.social_links || [],
     always_open: initialData?.always_open ?? false,
     owner_photo_url: initialData?.owner_photo_url || "",
     owner_q1_prompt:
@@ -198,6 +195,14 @@ export const DirectoryListingForm = ({
   const setServicedStates = (codes: string[]) =>
     setForm((prev) => ({ ...prev, serviced_states: codes }))
 
+  // One of up to 3 free-form social URL slots.
+  const setSocialLink = (index: number, value: string) =>
+    setForm((prev) => {
+      const next = [...prev.social_links]
+      next[index] = value
+      return { ...prev, social_links: next }
+    })
+
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -259,10 +264,10 @@ export const DirectoryListingForm = ({
           serviced_states: servicedStatesForSubmit,
         },
         social_links: {
-          facebook: form.facebook || undefined,
-          instagram: form.instagram || undefined,
-          twitter: form.twitter || undefined,
-          linkedin: form.linkedin || undefined,
+          links: form.social_links
+            .map((s) => s.trim())
+            .filter(Boolean)
+            .slice(0, 3),
         },
         always_open: form.always_open,
         owner_interview:
@@ -804,58 +809,40 @@ export const DirectoryListingForm = ({
         </div>
       </div>
 
-      {/* Social Links */}
+      {/* Social Links — up to 3, any platform. The logo is detected from the URL. */}
       <div>
         <h3 className="heading-sm text-primary mb-3">Social Media</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="label-sm text-secondary block mb-1">
-              Facebook
-            </label>
-            <input
-              name="facebook"
-              value={form.facebook}
-              onChange={handleChange}
-              placeholder="https://facebook.com/..."
-              className="w-full border rounded-sm px-3 py-2 text-sm"
-            />
-          </div>
-          <div>
-            <label className="label-sm text-secondary block mb-1">
-              Instagram
-            </label>
-            <input
-              name="instagram"
-              value={form.instagram}
-              onChange={handleChange}
-              placeholder="https://instagram.com/..."
-              className="w-full border rounded-sm px-3 py-2 text-sm"
-            />
-          </div>
-          <div>
-            <label className="label-sm text-secondary block mb-1">
-              Twitter
-            </label>
-            <input
-              name="twitter"
-              value={form.twitter}
-              onChange={handleChange}
-              placeholder="https://twitter.com/..."
-              className="w-full border rounded-sm px-3 py-2 text-sm"
-            />
-          </div>
-          <div>
-            <label className="label-sm text-secondary block mb-1">
-              LinkedIn
-            </label>
-            <input
-              name="linkedin"
-              value={form.linkedin}
-              onChange={handleChange}
-              placeholder="https://linkedin.com/..."
-              className="w-full border rounded-sm px-3 py-2 text-sm"
-            />
-          </div>
+        <p className="text-xs text-secondary mb-3">
+          Add up to 3 social profiles — any platform (Instagram, Facebook, X,
+          LinkedIn, YouTube, TikTok, Pinterest, etc.). Paste the full URL and
+          we&rsquo;ll show the right logo automatically.
+        </p>
+        <div className="space-y-3">
+          {[0, 1, 2].map((i) => {
+            const value = form.social_links[i] || ""
+            return (
+              <div key={i} className="flex items-center gap-3">
+                <span className="shrink-0 w-9 h-9 rounded-lg bg-gray-100 text-navy-dark flex items-center justify-center">
+                  {value.trim() ? (
+                    <SocialIcon url={value} className="w-5 h-5" />
+                  ) : (
+                    <span className="text-secondary text-xs">{i + 1}</span>
+                  )}
+                </span>
+                <input
+                  value={value}
+                  onChange={(e) => setSocialLink(i, e.target.value)}
+                  placeholder="https://instagram.com/yourbusiness"
+                  className="w-full border rounded-sm px-3 py-2 text-sm"
+                  aria-label={
+                    value.trim()
+                      ? `Social link ${i + 1} (${socialFromUrl(value).label})`
+                      : `Social link ${i + 1}`
+                  }
+                />
+              </div>
+            )
+          })}
         </div>
       </div>
 

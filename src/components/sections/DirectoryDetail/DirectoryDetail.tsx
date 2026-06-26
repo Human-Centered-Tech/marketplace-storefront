@@ -3,6 +3,8 @@
 import { DirectoryListing } from "@/types/directory"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 import { OWNER_INTERVIEW_QUESTIONS } from "@/lib/owner-interview"
+import { socialLinksToArray } from "@/lib/social"
+import { SocialIcon } from "@/components/sections/DirectoryManagement/SocialIcon"
 import { SingleLocationMap } from "@/components/sections/DirectoryListing/SingleLocationMap"
 
 const tierLabels: Record<string, string> = {
@@ -48,11 +50,7 @@ const ctaLabels: Record<string, string> = {
   book_a_call: "Book a Call",
 }
 
-export const DirectoryDetail = ({
-  listing,
-}: {
-  listing: DirectoryListing
-}) => {
+export const DirectoryDetail = ({ listing }: { listing: DirectoryListing }) => {
   const locationStr = listing.address
     ? [listing.address.city, listing.address.state, listing.address.zip]
         .filter(Boolean)
@@ -94,9 +92,7 @@ export const DirectoryDetail = ({
               designed for white); navy fallback for the initials. */}
           <div
             className={`w-28 h-28 lg:w-32 lg:h-32 rounded-xl flex items-center justify-center border-4 border-[#FAF9F5] shrink-0 ${
-              listing.logo_url
-                ? "bg-white p-2"
-                : "bg-navy-dark shadow-inner"
+              listing.logo_url ? "bg-white p-2" : "bg-navy-dark shadow-inner"
             }`}
           >
             {listing.logo_url ? (
@@ -174,7 +170,8 @@ export const DirectoryDetail = ({
                   ? listing.category_links
                       .slice()
                       .sort(
-                        (a, b) => (b.is_primary ? 1 : 0) - (a.is_primary ? 1 : 0)
+                        (a, b) =>
+                          (b.is_primary ? 1 : 0) - (a.is_primary ? 1 : 0)
                       )
                       .map((l) => l.category?.name)
                       .filter(Boolean)
@@ -404,62 +401,32 @@ export const DirectoryDetail = ({
               </div>
             )}
 
-            {/* Social Links */}
-            {listing.social_links &&
-              Object.values(listing.social_links).some(Boolean) && (
+            {/* Social Links — free-form URLs, brand logo detected per URL. */}
+            {(() => {
+              const socials = socialLinksToArray(listing.social_links)
+              if (socials.length === 0) return null
+              return (
                 <div>
                   <h2 className="label-sm text-[10px] text-gold-dark font-bold tracking-[0.2em] mb-4">
                     FOLLOW US
                   </h2>
                   <div className="h-px w-full bg-gold/30 mb-8" />
                   <div className="flex gap-4">
-                    {listing.social_links.facebook && (
+                    {socials.map((url, i) => (
                       <a
-                        href={listing.social_links.facebook}
+                        key={i}
+                        href={url}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="p-3 rounded-xl bg-gray-100 text-navy-dark hover:bg-[#F2CD69]/30 transition-colors"
                       >
-                        <span className="material-symbols-outlined">group</span>
+                        <SocialIcon url={url} className="w-5 h-5" />
                       </a>
-                    )}
-                    {listing.social_links.instagram && (
-                      <a
-                        href={listing.social_links.instagram}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-3 rounded-xl bg-gray-100 text-navy-dark hover:bg-[#F2CD69]/30 transition-colors"
-                      >
-                        <span className="material-symbols-outlined">
-                          photo_camera
-                        </span>
-                      </a>
-                    )}
-                    {listing.social_links.twitter && (
-                      <a
-                        href={listing.social_links.twitter}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-3 rounded-xl bg-gray-100 text-navy-dark hover:bg-[#F2CD69]/30 transition-colors"
-                      >
-                        <span className="material-symbols-outlined">share</span>
-                      </a>
-                    )}
-                    {listing.social_links.linkedin && (
-                      <a
-                        href={listing.social_links.linkedin}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-3 rounded-xl bg-gray-100 text-navy-dark hover:bg-[#F2CD69]/30 transition-colors"
-                      >
-                        <span className="material-symbols-outlined">
-                          work
-                        </span>
-                      </a>
-                    )}
+                    ))}
                   </div>
                 </div>
-              )}
+              )
+            })()}
           </div>
 
           {/* Right Column / Sidebar */}
@@ -481,8 +448,8 @@ export const DirectoryDetail = ({
                 </p>
                 <LocalizedClientLink
                   href={`/sell/onboarding?claim_listing=${listing.id}&return_to=${encodeURIComponent(
-                `/directory/${listing.id}/claim/checkout`
-              )}`}
+                    `/directory/${listing.id}/claim/checkout`
+                  )}`}
                   className="block w-full bg-navy-dark text-white py-4 rounded-xl label-sm text-[10px] font-bold tracking-widest hover:bg-navy transition-colors"
                 >
                   Claim This Listing
@@ -492,52 +459,53 @@ export const DirectoryDetail = ({
 
             {/* CTA Card — available on all paid tiers (incl. Local); only
                 rendered when claimed and a usable href resolves. */}
-            {!isUnclaimed && (() => {
-              const ctaType = listing.cta_type || "visit_shop"
-              const hasShop = Boolean(listing.vendor_id)
-              let href: string | null = null
-              let label = ctaLabels[ctaType] || "Learn More"
+            {!isUnclaimed &&
+              (() => {
+                const ctaType = listing.cta_type || "visit_shop"
+                const hasShop = Boolean(listing.vendor_id)
+                let href: string | null = null
+                let label = ctaLabels[ctaType] || "Learn More"
 
-              if (ctaType === "visit_shop") {
-                if (hasShop) {
-                  href = `/sellers/${listing.slug}`
-                  label = "Visit Our Shop"
-                } else if (listing.website_url) {
-                  href = listing.website_url
-                  label = "Visit Website"
+                if (ctaType === "visit_shop") {
+                  if (hasShop) {
+                    href = `/sellers/${listing.slug}`
+                    label = "Visit Our Shop"
+                  } else if (listing.website_url) {
+                    href = listing.website_url
+                    label = "Visit Website"
+                  }
+                } else {
+                  href = listing.cta_url || null
                 }
-              } else {
-                href = listing.cta_url || null
-              }
 
-              if (!href) return null
+                if (!href) return null
 
-              const external = href.startsWith("http")
-              return (
-                <div className="bg-navy-dark p-8 rounded-xl text-center shadow-2xl">
-                  <a
-                    href={href}
-                    target={external ? "_blank" : undefined}
-                    rel={external ? "noopener noreferrer" : undefined}
-                    className="w-full bg-gradient-to-br from-[#F2CD69] to-[#BE9B32] text-navy-dark py-4 rounded-xl label-sm text-[10px] font-bold tracking-widest flex items-center justify-center gap-3 hover:brightness-105 transition-all active:scale-95 mb-4"
-                  >
-                    <span className="material-symbols-outlined">
-                      {ctaType === "book_now" || ctaType === "book_a_call"
-                        ? "event"
-                        : ctaType === "shop_now" || ctaType === "visit_shop"
-                        ? "storefront"
-                        : "language"}
-                    </span>
-                    {label}
-                  </a>
-                  {locationStr && (
-                    <p className="text-white/60 text-xs label-sm tracking-wider">
-                      {locationStr}
-                    </p>
-                  )}
-                </div>
-              )
-            })()}
+                const external = href.startsWith("http")
+                return (
+                  <div className="bg-navy-dark p-8 rounded-xl text-center shadow-2xl">
+                    <a
+                      href={href}
+                      target={external ? "_blank" : undefined}
+                      rel={external ? "noopener noreferrer" : undefined}
+                      className="w-full bg-gradient-to-br from-[#F2CD69] to-[#BE9B32] text-navy-dark py-4 rounded-xl label-sm text-[10px] font-bold tracking-widest flex items-center justify-center gap-3 hover:brightness-105 transition-all active:scale-95 mb-4"
+                    >
+                      <span className="material-symbols-outlined">
+                        {ctaType === "book_now" || ctaType === "book_a_call"
+                          ? "event"
+                          : ctaType === "shop_now" || ctaType === "visit_shop"
+                            ? "storefront"
+                            : "language"}
+                      </span>
+                      {label}
+                    </a>
+                    {locationStr && (
+                      <p className="text-white/60 text-xs label-sm tracking-wider">
+                        {locationStr}
+                      </p>
+                    )}
+                  </div>
+                )
+              })()}
 
             {/* Hours */}
             {listing.always_open ? (
@@ -552,30 +520,33 @@ export const DirectoryDetail = ({
                   Open 24 hours, every day.
                 </p>
               </div>
-            ) : listing.hours_of_operation && Object.keys(listing.hours_of_operation).length > 0 && (
-              <div className="bg-gray-50 p-8 rounded-xl">
-                <h3 className="label-sm text-[10px] text-navy-dark font-bold tracking-widest mb-6 border-b border-gray-200 pb-4">
-                  HOURS OF OPERATION
-                </h3>
-                <ul className="space-y-3 font-serif text-base">
-                  {dayNames.map((day) => {
-                    const h = listing.hours_of_operation?.[day]
-                    return (
-                      <li
-                        key={day}
-                        className={`flex justify-between ${
-                          !h ? "text-secondary/50" : ""
-                        }`}
-                      >
-                        <span>{dayLabels[day]}</span>
-                        <span className={h ? "font-bold" : ""}>
-                          {h ? `${h.open} - ${h.close}` : "Closed"}
-                        </span>
-                      </li>
-                    )
-                  })}
-                </ul>
-              </div>
+            ) : (
+              listing.hours_of_operation &&
+              Object.keys(listing.hours_of_operation).length > 0 && (
+                <div className="bg-gray-50 p-8 rounded-xl">
+                  <h3 className="label-sm text-[10px] text-navy-dark font-bold tracking-widest mb-6 border-b border-gray-200 pb-4">
+                    HOURS OF OPERATION
+                  </h3>
+                  <ul className="space-y-3 font-serif text-base">
+                    {dayNames.map((day) => {
+                      const h = listing.hours_of_operation?.[day]
+                      return (
+                        <li
+                          key={day}
+                          className={`flex justify-between ${
+                            !h ? "text-secondary/50" : ""
+                          }`}
+                        >
+                          <span>{dayLabels[day]}</span>
+                          <span className={h ? "font-bold" : ""}>
+                            {h ? `${h.open} - ${h.close}` : "Closed"}
+                          </span>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                </div>
+              )
             )}
 
             {/* Location Map */}
@@ -667,7 +638,9 @@ function LocationEmbed({
         className="absolute inset-0"
         fallback={
           <div className="absolute inset-0 bg-gray-100 flex items-center justify-center">
-            <p className="text-secondary text-sm">{locationStrFallback(address)}</p>
+            <p className="text-secondary text-sm">
+              {locationStrFallback(address)}
+            </p>
           </div>
         }
       />
@@ -681,6 +654,8 @@ function locationStrFallback(address: {
   state?: string
   zip?: string
 }): string {
-  const s = [address.city, address.state, address.zip].filter(Boolean).join(", ")
+  const s = [address.city, address.state, address.zip]
+    .filter(Boolean)
+    .join(", ")
   return s || "Location"
 }

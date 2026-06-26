@@ -7,6 +7,7 @@ import {
   getMyDirectoryListing,
   updateDirectoryListing,
 } from "@/lib/data/directory-actions"
+import { socialLinksToArray } from "@/lib/social"
 
 export default function EditDirectoryListingPage() {
   const [categories, setCategories] = useState<DirectoryCategory[]>([])
@@ -76,7 +77,6 @@ export default function EditDirectoryListingPage() {
   }
 
   const addr = listing.address as any
-  const social = listing.social_links as any
   const interview = listing.owner_interview as any
   const devotional = listing.devotional as any
 
@@ -112,10 +112,7 @@ export default function EditDirectoryListingPage() {
               .split(",")
               .map((s: string) => s.trim().toUpperCase())
               .filter((s: string) => s.length === 2),
-            facebook: social?.facebook || "",
-            instagram: social?.instagram || "",
-            twitter: social?.twitter || "",
-            linkedin: social?.linkedin || "",
+            social_links: socialLinksToArray(listing.social_links),
             always_open: listing.always_open ?? false,
             owner_photo_url: interview?.photo_url || "",
             owner_q1_prompt: interview?.q1_prompt,
