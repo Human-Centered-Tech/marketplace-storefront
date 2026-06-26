@@ -90,6 +90,9 @@ export type DirectoryListing = {
     serviced_states?: string
   } | null
   social_links: {
+    // New shape: up to 3 free-form URLs (platform detected per URL).
+    links?: string[]
+    // Legacy keyed shape, still read for back-compat.
     facebook?: string
     instagram?: string
     twitter?: string
