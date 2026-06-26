@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState, type UIEvent } from "react"
 import { DirectoryParishAffiliation, Parish } from "@/types/directory"
 import {
   addParishAffiliation,
@@ -17,6 +17,9 @@ const TIER_PARISH_LIMITS: Record<string, number> = {
   featured: 3,
   enterprise: 25,
 }
+
+// Typeahead page size for the infinite-scroll parish search.
+const PARISH_PAGE = 20
 
 const formatParish = (p: Parish) => {
   const loc = [p.city, p.state].filter(Boolean).join(", ")
@@ -47,33 +50,36 @@ export const ParishAffiliationsSection = ({
   const [searching, setSearching] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [busyParishId, setBusyParishId] = useState<string | null>(null)
+  // Total matches reported by the backend (COUNT(*) OVER()), and whether a
+  // "load more" page fetch is in flight — drives the infinite scroll.
+  const [count, setCount] = useState(0)
+  const [loadingMore, setLoadingMore] = useState(false)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const reqIdRef = useRef(0)
+  // Next server offset to request. Tracks rows *received from the server*
+  // (incl. any already-affiliated ones filtered from the display), so the
+  // offset math stays correct even though we hide affiliated parishes.
+  const nextOffsetRef = useRef(0)
 
   const atCap = affiliations.length >= limit
   const remaining = Math.max(0, limit - affiliations.length)
 
-  // Debounced typeahead. We bump a request id on each call so a slower
-  // older response can't overwrite a faster newer one.
-  useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current)
-    const trimmed = query.trim()
-    if (trimmed.length < 2 || atCap) {
-      setResults([])
-      setSearching(false)
-      return
-    }
-
-    setSearching(true)
-    const myReq = ++reqIdRef.current
-
-    debounceRef.current = setTimeout(async () => {
+  // Fetch one page of parishes. `append` distinguishes the first page (replace
+  // results) from a scroll-triggered "load more" (append). A request id is
+  // bumped on every call so a slower older response — or one for a now-stale
+  // query — can never overwrite/append onto a newer one.
+  const fetchParishes = useCallback(
+    async (trimmed: string, offset: number, append: boolean) => {
+      const myReq = ++reqIdRef.current
+      if (append) setLoadingMore(true)
+      else setSearching(true)
       try {
         const backendUrl =
           process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9000"
         const url = new URL(`${backendUrl}/store/directory/parishes`)
         url.searchParams.set("q", trimmed)
-        url.searchParams.set("limit", "15")
+        url.searchParams.set("limit", String(PARISH_PAGE))
+        url.searchParams.set("offset", String(offset))
         const res = await fetch(url.toString(), {
           headers: {
             "x-publishable-api-key":
@@ -81,21 +87,59 @@ export const ParishAffiliationsSection = ({
           },
         })
         if (!res.ok) throw new Error(`Search failed (${res.status})`)
-        const data = (await res.json()) as { parishes: Parish[] }
+        const data = (await res.json()) as { parishes: Parish[]; count: number }
         if (myReq !== reqIdRef.current) return
         const affiliatedIds = new Set(affiliations.map((a) => a.parish_id))
-        setResults(data.parishes.filter((p) => !affiliatedIds.has(p.id)))
+        const fresh = data.parishes.filter((p) => !affiliatedIds.has(p.id))
+        setCount(data.count ?? 0)
+        nextOffsetRef.current = offset + data.parishes.length
+        setResults((prev) => (append ? [...prev, ...fresh] : fresh))
       } catch {
-        if (myReq === reqIdRef.current) setResults([])
+        if (myReq === reqIdRef.current && !append) setResults([])
       } finally {
-        if (myReq === reqIdRef.current) setSearching(false)
+        if (myReq === reqIdRef.current) {
+          if (append) setLoadingMore(false)
+          else setSearching(false)
+        }
       }
+    },
+    [affiliations]
+  )
+
+  // Debounced first-page search on query change. Resets paging state.
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    const trimmed = query.trim()
+    if (trimmed.length < 2 || atCap) {
+      reqIdRef.current++ // invalidate any in-flight fetch
+      setResults([])
+      setSearching(false)
+      setLoadingMore(false)
+      setCount(0)
+      nextOffsetRef.current = 0
+      return
+    }
+
+    debounceRef.current = setTimeout(() => {
+      nextOffsetRef.current = 0
+      fetchParishes(trimmed, 0, false)
     }, 220)
 
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current)
     }
-  }, [query, atCap, affiliations])
+  }, [query, atCap, fetchParishes])
+
+  // Infinite scroll: when the dropdown nears its bottom and more results exist,
+  // pull the next page from the server and append it.
+  const handleResultsScroll = (e: UIEvent<HTMLDivElement>) => {
+    if (searching || loadingMore) return
+    if (nextOffsetRef.current >= count) return
+    const el = e.currentTarget
+    if (el.scrollHeight - el.scrollTop - el.clientHeight < 64) {
+      fetchParishes(query.trim(), nextOffsetRef.current, true)
+    }
+  }
 
   const handleAdd = async (parish: Parish) => {
     setError(null)
@@ -119,6 +163,8 @@ export const ParishAffiliationsSection = ({
       setAffiliations((prev) => [...prev, { ...res.affiliation, parish }])
       setQuery("")
       setResults([])
+      setCount(0)
+      nextOffsetRef.current = 0
     } finally {
       // try/finally guarantees the spinner clears even on an unexpected
       // throw — otherwise the row would stay disabled and feel frozen.
@@ -217,7 +263,10 @@ export const ParishAffiliationsSection = ({
             autoComplete="off"
           />
           {query.trim().length >= 2 && (
-            <div className="border rounded-sm mt-1 max-h-72 overflow-y-auto bg-white shadow-sm">
+            <div
+              className="border rounded-sm mt-1 max-h-72 overflow-y-auto bg-white shadow-sm"
+              onScroll={handleResultsScroll}
+            >
               {searching && (
                 <div className="px-3 py-2 text-xs text-secondary">
                   Searching…
@@ -249,6 +298,15 @@ export const ParishAffiliationsSection = ({
                     </button>
                   )
                 })}
+              {!searching && results.length > 0 && (
+                <div className="px-3 py-2 text-[11px] text-secondary text-center border-t bg-[#FAF9F5]">
+                  {loadingMore
+                    ? "Loading more…"
+                    : nextOffsetRef.current < count
+                      ? `Showing ${results.length} of ${count} — scroll for more`
+                      : "All matching parishes shown"}
+                </div>
+              )}
             </div>
           )}
           {query.trim().length > 0 && query.trim().length < 2 && (
