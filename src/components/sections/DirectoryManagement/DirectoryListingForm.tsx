@@ -832,7 +832,7 @@ export const DirectoryListingForm = ({
                 <input
                   value={value}
                   onChange={(e) => setSocialLink(i, e.target.value)}
-                  placeholder="https://instagram.com/yourbusiness"
+                  placeholder="https://"
                   className="w-full border rounded-sm px-3 py-2 text-sm"
                   aria-label={
                     value.trim()
