@@ -5,13 +5,14 @@ import { DirectoryParishAffiliation, Parish } from "@/types/directory"
 import {
   addParishAffiliation,
   removeParishAffiliation,
+  getParishAffiliations,
 } from "@/lib/data/directory-actions"
 
 // Mirror of the backend's TIER_AFFILIATION_LIMITS map (see
-// marketplace-backend/src/api/store/directory/listings/[id]/affiliations/route.ts).
-// Used only for UI hints; the backend remains the source of truth and will
-// 422 if we get out of sync. Unknown/newer tiers fall back to 1 to match
-// the backend's `|| 1` behavior.
+// marketplace-backend/src/lib/directory-tier.ts). Used only as the INITIAL UI
+// hint from the listing's stored subscription_tier; on mount we fetch the
+// backend's authoritative limit (which also honors the owner's selected
+// membership pre-payment) and use that. Unknown/newer tiers fall back to 1.
 const TIER_PARISH_LIMITS: Record<string, number> = {
   verified: 1,
   featured: 3,
@@ -42,7 +43,11 @@ export const ParishAffiliationsSection = ({
   tier,
   initialAffiliations,
 }: Props) => {
-  const limit = (tier && TIER_PARISH_LIMITS[tier]) || 1
+  // Initial hint from the listing's stored tier; replaced on mount by the
+  // backend's authoritative limit (which honors the selected membership before
+  // payment, so setup isn't capped at 1 while subscription_tier is "verified").
+  const tierLimit = (tier && TIER_PARISH_LIMITS[tier]) || 1
+  const [limit, setLimit] = useState(tierLimit)
   const [affiliations, setAffiliations] =
     useState<DirectoryParishAffiliation[]>(initialAffiliations)
   const [query, setQuery] = useState("")
@@ -60,6 +65,22 @@ export const ParishAffiliationsSection = ({
   // (incl. any already-affiliated ones filtered from the display), so the
   // offset math stays correct even though we hide affiliated parishes.
   const nextOffsetRef = useRef(0)
+
+  // Replace the tier-derived hint with the backend's authoritative limit, which
+  // honors the owner's selected membership (recommended_tier) during pre-payment
+  // setup — so a not-yet-paid listing (subscription_tier still "verified") shows
+  // the full parish count they chose, not the default 1.
+  useEffect(() => {
+    let cancelled = false
+    getParishAffiliations(listingId)
+      .then((res) => {
+        if (!cancelled && typeof res.limit === "number") setLimit(res.limit)
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [listingId])
 
   const atCap = affiliations.length >= limit
   const remaining = Math.max(0, limit - affiliations.length)

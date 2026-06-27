@@ -132,6 +132,29 @@ export async function getMyDirectoryListing(): Promise<DirectoryListing | null> 
   return res.data.listing ?? null
 }
 
+// Read the authoritative parish-affiliation limit for a listing. The backend
+// accounts for the owner's SELECTED membership (recommended_tier) during
+// pre-payment setup, so this can exceed what the listing's stored
+// subscription_tier alone would imply. Falls back to null limit on error so the
+// UI can use its tier-derived default.
+export async function getParishAffiliations(listingId: string): Promise<{
+  affiliations: DirectoryParishAffiliation[]
+  limit: number | null
+  remaining: number | null
+}> {
+  const res = await authedBackendFetch<{
+    affiliations: DirectoryParishAffiliation[]
+    limit: number
+    remaining: number
+  }>(`/store/directory/listings/${listingId}/affiliations`)
+  if (!res.ok) return { affiliations: [], limit: null, remaining: null }
+  return {
+    affiliations: res.data.affiliations ?? [],
+    limit: res.data.limit ?? null,
+    remaining: res.data.remaining ?? null,
+  }
+}
+
 export async function addParishAffiliation(
   listingId: string,
   parishId: string
@@ -146,11 +169,11 @@ export async function addParishAffiliation(
     body: JSON.stringify({ parish_id: parishId }),
   })
   if (!res.ok) {
-    // The backend's 422 message starts with "Your <tier> tier allows" and
-    // 409 with "Already affiliated"; pass a discriminator up so the form
-    // can decide whether to show it inline vs as a generic error.
+    // The backend's 422 message reads "Your membership allows a maximum of …"
+    // and 409 "Already affiliated"; pass a discriminator up so the form can
+    // decide whether to show it inline vs as a generic error.
     const e = res.error
-    const code = e.startsWith("Your ") && e.includes("tier allows")
+    const code = e.includes("allows a maximum of")
       ? "tier_limit"
       : e.toLowerCase().startsWith("already affiliated")
         ? "duplicate"
