@@ -21,12 +21,14 @@ import {
 } from "./routing"
 
 // Tier-aware "Book a call" Calendly links. Enterprise (Tier 3 / $2,999) books
-// the enterprise call; every other tier — and the financial dead-end — books
-// the general membership call.
+// the enterprise call; every other tier books the general membership call;
+// the financial dead-end books the Arimathea partner intro call.
 const CALENDLY_MEMBERSHIP_URL =
   "https://calendly.com/business-catholicowned/catholic-owned-membership"
 const CALENDLY_ENTERPRISE_URL =
   "https://calendly.com/business-catholicowned/catholic-owned-enterprise"
+const ARIMATHEA_CALENDLY_URL =
+  "https://calendly.com/daren-arimatheainvesting/catholic-owned-discussion"
 const CALENDLY_BY_TIER: Partial<Record<RecommendedTierKey, string>> = {
   tier3: CALENDLY_ENTERPRISE_URL,
 }
@@ -622,7 +624,7 @@ const BookCallStep: React.FC = () => (
       subtitle="Your next step is a simple introductory call with our partners at Arimathea to ensure a good fit. After your call, we'll reach out directly with next steps."
     />
     <a
-      href={CALENDLY_MEMBERSHIP_URL}
+      href={ARIMATHEA_CALENDLY_URL}
       target="_blank"
       rel="noopener noreferrer"
       className="inline-flex items-center px-10 py-4 text-[13px] font-semibold uppercase tracking-[0.1em] rounded-xl bg-[#BE9B32] text-[#001435] hover:bg-[#d4af4c] shadow-lg transition-colors"
