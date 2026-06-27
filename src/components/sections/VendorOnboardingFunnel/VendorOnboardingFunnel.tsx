@@ -7,6 +7,7 @@ import {
   EmployeeRange,
   FunnelState,
   InvoiceRange,
+  RecommendedTierKey,
   RevenueRange,
   ScreeningMethod,
   SizingAnswers,
@@ -19,8 +20,18 @@ import {
   recommendTier,
 } from "./routing"
 
-const ARIMATHEA_CALENDLY_URL =
-  "https://calendly.com/daren-arimatheainvesting/catholic-owned-discussion"
+// Tier-aware "Book a call" Calendly links. Enterprise (Tier 3 / $2,999) books
+// the enterprise call; every other tier — and the financial dead-end — books
+// the general membership call.
+const CALENDLY_MEMBERSHIP_URL =
+  "https://calendly.com/business-catholicowned/catholic-owned-membership"
+const CALENDLY_ENTERPRISE_URL =
+  "https://calendly.com/business-catholicowned/catholic-owned-enterprise"
+const CALENDLY_BY_TIER: Partial<Record<RecommendedTierKey, string>> = {
+  tier3: CALENDLY_ENTERPRISE_URL,
+}
+const calendlyForTier = (key: RecommendedTierKey): string =>
+  CALENDLY_BY_TIER[key] ?? CALENDLY_MEMBERSHIP_URL
 
 // Every funnel path starts at the Founding Pillars gate (initialState.step),
 // and its "Agree and continue" button is disabled until all four pillars are
@@ -611,7 +622,7 @@ const BookCallStep: React.FC = () => (
       subtitle="Your next step is a simple introductory call with our partners at Arimathea to ensure a good fit. After your call, we'll reach out directly with next steps."
     />
     <a
-      href={ARIMATHEA_CALENDLY_URL}
+      href={CALENDLY_MEMBERSHIP_URL}
       target="_blank"
       rel="noopener noreferrer"
       className="inline-flex items-center px-10 py-4 text-[13px] font-semibold uppercase tracking-[0.1em] rounded-xl bg-[#BE9B32] text-[#001435] hover:bg-[#d4af4c] shadow-lg transition-colors"
@@ -794,7 +805,7 @@ const RecommendedTierStep: React.FC<{
         </LocalizedClientLink>
         {tier.bookCallOption && (
           <a
-            href={ARIMATHEA_CALENDLY_URL}
+            href={calendlyForTier(tierKey)}
             target="_blank"
             rel="noopener noreferrer"
             className="flex-1 inline-flex items-center justify-center px-8 py-4 text-[13px] font-semibold uppercase tracking-[0.1em] rounded-xl bg-white border-2 border-[#001435] text-[#001435] hover:bg-[#001435] hover:text-white transition-colors"

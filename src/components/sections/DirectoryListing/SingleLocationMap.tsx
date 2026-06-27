@@ -14,6 +14,11 @@ type LatLng = { lat: number; lng: number }
  * (e.g. lat/lng already stored on a listing's address); otherwise geocodes the
  * `query` string client-side via the Geocoding API. Renders `fallback` when no
  * key is configured or no location can be resolved.
+ *
+ * When `approximate` is set, the exact pin is omitted — the map simply centers
+ * on the (typically city/state/zip-derived) location at the caller's zoom. Use
+ * this for public listings whose precise address is intentionally withheld, so
+ * the area is shown without implying a pinpoint location.
  */
 export function SingleLocationMap({
   coords: coordsProp = null,
@@ -21,12 +26,14 @@ export function SingleLocationMap({
   zoom = 14,
   className = "",
   fallback = null,
+  approximate = false,
 }: {
   coords?: LatLng | null
   query?: string | null
   zoom?: number
   className?: string
   fallback?: ReactNode
+  approximate?: boolean
 }) {
   const hasProp =
     !!coordsProp &&
@@ -79,16 +86,18 @@ export function SingleLocationMap({
           zoomControl={true}
           style={{ width: "100%", height: "100%" }}
         >
-          <AdvancedMarker position={coords}>
-            <div className="w-10 h-10 bg-navy-dark rounded-full flex items-center justify-center border-4 border-[#FAF9F5] shadow-xl">
-              <span
-                className="material-symbols-outlined text-[#F2CD69]"
-                style={{ fontVariationSettings: "'FILL' 1" }}
-              >
-                location_on
-              </span>
-            </div>
-          </AdvancedMarker>
+          {!approximate && (
+            <AdvancedMarker position={coords}>
+              <div className="w-10 h-10 bg-navy-dark rounded-full flex items-center justify-center border-4 border-[#FAF9F5] shadow-xl">
+                <span
+                  className="material-symbols-outlined text-[#F2CD69]"
+                  style={{ fontVariationSettings: "'FILL' 1" }}
+                >
+                  location_on
+                </span>
+              </div>
+            </AdvancedMarker>
+          )}
         </GoogleMap>
       </div>
     </GoogleMapsProvider>

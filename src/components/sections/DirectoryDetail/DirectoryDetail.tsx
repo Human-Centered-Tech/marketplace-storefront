@@ -603,9 +603,12 @@ export const DirectoryDetail = ({ listing }: { listing: DirectoryListing }) => {
   )
 }
 
-// Inline Google map for a single listing. Prefers lat/lng stored on the
-// address (written by the backend geocoder on save); otherwise geocodes the
-// address string client-side. Renders a placeholder when there's no location.
+// Inline Google map for a single listing. Owner payloads carry precise lat/lng
+// (written by the backend geocoder on save); public payloads are coarsened by
+// the backend to city/state/zip only. With precise coords we render the exact
+// pin; without them we render an APPROXIMATE, pin-less area map geocoded from
+// ONLY the city/state/zip (never the street or `full`, either of which may
+// still embed an exact address) so we never leak/imply a precise location.
 function LocationEmbed({
   address,
 }: {
@@ -619,20 +622,31 @@ function LocationEmbed({
     lng?: number
   }
 }) {
-  // Prefer the full address string (Bubble-imported listings have only this
-  // populated); fall back to a composite of structured fields.
-  const query =
+  const hasPreciseCoords =
+    Number.isFinite(address.lat) && Number.isFinite(address.lng)
+
+  const coords = hasPreciseCoords
+    ? { lat: address.lat as number, lng: address.lng as number }
+    : null
+
+  // Coarse, public-safe location string — used directly in approximate mode.
+  const cityStateZip = [address.city, address.state, address.zip]
+    .filter(Boolean)
+    .join(", ")
+
+  // Precise mode may geocode the full/street address as a backup to the
+  // stored coords (Bubble-imported listings have only `full`); approximate
+  // mode must stay coarse and ignore street/full entirely.
+  const preciseQuery =
     address.full ??
     [address.street, address.city, address.state, address.zip]
       .filter(Boolean)
       .join(", ")
 
-  const coords =
-    Number.isFinite(address.lat) && Number.isFinite(address.lng)
-      ? { lat: address.lat as number, lng: address.lng as number }
-      : null
+  const approximate = !hasPreciseCoords
+  const query = approximate ? cityStateZip : preciseQuery
 
-  // No address at all — render a placeholder rather than a misleading map.
+  // No location at all — render a placeholder rather than a misleading/0,0 map.
   if (!query && !coords) {
     return (
       <div className="h-48 relative overflow-hidden bg-gray-100 flex items-center justify-center">
@@ -646,6 +660,8 @@ function LocationEmbed({
       <SingleLocationMap
         coords={coords}
         query={query || null}
+        approximate={approximate}
+        zoom={approximate ? 11 : 14}
         className="absolute inset-0"
         fallback={
           <div className="absolute inset-0 bg-gray-100 flex items-center justify-center">
