@@ -97,10 +97,26 @@ const Form = () => {
   })()
 
 
+  // Flash shown when the user lands here from the email-verification link on a
+  // device where they weren't signed in: verification already succeeded from
+  // the token (no login wall) — they just sign in once here to continue.
+  const emailVerified = searchParams.get("email_verified")
+
   return (
     <main className="min-h-[70vh] flex items-center justify-center py-12 px-4">
       <div className="w-full max-w-md">
         <div className="bg-[rgba(var(--neutral-0))] rounded-sm border border-[rgba(var(--neutral-100))] p-8 lg:p-10 shadow-sm">
+          {emailVerified === "1" && (
+            <div className="mb-6 rounded-sm border border-green-300 bg-green-50 px-4 py-3 text-sm text-green-800">
+              Your email is verified. Please sign in to continue.
+            </div>
+          )}
+          {emailVerified === "error" && (
+            <div className="mb-6 rounded-sm border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+              We couldn&rsquo;t verify that link — it may have expired. Sign in
+              and we&rsquo;ll send a fresh verification email.
+            </div>
+          )}
           <div className="text-center mb-8">
             <h1 className="font-serif text-3xl font-bold text-primary mb-2">
               Welcome Back

@@ -13,13 +13,18 @@ const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || ""
 
 /**
  * Email-verification redirect handler. The verification email links here
- * with `?token=...`; we proxy to the backend with the customer's auth
- * cookie + publishable key, then forward to the dashboard with a flash
- * query (`?email_verified=1` on success, `?email_verified=error` on fail).
+ * with `?token=...`. We verify via the TOKEN-ONLY backend endpoint
+ * (`/store/customers/verify-email`), which needs no login session — the token
+ * itself proves email ownership. This is the key fix: the email is almost
+ * always opened without the customer's cookie (on their phone, or in the
+ * Gmail/Outlook in-app browser), and the old /me endpoint forced a login wall
+ * before they could verify.
  *
- * The user must be signed in for this to work — verifying as anon would
- * leak nothing (Medusa rejects without an actor) but the UX is to bounce
- * unauthenticated users to login first with return_to set.
+ * Post-verify redirect is session-aware:
+ *  - already signed in (cookie present)  -> straight into the dashboard
+ *    (or the vendor SSO handoff for active vendors), no re-login.
+ *  - not signed in on this device        -> the /user page, which shows the
+ *    login form with a "verified — please sign in" flash.
  */
 export async function GET(req: NextRequest) {
   const token = req.nextUrl.searchParams.get("token")
@@ -29,33 +34,17 @@ export async function GET(req: NextRequest) {
     )
   }
 
-  const cookies = await nextCookies()
-  const jwt = cookies.get("_medusa_jwt")?.value
-  if (!jwt) {
-    // Send them to login first; LoginForm.resolveReturnTo will bring them
-    // back here with the token preserved.
-    return NextResponse.redirect(
-      `${STOREFRONT_URL}/us/user?return_to=${encodeURIComponent(
-        `/us/verify-email?token=${token}`
-      )}`
-    )
-  }
-
   try {
     const headers: Record<string, string> = {
-      authorization: `Bearer ${jwt}`,
       "content-type": "application/json",
     }
     if (PUBLISHABLE_KEY) headers["x-publishable-api-key"] = PUBLISHABLE_KEY
 
-    const res = await fetch(
-      `${BACKEND_URL}/store/customers/me/verify-email`,
-      {
-        method: "POST",
-        headers,
-        body: JSON.stringify({ token }),
-      }
-    )
+    const res = await fetch(`${BACKEND_URL}/store/customers/verify-email`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ token }),
+    })
 
     if (!res.ok) {
       return NextResponse.redirect(
@@ -63,10 +52,22 @@ export async function GET(req: NextRequest) {
       )
     }
 
-    // Bust the customer cache so the dashboard's next render reflects
-    // the freshly-flipped metadata.email_verified flag — without this,
-    // the unverified banner sticks around because retrieveCustomer
-    // serves stale cached data.
+    const cookies = await nextCookies()
+    const jwt = cookies.get("_medusa_jwt")?.value
+
+    // Not signed in on this device (the common cross-device email case):
+    // verification still succeeded from the token. Send them to /user, which
+    // renders the login form + a "verified, please sign in" flash.
+    if (!jwt) {
+      return NextResponse.redirect(
+        `${STOREFRONT_URL}/us/user?email_verified=1`
+      )
+    }
+
+    // Signed in: bust the customer cache so the dashboard's next render
+    // reflects the freshly-flipped metadata.email_verified flag — without
+    // this, the unverified banner sticks around (retrieveCustomer serves
+    // stale cached data).
     const cacheId = cookies.get("_medusa_cache_id")?.value
     if (cacheId) revalidateTag(`customers-${cacheId}`)
 
@@ -78,9 +79,7 @@ export async function GET(req: NextRequest) {
     // this branch (see PR #56).
     const vendorStatus = await retrieveVendorStatus()
     if (vendorStatus.isVendor) {
-      return NextResponse.redirect(
-        `${STOREFRONT_URL}/api/vendor-handoff`
-      )
+      return NextResponse.redirect(`${STOREFRONT_URL}/api/vendor-handoff`)
     }
 
     return NextResponse.redirect(
