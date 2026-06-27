@@ -11,6 +11,7 @@ import { getAuthHeaders } from "./cookies"
 
 export const listNetworkingEvents = async (params?: {
   status?: string
+  q?: string
   limit?: number
   offset?: number
 }) => {

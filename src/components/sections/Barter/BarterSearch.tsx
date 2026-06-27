@@ -1,7 +1,8 @@
 "use client"
 
-import { useState, useEffect, useCallback, useMemo } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { BarterListing, BarterCategory } from "@/types/barter"
+import { listBarterListings } from "@/lib/data/barter"
 import { BarterListingCard } from "./BarterListingCard"
 
 type BarterSearchProps = {
@@ -10,68 +11,84 @@ type BarterSearchProps = {
   categories: BarterCategory[]
 }
 
+const PAGE_SIZE = 20
+
 export const BarterSearch = ({
   initialListings,
   initialCount,
   categories,
 }: BarterSearchProps) => {
-  const [allListings, setAllListings] = useState(initialListings)
+  const [listings, setListings] = useState(initialListings)
+  const [count, setCount] = useState(initialCount)
+  const [offset, setOffset] = useState(0)
   const [search, setSearch] = useState("")
+  const [debouncedSearch, setDebouncedSearch] = useState("")
   const [categoryId, setCategoryId] = useState("")
   const [listingType, setListingType] = useState("")
   const [condition, setCondition] = useState("")
   const [loading, setLoading] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
 
-  // Fetch all listings from backend (server-side filtering may not be supported)
-  const fetchListings = useCallback(async () => {
-    setLoading(true)
-    try {
-      const params = new URLSearchParams()
-      if (categoryId) params.set("category_id", categoryId)
-      if (listingType) params.set("listing_type", listingType)
-      if (condition) params.set("condition", condition)
-
-      const backendUrl =
-        process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9000"
-      const res = await fetch(
-        `${backendUrl}/store/barter/listings?${params.toString()}`,
-        {
-          headers: {
-            "x-publishable-api-key":
-              process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "",
-          },
-        }
-      )
-      const data = await res.json()
-      setAllListings(data.listings || [])
-    } catch (err) {
-      console.error("[BarterSearch] fetch failed:", err)
-    } finally {
-      setLoading(false)
-    }
-  }, [categoryId, listingType, condition])
-
-  // Re-fetch when dropdown filters change
+  // Debounce the free-text input before it hits the backend.
   useEffect(() => {
-    const timer = setTimeout(() => {
-      fetchListings()
-    }, 300)
+    const timer = setTimeout(() => setDebouncedSearch(search), 300)
     return () => clearTimeout(timer)
-  }, [fetchListings])
+  }, [search])
 
-  // Client-side text search over fetched listings
-  const filteredListings = useMemo(() => {
-    if (!search.trim()) return allListings
-    const q = search.toLowerCase()
-    return allListings.filter(
-      (l) =>
-        l.title.toLowerCase().includes(q) ||
-        l.description?.toLowerCase().includes(q) ||
-        l.trade_terms?.toLowerCase().includes(q) ||
-        l.location?.city?.toLowerCase().includes(q) ||
-        l.location?.state?.toLowerCase().includes(q)
-    )
-  }, [allListings, search])
+  // Build the server-side query for a given page. `q`/filters are sent to the
+  // backend so search covers the FULL dataset, not just the first page.
+  const buildParams = useCallback(
+    (pageOffset: number) => ({
+      limit: PAGE_SIZE,
+      offset: pageOffset,
+      ...(debouncedSearch.trim() ? { q: debouncedSearch.trim() } : {}),
+      ...(categoryId ? { category_id: categoryId } : {}),
+      ...(listingType ? { listing_type: listingType } : {}),
+      ...(condition ? { condition } : {}),
+    }),
+    [debouncedSearch, categoryId, listingType, condition]
+  )
+
+  // Re-fetch page 0 whenever the search text or any filter changes. The first
+  // run is skipped so the server-rendered initialListings aren't immediately
+  // refetched on mount.
+  const isFirstRun = useRef(true)
+  useEffect(() => {
+    if (isFirstRun.current) {
+      isFirstRun.current = false
+      return
+    }
+    let cancelled = false
+    setLoading(true)
+    listBarterListings(buildParams(0))
+      .then((res) => {
+        if (cancelled) return
+        setListings(res.listings || [])
+        setCount(res.count || 0)
+        setOffset(0)
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [buildParams])
+
+  // Fetch the next page and append (real pagination — searches/filters carry
+  // over so "Load More" pulls the next slice of the matching dataset).
+  const loadMore = async () => {
+    const nextOffset = offset + PAGE_SIZE
+    setLoadingMore(true)
+    try {
+      const res = await listBarterListings(buildParams(nextOffset))
+      setListings((prev) => [...prev, ...(res.listings || [])])
+      setCount(res.count || 0)
+      setOffset(nextOffset)
+    } finally {
+      setLoadingMore(false)
+    }
+  }
 
   const clearFilters = () => {
     setSearch("")
@@ -81,6 +98,7 @@ export const BarterSearch = ({
   }
 
   const hasActiveFilters = search || categoryId || listingType || condition
+  const hasMore = listings.length < count
 
   return (
     <>
@@ -178,7 +196,7 @@ export const BarterSearch = ({
       <section className="px-4 lg:px-8 pb-24 max-w-7xl mx-auto">
         {loading ? (
           <div className="text-center py-12 text-secondary">Searching...</div>
-        ) : filteredListings.length === 0 ? (
+        ) : listings.length === 0 ? (
           <div className="text-center py-12 text-secondary">
             No listings found. Try adjusting your search.
           </div>
@@ -191,23 +209,27 @@ export const BarterSearch = ({
               </h2>
               <div className="h-px flex-grow mx-8 bg-gray-200" />
               <span className="font-serif italic text-secondary shrink-0">
-                Showing {filteredListings.length}{" "}
-                {filteredListings.length === 1 ? "result" : "results"}
+                Showing {listings.length} of {count}{" "}
+                {count === 1 ? "result" : "results"}
               </span>
             </div>
 
             {/* Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-              {filteredListings.map((listing) => (
+              {listings.map((listing) => (
                 <BarterListingCard key={listing.id} listing={listing} />
               ))}
             </div>
 
             {/* Load More */}
-            {filteredListings.length < allListings.length && !search && (
+            {hasMore && (
               <div className="mt-20 text-center">
-                <button className="px-10 py-4 border-b-2 border-gold text-navy-dark label-sm tracking-[0.2em] hover:bg-gold/5 transition-all duration-300">
-                  Load More Discoveries
+                <button
+                  onClick={loadMore}
+                  disabled={loadingMore}
+                  className="px-10 py-4 border-b-2 border-gold text-navy-dark label-sm tracking-[0.2em] hover:bg-gold/5 transition-all duration-300 disabled:opacity-50 disabled:cursor-wait"
+                >
+                  {loadingMore ? "Loading…" : "Load More Discoveries"}
                 </button>
               </div>
             )}
