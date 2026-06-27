@@ -3,6 +3,7 @@ import { notFound } from "next/navigation"
 import { getDirectoryListing } from "@/lib/data/directory"
 import { DirectoryDetail } from "@/components/sections/DirectoryDetail/DirectoryDetail"
 import { TrackPageView } from "@/components/sections/Analytics/TrackPageView"
+import { buildSocialMetadata } from "@/lib/helpers/seo"
 
 type Props = {
   params: Promise<{ id: string; locale: string }>
@@ -16,11 +17,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: "Not Found" }
   }
 
+  const description =
+    listing.description?.slice(0, 160) ||
+    `${listing.business_name} - Catholic-owned business`
+
   return {
     title: listing.business_name,
-    description:
-      listing.description?.slice(0, 160) ||
-      `${listing.business_name} - Catholic-owned business`,
+    description,
+    ...buildSocialMetadata({
+      title: listing.business_name,
+      description,
+      image: listing.cover_image_url || listing.logo_url,
+    }),
   }
 }
 

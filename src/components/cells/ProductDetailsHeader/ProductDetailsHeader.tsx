@@ -195,10 +195,18 @@ export const ProductDetailsHeader = ({
         </LocalizedClientLink>
       )}
 
-      {/* Product title */}
-      <h1 className="font-serif text-4xl lg:text-5xl font-bold text-[#001435] leading-tight">
-        {product.title}
-      </h1>
+      {/* Product title + subtitle (e.g. artist / maker name). Subtitle is
+          optional — rendered subtly below the title only when present. */}
+      <div className="space-y-2">
+        <h1 className="font-serif text-4xl lg:text-5xl font-bold text-[#001435] leading-tight">
+          {product.title}
+        </h1>
+        {product.subtitle && product.subtitle.trim() && (
+          <p className="font-serif italic text-lg lg:text-xl text-[#75777f] leading-snug">
+            {product.subtitle}
+          </p>
+        )}
+      </div>
 
       {/* Price */}
       <div className="flex items-center gap-3">

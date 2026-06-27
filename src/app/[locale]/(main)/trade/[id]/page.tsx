@@ -3,6 +3,7 @@ import { notFound } from "next/navigation"
 import { getBarterListing } from "@/lib/data/barter"
 import { retrieveCustomer } from "@/lib/data/customer"
 import { BarterDetail } from "@/components/sections/Barter/BarterDetail"
+import { buildSocialMetadata } from "@/lib/helpers/seo"
 
 type Props = {
   params: Promise<{ id: string; locale: string }>
@@ -16,11 +17,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: "Not Found" }
   }
 
+  const description =
+    listing.description?.slice(0, 160) ||
+    `${listing.title} - Community Marketplace listing`
+
   return {
     title: listing.title,
-    description:
-      listing.description?.slice(0, 160) ||
-      `${listing.title} - Community Marketplace listing`,
+    description,
+    ...buildSocialMetadata({
+      title: listing.title,
+      description,
+      image: listing.images?.[0]?.url,
+    }),
   }
 }
 

@@ -10,7 +10,37 @@ import { getRegion } from "@/lib/data/regions"
 import { getSellerByHandle } from "@/lib/data/seller"
 import { retrieveVendorStatus } from "@/lib/data/vendor"
 import { SellerProps } from "@/types/seller"
+import { buildSocialMetadata } from "@/lib/helpers/seo"
+import type { Metadata } from "next"
 import { notFound } from "next/navigation"
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ handle: string; locale: string }>
+}): Promise<Metadata> {
+  const { handle } = await params
+  const seller = (await getSellerByHandle(handle)) as SellerProps
+
+  // getSellerByHandle returns `[]` on fetch error (back-compat); bail to a
+  // generic title rather than throwing inside metadata generation.
+  if (!seller || Array.isArray(seller)) {
+    return { title: "Shop" }
+  }
+
+  const description =
+    seller.description?.slice(0, 160) || `${seller.name} — Catholic-owned shop`
+
+  return {
+    title: seller.name,
+    description,
+    ...buildSocialMetadata({
+      title: seller.name,
+      description,
+      image: seller.cover_image_url || seller.photo,
+    }),
+  }
+}
 
 export default async function SellerPage({
   params,

@@ -20,6 +20,10 @@ export const ProductCard = ({
     : { cheapestPrice: null }
 
   const productName = String(product.title || "Product")
+  // Algolia hit carries `subtitle` (e.g. an artist / maker name). Shown
+  // between the title and price when present; never breaks the card when
+  // absent. Cast to any because the union type narrows to a partial hit.
+  const productSubtitle = String((product as any).subtitle || "").trim()
   const categoryName = (api_product as any)?.categories?.[0]?.name
 
   const priceLabel = cheapestPrice?.calculated_price ?? "View Price"
@@ -114,6 +118,11 @@ export const ProductCard = ({
             {productName}
           </h4>
         </LocalizedClientLink>
+        {productSubtitle && (
+          <p className="text-sm italic text-[#75777f] leading-snug line-clamp-1 mt-0.5">
+            {productSubtitle}
+          </p>
+        )}
         <p className="font-serif text-2xl text-[#001435] mt-1">{priceLabel}</p>
         {/* Routes to the product detail page where the real add-to-cart
             flow lives (variant picker, stock check, optimistic cart
