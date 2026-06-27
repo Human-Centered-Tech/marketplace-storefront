@@ -94,6 +94,14 @@ export type DirectoryListing = {
     // directory state filter. Stored as a string; the picker works in arrays.
     serviced_states?: string
   } | null
+  // Whether the listing's exact street-level location/pin is shown publicly on
+  // the map. Nullable: null = use precise_location_default. Set/edited via the
+  // owner's listing form.
+  show_precise_location?: boolean | null
+  // Owner-only hint returned on the owner's listing response: the default
+  // checked state for the "show precise location" toggle (true when the
+  // business is "local only"). Used only to seed the form's initial state.
+  precise_location_default?: boolean
   social_links: {
     // New shape: up to 3 free-form URLs (platform detected per URL).
     links?: string[]

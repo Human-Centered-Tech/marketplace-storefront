@@ -118,6 +118,9 @@ export default function EditDirectoryListingPage() {
               .map((s: string) => s.trim().toUpperCase())
               .filter((s: string) => US_STATE_CODES.includes(s)),
             social_links: socialLinksToArray(listing.social_links),
+            // Opt-in only: checked solely when the owner has explicitly turned
+            // it on. Default off for everyone (no auto-expose nudge).
+            show_precise_location: listing.show_precise_location ?? false,
             always_open: listing.always_open ?? false,
             owner_photo_url: interview?.photo_url || "",
             owner_q1_prompt: interview?.q1_prompt,

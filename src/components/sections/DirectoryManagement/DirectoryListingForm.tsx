@@ -32,6 +32,11 @@ type DirectoryFormData = {
   serviced_states: string[]
   // Up to 3 free-form social URLs; the platform/logo is detected per URL.
   social_links: string[]
+  // When true, the listing's exact street address/pin is shown publicly on the
+  // map. Resolved upstream from `listing.show_precise_location ??
+  // listing.precise_location_default ?? false`, so local-only businesses arrive
+  // pre-checked. Always sent to the backend as an explicit boolean.
+  show_precise_location: boolean
   always_open: boolean
   // Owner interview
   owner_photo_url: string
@@ -126,6 +131,10 @@ export const DirectoryListingForm = ({
     zip: initialData?.zip || "",
     serviced_states: initialData?.serviced_states || [],
     social_links: initialData?.social_links || [],
+    // Effective checked state is computed by the caller (edit page) as
+    // listing.show_precise_location ?? listing.precise_location_default ?? false.
+    // On create there's no listing yet, so it falls back to unchecked here.
+    show_precise_location: initialData?.show_precise_location ?? false,
     always_open: initialData?.always_open ?? false,
     owner_photo_url: initialData?.owner_photo_url || "",
     owner_q1_prompt:
@@ -270,6 +279,9 @@ export const DirectoryListingForm = ({
             .slice(0, 3),
         },
         always_open: form.always_open,
+        // Explicit boolean — whether the public map shows this listing's exact
+        // street-level location. The backend stores it on the listing.
+        show_precise_location: form.show_precise_location,
         owner_interview:
           form.owner_q1_answer ||
           form.owner_q2_answer ||
@@ -489,6 +501,22 @@ export const DirectoryListingForm = ({
               onChange={handleChange}
               className="w-full border rounded-sm px-3 py-2 text-sm"
             />
+          </div>
+          <div className="md:col-span-2">
+            <label className="inline-flex items-center gap-2 text-sm text-secondary">
+              <input
+                type="checkbox"
+                name="show_precise_location"
+                checked={form.show_precise_location}
+                onChange={handleChange}
+              />
+              Show my exact location on the map
+            </label>
+            <p className="text-xs text-secondary mt-1">
+              Off by default. Turn this on to show your exact street location on
+              the map so customers can find you. Leave it off if you work from
+              home or don&rsquo;t want your street address shown publicly.
+            </p>
           </div>
           <div className="md:col-span-2">
             <label className="inline-flex items-center gap-2 text-sm text-secondary">
