@@ -7,19 +7,14 @@ import { socialLinksToArray } from "@/lib/social"
 import { SocialIcon } from "@/components/sections/DirectoryManagement/SocialIcon"
 import { SingleLocationMap } from "@/components/sections/DirectoryListing/SingleLocationMap"
 
+// Canonical tier labels — MUST match the card/home/map badge labels in
+// lib/directory-tiers.ts (Verified / Featured / Enterprise). The DB column
+// `subscription_tier` is constrained to these three values; owner-less
+// listings render the "Unclaimed" pill below instead of a tier label.
 const tierLabels: Record<string, string> = {
-  // Canva tier set
-  local: "Local Member",
-  merchant: "Marketplace Merchant",
-  tier2_startup: "Tier 2 — Startup",
-  tier2_nonprofit: "Tier 2 — Non-profit",
-  tier2_business: "Tier 2",
-  tier3: "Tier 3",
-  tier4: "Tier 4",
-  // Legacy
-  enterprise: "Enterprise Tier",
-  featured: "Premium Tier",
-  verified: "Verified Business",
+  verified: "Verified",
+  featured: "Featured",
+  enterprise: "Enterprise",
 }
 
 const dayLabels: Record<string, string> = {

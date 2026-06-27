@@ -7,29 +7,21 @@
 // Change a label here once and it updates everywhere (home preview, search
 // cards, map).
 //
-// NOTE (taxonomy decision pending): the directory currently carries TWO
-// overlapping tier vocabularies — the original verified/featured/enterprise and
-// the newer "Canva" local / tier2_* / tier3 / tier4 / merchant set. Both are
-// mapped below so nothing renders blank. Settling on ONE canonical set and the
-// final public names is a product call for Brooke; until then this at least
-// keeps the labels consistent.
+// Canonical taxonomy (product decision, locked): the directory has ONE public
+// tier vocabulary — Verified / Featured / Enterprise — plus "Unclaimed" for
+// owner-less listings (handled at the call site, not here). The DB column
+// `subscription_tier` is constrained to verified|featured|enterprise (see
+// backend Migration20260521120000); the Canva billing tiers (local / merchant /
+// tier2_* / tier3 / tier4) live in a separate `pricing_tier` column and never
+// reach this badge map, so they are intentionally NOT keyed here.
 
 export type TierBadgeColor = "gold" | "navy" | "outline"
 export type TierBadge = { label: string; color: TierBadgeColor }
 
 const TIER_BADGES: Record<string, TierBadge> = {
-  // Canva tier set
-  local: { label: "Local", color: "outline" },
-  merchant: { label: "Merchant", color: "outline" },
-  tier2_startup: { label: "Tier 2", color: "navy" },
-  tier2_nonprofit: { label: "Tier 2", color: "navy" },
-  tier2_business: { label: "Tier 2", color: "navy" },
-  tier3: { label: "Tier 3", color: "gold" },
-  tier4: { label: "Tier 4", color: "gold" },
-  // Original/legacy set
-  enterprise: { label: "Enterprise", color: "gold" },
-  featured: { label: "Featured", color: "navy" },
   verified: { label: "Verified", color: "navy" },
+  featured: { label: "Featured", color: "navy" },
+  enterprise: { label: "Enterprise", color: "gold" },
 }
 
 // A recognized tier wins; a claimed + approved listing with no special tier
