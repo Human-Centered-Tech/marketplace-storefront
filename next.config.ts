@@ -1,5 +1,11 @@
 import type { NextConfig } from "next"
 
+// CJS require to match this file's `module.exports` style. withSentryConfig
+// wires source-map/build support around the runtime SDK (instrumentation*.ts).
+// Without a SENTRY_AUTH_TOKEN it simply skips source-map upload (warns, does
+// not fail the build).
+const { withSentryConfig } = require("@sentry/nextjs")
+
 function backendImageHost() {
   const url =
     process.env.MEDUSA_BACKEND_URL ||
@@ -121,4 +127,11 @@ const nextConfig: NextConfig = {
   },
 }
 
-module.exports = nextConfig
+module.exports = withSentryConfig(nextConfig, {
+  // No tunnelRoute: the storefront uses /[locale] routing + middleware, and a
+  // tunnel path would risk colliding with it. Errors send directly to Sentry.
+  silent: true,
+  widenClientFileUpload: true,
+  disableLogger: true,
+  telemetry: false,
+})
