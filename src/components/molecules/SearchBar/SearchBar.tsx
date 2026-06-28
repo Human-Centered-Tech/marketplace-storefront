@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
 import { useState, useCallback, useRef, useEffect } from "react"
+import { GlobalSearchResults } from "./GlobalSearchResults"
 
 export function SearchBar({
   variant = "hero",
@@ -63,6 +64,9 @@ export function SearchBar({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setIsExpanded(true)}
+          onKeyDown={(e) => {
+            if (e.key === "Escape") setIsExpanded(false)
+          }}
         />
         <button
           type="submit"
@@ -84,6 +88,12 @@ export function SearchBar({
             <line x1="21" y1="21" x2="16.65" y2="16.65" />
           </svg>
         </button>
+        {isExpanded && (
+          <GlobalSearchResults
+            query={query}
+            onNavigate={() => setIsExpanded(false)}
+          />
+        )}
       </form>
     )
   }
