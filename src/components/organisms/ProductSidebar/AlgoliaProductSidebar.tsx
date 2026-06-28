@@ -3,13 +3,10 @@
 import { Button, Chip, Input, StarRating } from "@/components/atoms"
 import { Accordion, FilterCheckboxOption, Modal } from "@/components/molecules"
 import useFilters from "@/hooks/useFilters"
-import useUpdateSearchParams from "@/hooks/useUpdateSearchParams"
 import { cn } from "@/lib/utils"
-import { useSearchParams } from "next/navigation"
 import React, { useEffect, useState } from "react"
-import { useRefinementList } from "react-instantsearch"
+import { useRange, useRefinementList } from "react-instantsearch"
 import { ProductListingActiveFilters } from "../ProductListingActiveFilters/ProductListingActiveFilters"
-import useGetAllSearchParams from "@/hooks/useGetAllSearchParams"
 
 const filters = [
   { label: "5", amount: 40 },
@@ -22,8 +19,6 @@ const filters = [
 export const AlgoliaProductSidebar = () => {
   const [isMobile, setIsMobile] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
-
-  const { allSearchParams } = useGetAllSearchParams()
 
   useEffect(() => {
     const handleResize = () => {
@@ -43,11 +38,7 @@ export const AlgoliaProductSidebar = () => {
           <div className="px-4 space-y-4">
             <ProductListingActiveFilters />
             <CategoryFilter />
-            <PriceFilter
-              defaultOpen={Boolean(
-                allSearchParams.min_price || allSearchParams.max_price
-              )}
-            />
+            <PriceFilter />
           </div>
         </Modal>
       )}
@@ -96,51 +87,67 @@ function CategoryFilter({ defaultOpen = true }: { defaultOpen?: boolean }) {
   )
 }
 
-// Hardcoded for now — when variants.prices.amount is added to the index's
-// attributesForFaceting, swap to useRange({ attribute: "variants.prices.amount" })
-// to auto-scale these from real catalog data. Catalog max today is ~$499.
-const PRICE_MIN = 0
-const PRICE_MAX = 500
-
+// Single-handle "up to $X" price slider whose bounds come from the live result
+// set. useRange reads facet *stats* (min/max) for `max_price` — which requires
+// max_price to be in the index's attributesForFaceting (see algolia-config.json)
+// — and InstantSearch computes that range EXCLUDING this filter's own
+// refinement, so dragging the handle never collapses the slider's own ceiling
+// (no feedback loop). Refining on max_price means "show products whose priciest
+// variant is at or below $X"; for the single-price products that dominate the
+// catalog that's exactly "price ≤ $X".
 function PriceFilter({ defaultOpen = true }: { defaultOpen?: boolean }) {
-  const updateSearchParams = useUpdateSearchParams()
-  const searchParams = useSearchParams()
+  const { start, range, refine, canRefine } = useRange({
+    attribute: "max_price",
+  })
 
-  // Slider value tracks the *max* — minimum is always $0. Matches the
-  // single-handle pattern from the non-Algolia ProductSidebar.
-  const initial = parseInt(searchParams.get("max_price") || "") || PRICE_MAX
-  const [value, setValue] = useState<number>(initial)
+  const min = Number.isFinite(range.min) ? Math.floor(range.min as number) : 0
+  const max = Number.isFinite(range.max) ? Math.ceil(range.max as number) : 0
 
+  // `start` is [lower, upper]; an unset upper bound comes back as Infinity.
+  const activeUpper = Number.isFinite(start[1])
+    ? Math.min(start[1] as number, max)
+    : max
+
+  const [value, setValue] = useState<number>(activeUpper)
+
+  // Re-sync when the result set changes the bounds (e.g. switching category)
+  // or when the refinement is cleared elsewhere (active-filter chip / reset).
   useEffect(() => {
-    const v = parseInt(searchParams.get("max_price") || "")
-    setValue(Number.isFinite(v) && v > 0 ? v : PRICE_MAX)
-  }, [searchParams])
+    setValue(activeUpper)
+  }, [activeUpper])
+
+  // No usable range to filter on (no results, or every product is the same
+  // price) — hide rather than render a dead, full-width slider.
+  if (!canRefine || max <= min) return null
 
   const commit = () => {
-    // No filter when slider is at the cap; otherwise persist max_price.
-    updateSearchParams("max_price", value >= PRICE_MAX ? "" : String(value))
+    // At the ceiling = no constraint; clear so the count reflects everything.
+    refine(value >= max ? [undefined, undefined] : [undefined, value])
   }
+
+  // Coarser step on wide ranges so the handle stays usable.
+  const step = Math.max(1, Math.round((max - min) / 50))
 
   return (
     <Accordion heading="Price" defaultOpen={defaultOpen}>
       <div className="px-4 space-y-4 pb-4">
         <input
           type="range"
-          min={PRICE_MIN}
-          max={PRICE_MAX}
-          step={5}
+          min={min}
+          max={max}
+          step={step}
           value={value}
           onChange={(e) => setValue(parseInt(e.target.value))}
           onMouseUp={commit}
           onTouchEnd={commit}
           onKeyUp={commit}
           aria-label="Maximum price"
-          aria-valuetext={value >= PRICE_MAX ? `$${PRICE_MAX}+` : `$${value}`}
+          aria-valuetext={value >= max ? `$${max}+` : `$${value}`}
           className="w-full accent-[#755b00] cursor-pointer"
         />
         <div className="flex justify-between text-xs font-bold text-[#44474e]">
-          <span>${PRICE_MIN}</span>
-          <span>{value >= PRICE_MAX ? `$${PRICE_MAX}+` : `$${value}`}</span>
+          <span>${min}</span>
+          <span>{value >= max ? `$${max}+` : `$${value}`}</span>
         </div>
       </div>
     </Accordion>
