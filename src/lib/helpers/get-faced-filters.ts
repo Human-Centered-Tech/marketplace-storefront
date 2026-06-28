@@ -82,14 +82,17 @@ export const getFacedFilters = (filters: ReadonlyURLSearchParams): string => {
     }
   }
 
-  const priceFilter =
-    minPrice && maxPrice
-      ? ` AND variants.prices.amount:${minPrice} TO ${maxPrice}`
-      : minPrice
-      ? ` AND variants.prices.amount >= ${minPrice}`
-      : maxPrice
-      ? ` AND variants.prices.amount <= ${maxPrice}`
-      : ""
+  // Price filter on the indexed numeric range (min_price/max_price, decimal
+  // dollars). The old code filtered `variants.prices.amount`, which the search
+  // index drops to stay under Algolia's 10KB cap — so it always returned zero.
+  // A product matches when its [min_price, max_price] overlaps the requested
+  // [minPrice, maxPrice]: max_price >= minPrice AND min_price <= maxPrice.
+  const priceClauses: string[] = []
+  if (minPrice) priceClauses.push(`max_price >= ${minPrice}`)
+  if (maxPrice) priceClauses.push(`min_price <= ${maxPrice}`)
+  const priceFilter = priceClauses.length
+    ? ` AND ${priceClauses.join(" AND ")}`
+    : ""
 
   return facet + priceFilter + rating
 }
