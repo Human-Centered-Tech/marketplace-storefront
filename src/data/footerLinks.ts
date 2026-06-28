@@ -19,7 +19,7 @@ const links = {
     { label: "Merchant Terms", path: "/merchant-terms" },
   ],
   connect: [
-    { label: "Contact Us", path: "#" },
+    { label: "Contact Us", path: "mailto:support@catholicowned.com" },
     { label: "Events", path: "/networking" },
   ],
 }

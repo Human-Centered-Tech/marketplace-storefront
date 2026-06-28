@@ -9,6 +9,7 @@ import {
   UpcomingEvents,
   FoundersVision,
 } from "@/components/sections"
+import { CommunityTestimonials } from "@/components/sections/CommunityTestimonials/CommunityTestimonials"
 
 import type { Metadata } from "next"
 import { headers, cookies } from "next/headers"
@@ -198,6 +199,9 @@ export default async function Home({
 
       {/* 8. Founders' Vision */}
       <FoundersVision />
+
+      {/* 9. Community testimonials (shopper / app-user reviews) */}
+      <CommunityTestimonials limit={3} className="bg-[#faf9f5]" />
     </main>
   )
 }

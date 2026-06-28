@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import Image from "next/image"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
+import { CommunityTestimonials } from "@/components/sections/CommunityTestimonials/CommunityTestimonials"
 
 export const metadata: Metadata = {
   title: "About — Catholic Owned",
@@ -197,6 +198,9 @@ export default function AboutPage() {
           </div>
         </div>
       </section>
+
+      {/* Community testimonials */}
+      <CommunityTestimonials limit={6} className="bg-[#faf9f5]" />
 
       {/* CTA */}
       <section className="py-16 lg:py-24 bg-[#17294A]">

@@ -1,6 +1,33 @@
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 import footerLinks from "@/data/footerLinks"
 
+// Footer links are mostly in-app (locale-prefixed). External/contact paths
+// (mailto:, tel:, http) must render as a plain <a> — routing them through
+// LocalizedClientLink would produce "/us/mailto:…" and break them.
+const isExternalPath = (p: string) => /^(mailto:|tel:|https?:\/\/)/.test(p)
+
+function FooterLink({ path, label }: { path: string; label: string }) {
+  const className =
+    "block text-[14px] text-white/80 hover:text-white transition-colors"
+  if (isExternalPath(path)) {
+    const newTab = /^https?:\/\//.test(path)
+    return (
+      <a
+        href={path}
+        className={className}
+        {...(newTab ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+      >
+        {label}
+      </a>
+    )
+  }
+  return (
+    <LocalizedClientLink href={path} className={className}>
+      {label}
+    </LocalizedClientLink>
+  )
+}
+
 export function Footer() {
   return (
     <footer className="bg-navy-dark text-white">
@@ -24,13 +51,7 @@ export function Footer() {
             </h3>
             <nav className="space-y-2.5" aria-label="Marketplace navigation">
               {footerLinks.marketplace.map(({ label, path }) => (
-                <LocalizedClientLink
-                  key={label}
-                  href={path}
-                  className="block text-[14px] text-white/80 hover:text-white transition-colors"
-                >
-                  {label}
-                </LocalizedClientLink>
+                <FooterLink key={label} path={path} label={label} />
               ))}
             </nav>
           </div>
@@ -42,13 +63,7 @@ export function Footer() {
             </h3>
             <nav className="space-y-2.5" aria-label="For Businesses navigation">
               {footerLinks.forBusinesses.map(({ label, path }) => (
-                <LocalizedClientLink
-                  key={label}
-                  href={path}
-                  className="block text-[14px] text-white/80 hover:text-white transition-colors"
-                >
-                  {label}
-                </LocalizedClientLink>
+                <FooterLink key={label} path={path} label={label} />
               ))}
             </nav>
           </div>
@@ -60,13 +75,7 @@ export function Footer() {
             </h3>
             <nav className="space-y-2.5" aria-label="Connect navigation">
               {footerLinks.connect.map(({ label, path }) => (
-                <LocalizedClientLink
-                  key={label}
-                  href={path}
-                  className="block text-[14px] text-white/80 hover:text-white transition-colors"
-                >
-                  {label}
-                </LocalizedClientLink>
+                <FooterLink key={label} path={path} label={label} />
               ))}
             </nav>
           </div>
@@ -78,13 +87,7 @@ export function Footer() {
             </h3>
             <nav className="space-y-2.5" aria-label="Legal navigation">
               {footerLinks.legal.map(({ label, path }) => (
-                <LocalizedClientLink
-                  key={label}
-                  href={path}
-                  className="block text-[14px] text-white/80 hover:text-white transition-colors"
-                >
-                  {label}
-                </LocalizedClientLink>
+                <FooterLink key={label} path={path} label={label} />
               ))}
             </nav>
           </div>
