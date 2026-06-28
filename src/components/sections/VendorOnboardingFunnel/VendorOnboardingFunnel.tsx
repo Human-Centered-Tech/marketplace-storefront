@@ -31,6 +31,9 @@ const ARIMATHEA_CALENDLY_URL =
   "https://calendly.com/daren-arimatheainvesting/catholic-owned-discussion"
 const CALENDLY_BY_TIER: Partial<Record<RecommendedTierKey, string>> = {
   tier3: CALENDLY_ENTERPRISE_URL,
+  // Tier 4 ($10k, top tier) books the enterprise call too — not the general
+  // membership fallback.
+  tier4: CALENDLY_ENTERPRISE_URL,
 }
 const calendlyForTier = (key: RecommendedTierKey): string =>
   CALENDLY_BY_TIER[key] ?? CALENDLY_MEMBERSHIP_URL
