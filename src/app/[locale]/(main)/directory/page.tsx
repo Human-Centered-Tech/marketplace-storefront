@@ -28,7 +28,7 @@ export default async function DirectoryPage() {
       <section className="relative py-16 lg:py-24 px-4 text-center overflow-hidden bg-[#FAF9F5]">
         <div className="max-w-4xl mx-auto relative z-10">
           <p className="label-sm text-gold-dark tracking-[0.3em] mb-4 font-bold opacity-80">
-            The New Catholic Economy
+            Building the New Catholic Economy®
           </p>
           <h1 className="display-md text-navy-dark mb-6 tracking-tight">
             Business Directory

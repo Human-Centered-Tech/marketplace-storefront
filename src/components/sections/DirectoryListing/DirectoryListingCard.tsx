@@ -41,6 +41,14 @@ export const DirectoryListingCard = ({
     showDistance && typeof distanceMi === "number"
       ? `${distanceMi < 0.1 ? "<0.1" : distanceMi.toFixed(1)} mi away`
       : null
+  // Real, displayable location text. `listing.address` is always present
+  // (hitToListing seeds it even when city/state are blank), so we gate the
+  // map-pin row on actual content — otherwise an empty pin icon shows for
+  // listings with no location.
+  const cityStateLabel = [listing.address?.city, listing.address?.state]
+    .filter(Boolean)
+    .join(", ")
+  const hasLocation = Boolean(cityStateLabel) || Boolean(distanceLabel)
 
   // First card spans full width like the Stitch "Enterprise" card
   if (featured && isEnterprise) {
@@ -116,7 +124,7 @@ export const DirectoryListingCard = ({
             <div className="h-px bg-gold/30 mb-6" />
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                {listing.address && (
+                {hasLocation && (
                   <div className="flex items-center text-secondary text-xs">
                     <span className="material-symbols-outlined text-sm mr-1">
                       location_on
@@ -126,9 +134,7 @@ export const DirectoryListingCard = ({
                         {distanceLabel}
                       </span>
                     )}
-                    {[listing.address.city, listing.address.state]
-                      .filter(Boolean)
-                      .join(", ")}
+                    {cityStateLabel}
                   </div>
                 )}
               </div>
@@ -246,7 +252,7 @@ export const DirectoryListingCard = ({
         )}
         <div className="h-px bg-gold/20 mb-4" />
         <div className="flex items-center justify-between text-xs">
-          {listing.address && (
+          {hasLocation && (
             <div className="flex items-center gap-1 text-secondary">
               <span className="material-symbols-outlined text-sm">
                 location_on
@@ -256,12 +262,10 @@ export const DirectoryListingCard = ({
                   {distanceLabel}
                 </span>
               )}
-              {[listing.address.city, listing.address.state]
-                .filter(Boolean)
-                .join(", ")}
+              {cityStateLabel}
             </div>
           )}
-          <span className="label-sm text-[10px] text-navy-dark font-bold tracking-widest hover:text-gold-dark">
+          <span className="label-sm text-[10px] text-navy-dark font-bold tracking-widest hover:text-gold-dark ml-auto">
             Explore
           </span>
         </div>

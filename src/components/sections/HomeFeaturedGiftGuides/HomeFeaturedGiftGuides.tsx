@@ -48,9 +48,9 @@ export const HomeFeaturedGiftGuides = async () => {
           <div className="h-[1px] flex-grow mx-8 bg-[#BE9B32]/30 hidden sm:block" />
           <LocalizedClientLink
             href="/guides"
-            className="font-sans text-[11px] font-bold uppercase tracking-[0.15em] text-[#BE9B32] hover:text-[#001435] transition-colors whitespace-nowrap shrink-0"
+            className="font-sans text-[11px] font-bold uppercase tracking-[0.15em] text-[#001435] hover:text-[#755b00] transition-colors whitespace-nowrap shrink-0 underline decoration-[#BE9B32] underline-offset-8"
           >
-            View all →
+            View All →
           </LocalizedClientLink>
         </div>
         <AutoCarousel

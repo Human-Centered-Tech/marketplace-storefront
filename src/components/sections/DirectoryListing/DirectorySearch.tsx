@@ -555,7 +555,7 @@ export const DirectorySearch = ({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="flex-1 min-w-0 bg-transparent border-none focus:ring-0 font-sans text-sm py-4 pl-2"
-            placeholder="Search business name..."
+            placeholder="Search name, category, city, parish..."
           />
           {search && (
             <button
@@ -575,7 +575,7 @@ export const DirectorySearch = ({
           <select
             value={categoryId}
             onChange={(e) => setCategoryId(e.target.value)}
-            className="w-full bg-transparent border-none focus:ring-0 font-sans text-sm py-4 appearance-none cursor-pointer"
+            className="flex-1 min-w-0 bg-transparent border-none focus:ring-0 font-sans text-sm py-4 appearance-none cursor-pointer"
           >
             <option value="">All Categories</option>
             {categories.map((cat) => (
@@ -584,6 +584,20 @@ export const DirectorySearch = ({
               </option>
             ))}
           </select>
+          <svg
+            aria-hidden="true"
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="ml-1 shrink-0 text-secondary"
+          >
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
         </div>
         <div
           className="flex items-center px-3 border-r border-gray-100 shrink-0 cursor-pointer"

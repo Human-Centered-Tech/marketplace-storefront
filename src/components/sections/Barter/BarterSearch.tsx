@@ -102,8 +102,9 @@ export const BarterSearch = ({
 
   return (
     <>
-      {/* Search & Filter Bar — floats over hero */}
-      <section className="px-4 lg:px-8 -mt-10 relative z-20">
+      {/* Search & Filter Bar — sits below the flat hero, aligned to the other
+          page bodies (max-w-7xl) rather than floating over a banner image. */}
+      <section className="px-4 lg:px-8 pt-8 lg:pt-10 relative z-20">
         <div className="max-w-7xl mx-auto">
           <div className="bg-white rounded-xl shadow-xl p-4 md:p-6 grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
             {/* Search input */}

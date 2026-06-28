@@ -217,9 +217,9 @@ export async function DirectoryPreview({
           <div className="h-[1px] flex-grow mx-8 bg-[#BE9B32]/30 hidden sm:block" />
           <LocalizedClientLink
             href="/directory"
-            className="font-sans text-sm font-semibold text-[#BE9B32] hover:text-[#755b00] whitespace-nowrap"
+            className="font-sans text-[11px] font-bold uppercase tracking-[0.15em] text-[#001435] hover:text-[#755b00] transition-colors whitespace-nowrap underline decoration-[#BE9B32] underline-offset-8"
           >
-            View all &rarr;
+            View All &rarr;
           </LocalizedClientLink>
         </div>
 

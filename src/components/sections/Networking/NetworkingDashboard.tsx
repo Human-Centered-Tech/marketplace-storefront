@@ -109,7 +109,7 @@ export const NetworkingDashboard = ({
         ) : (
           <div className="space-y-4">
             <p className="text-sm text-secondary">
-              Subscribe to join Catholic Speed Networking events and connect with
+              Subscribe to join Catholic Networking events and connect with
               faithful professionals.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">

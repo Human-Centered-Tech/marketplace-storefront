@@ -23,31 +23,49 @@ function BarterCard({
   category,
   title,
   href,
+  imageUrl,
 }: {
   category: string
   title: string
   href: string
+  imageUrl?: string
 }) {
   return (
-    <div
-      className="rounded-xl p-8 space-y-6 hover:bg-[#1e3660]/80 transition-all border border-[#BE9B32]/40"
+    <LocalizedClientLink
+      href={href}
+      className="group flex flex-col rounded-xl overflow-hidden hover:bg-[#1e3660]/80 transition-all border border-[#BE9B32]/40"
       style={{ backgroundColor: "#1e3660" }}
     >
-      <div className="space-y-1">
-        <span className="font-sans text-[10px] tracking-[0.2em] uppercase text-[#BE9B32] font-bold">
-          {category}
-        </span>
-        <h4 className="font-serif text-lg font-medium text-white leading-tight">
-          {title}
-        </h4>
+      {/* Listing image — piques curiosity */}
+      <div className="aspect-[4/3] overflow-hidden relative bg-[#17294a]">
+        {imageUrl ? (
+          <img
+            src={imageUrl}
+            alt={title}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <span className="text-[#BE9B32]/30 font-serif text-4xl">
+              {title.charAt(0)}
+            </span>
+          </div>
+        )}
       </div>
-      <LocalizedClientLink
-        href={href}
-        className="inline-block text-white text-[10px] font-sans tracking-[0.15em] uppercase border border-white/20 px-4 py-2 rounded-lg hover:bg-white hover:text-[#001435] transition-all"
-      >
-        Message Lister
-      </LocalizedClientLink>
-    </div>
+      <div className="p-8 space-y-6 flex flex-col flex-grow">
+        <div className="space-y-1">
+          <span className="font-sans text-[10px] tracking-[0.2em] uppercase text-[#BE9B32] font-bold">
+            {category}
+          </span>
+          <h4 className="font-serif text-lg font-medium text-white leading-tight">
+            {title}
+          </h4>
+        </div>
+        <span className="mt-auto inline-block self-start text-white text-[10px] font-sans tracking-[0.15em] uppercase border border-white/20 px-4 py-2 rounded-lg group-hover:bg-white group-hover:text-[#001435] transition-all">
+          View Listing
+        </span>
+      </div>
+    </LocalizedClientLink>
   )
 }
 
@@ -71,6 +89,12 @@ export const BannerSection = async () => {
             Sacred Exchange
           </h2>
           <div className="h-[1px] flex-grow bg-white/20" />
+          <LocalizedClientLink
+            href="/trade"
+            className="font-sans text-[11px] font-bold uppercase tracking-[0.15em] text-[#F2CD69] hover:text-white transition-colors whitespace-nowrap underline decoration-[#BE9B32] underline-offset-8"
+          >
+            View All →
+          </LocalizedClientLink>
         </div>
 
         {/* 4-column grid */}
@@ -82,6 +106,7 @@ export const BannerSection = async () => {
                   category={listingTypeLabel(listing.listing_type)}
                   title={listing.title}
                   href={`/trade/${listing.id}`}
+                  imageUrl={listing.images?.[0]?.url}
                 />
               ))
             : fallbackItems.map((item) => (

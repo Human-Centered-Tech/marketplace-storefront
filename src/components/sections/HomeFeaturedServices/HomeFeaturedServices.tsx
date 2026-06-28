@@ -113,7 +113,7 @@ export const HomeFeaturedServices = async () => {
             href="/directory"
             className="font-sans text-[11px] font-bold uppercase tracking-[0.15em] text-[#001435] hover:text-[#755b00] transition-colors whitespace-nowrap underline decoration-[#BE9B32] underline-offset-8"
           >
-            View All Directory
+            View All →
           </LocalizedClientLink>
         </div>
         <AutoCarousel

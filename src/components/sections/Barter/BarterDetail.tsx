@@ -115,8 +115,20 @@ export const BarterDetail = ({
         </div>
       </div>
 
-      {/* Image Gallery */}
-      {images.length > 0 ? (
+      {/* Image Gallery — only the images that actually exist are rendered. A
+          single image fills the width; with no images the gallery is omitted
+          entirely (no empty placeholder tiles). */}
+      {images.length === 1 ? (
+        <section className="mb-12">
+          <div className="overflow-hidden rounded-xl bg-gray-100 h-[300px] md:h-[500px] group">
+            <img
+              src={images[0]?.url}
+              alt={listing.title}
+              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+            />
+          </div>
+        </section>
+      ) : images.length > 1 ? (
         <section className="grid grid-cols-1 md:grid-cols-4 grid-rows-2 gap-3 h-[300px] md:h-[500px] mb-12">
           {/* Main image */}
           <div className="md:col-span-2 md:row-span-2 overflow-hidden rounded-xl bg-gray-100 group">
@@ -142,34 +154,8 @@ export const BarterDetail = ({
               />
             </div>
           ))}
-          {/* Fill empty slots if fewer than 4 images */}
-          {images.length === 1 && (
-            <>
-              <div className="overflow-hidden rounded-xl bg-gray-50 flex items-center justify-center">
-                <span className="text-gray-200 font-serif text-3xl">
-                  {listing.title.charAt(0)}
-                </span>
-              </div>
-              <div className="overflow-hidden rounded-xl bg-gray-50 flex items-center justify-center">
-                <span className="material-symbols-outlined text-gray-200 text-3xl">
-                  image
-                </span>
-              </div>
-              <div className="md:col-span-2 overflow-hidden rounded-xl bg-gray-50 flex items-center justify-center">
-                <span className="material-symbols-outlined text-gray-200 text-3xl">
-                  photo_library
-                </span>
-              </div>
-            </>
-          )}
         </section>
-      ) : (
-        <div className="h-[300px] md:h-[400px] bg-gray-50 rounded-xl mb-12 flex items-center justify-center">
-          <span className="text-gray-300 font-serif text-6xl">
-            {listing.title.charAt(0)}
-          </span>
-        </div>
-      )}
+      ) : null}
 
       {/* Main Content Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">

@@ -57,35 +57,42 @@ export const BarterListingCard = ({
       href={`/trade/${listing.id}`}
       className="group bg-white rounded-2xl overflow-hidden border border-gray-100/50 shadow-sm hover:shadow-md transition-all duration-500 flex flex-col"
     >
-      {/* Image */}
-      <div className="aspect-[4/5] overflow-hidden relative">
-        {imageUrl ? (
+      {/* Image — omitted entirely when the listing has no image, so we never
+          render an empty/placeholder box. The type badge moves inline below. */}
+      {imageUrl && (
+        <div className="aspect-[4/5] overflow-hidden relative">
           <img
             src={imageUrl}
             alt={listing.title}
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
           />
-        ) : (
-          <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-            <span className="text-gray-300 text-4xl font-serif">
-              {listing.title.charAt(0)}
+          {/* Type badge */}
+          <div className="absolute top-4 left-4">
+            <span
+              className={`backdrop-blur-md px-3 py-1 rounded-full label-sm text-[10px] ${
+                typeBadgeStyles[listing.listing_type] || typeBadgeStyles.sell
+              }`}
+            >
+              {typeLabels[listing.listing_type] || listing.listing_type}
             </span>
           </div>
-        )}
-        {/* Type badge */}
-        <div className="absolute top-4 left-4">
-          <span
-            className={`backdrop-blur-md px-3 py-1 rounded-full label-sm text-[10px] ${
-              typeBadgeStyles[listing.listing_type] || typeBadgeStyles.sell
-            }`}
-          >
-            {typeLabels[listing.listing_type] || listing.listing_type}
-          </span>
         </div>
-      </div>
+      )}
 
       {/* Content */}
       <div className="p-6 flex flex-col flex-grow">
+        {/* Inline type badge for image-less listings */}
+        {!imageUrl && (
+          <div className="mb-4">
+            <span
+              className={`inline-block px-3 py-1 rounded-full label-sm text-[10px] ${
+                typeBadgeStyles[listing.listing_type] || typeBadgeStyles.sell
+              }`}
+            >
+              {typeLabels[listing.listing_type] || listing.listing_type}
+            </span>
+          </div>
+        )}
         <div className="flex justify-between items-start gap-2 mb-2">
           <h3 className="font-serif text-lg md:text-xl font-semibold text-navy-dark leading-tight line-clamp-1">
             {listing.title}

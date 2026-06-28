@@ -8,7 +8,7 @@ import { NetworkingDashboard } from "@/components/sections/Networking/Networking
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Speed Networking — My Dashboard",
+  title: "Networking — My Dashboard",
 }
 
 export default async function UserNetworkingPage() {
@@ -26,7 +26,7 @@ export default async function UserNetworkingPage() {
         <UserNavigation />
         <div className="md:col-span-3 space-y-8">
           <h1 className="heading-xl text-primary uppercase">
-            Speed Networking
+            Networking
           </h1>
           <NetworkingDashboard
             currentUserId={user.id}

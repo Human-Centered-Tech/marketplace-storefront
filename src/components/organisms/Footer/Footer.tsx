@@ -96,7 +96,7 @@ export function Footer() {
         {/* Bottom bar */}
         <div className="mt-12 pt-6 border-t border-white/10">
           <p className="text-[13px] text-white/40 text-center">
-            &copy; {new Date().getFullYear()} Catholic Owned<span className="text-[0.7em] align-top ml-[1px]">&reg;</span>. All Rights Reserved.
+            &copy; {new Date().getFullYear()} Catholic Owned, PBC
           </p>
         </div>
       </div>

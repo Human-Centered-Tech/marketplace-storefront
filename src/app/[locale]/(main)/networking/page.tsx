@@ -3,9 +3,9 @@ import { listNetworkingEvents } from "@/lib/data/networking"
 import { NetworkingEventsView } from "@/components/sections/Networking/NetworkingEventsView"
 
 export const metadata: Metadata = {
-  title: "Speed Networking",
+  title: "Events",
   description:
-    "Building the Mystical Body in Business. Join virtual speed networking events for Catholic professionals.",
+    "Building the New Catholic Economy®. Join virtual networking events for Catholic professionals.",
 }
 
 export default async function NetworkingPage() {
@@ -22,10 +22,10 @@ export default async function NetworkingPage() {
       <section className="relative py-16 lg:py-24 px-4 text-center overflow-hidden bg-[#FAF9F5]" style={{ backgroundImage: "none" }}>
         <div className="max-w-4xl mx-auto relative z-10">
           <p className="label-sm text-gold-dark tracking-[0.3em] mb-4 font-bold opacity-80">
-            Building the Mystical Body in Business
+            Building the New Catholic Economy®
           </p>
           <h1 className="display-md text-navy-dark mb-6 tracking-tight">
-            Speed Networking
+            Events
           </h1>
           <p className="font-serif text-xl italic text-secondary max-w-2xl mx-auto leading-relaxed">
             Connect with faithful entrepreneurs, skilled artisans, and principled

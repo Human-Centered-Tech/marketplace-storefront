@@ -60,6 +60,7 @@ export const UserDropdown = ({
             <NavigationItem href="/user/addresses">Addresses</NavigationItem>
             <NavigationItem href="/user/reviews">Reviews</NavigationItem>
             <NavigationItem href="/user/wishlist">Wishlist</NavigationItem>
+            <NavigationItem href="/user/registry">My Registries</NavigationItem>
             <Divider />
             <NavigationItem href="/user/settings">Settings</NavigationItem>
             {isVendor ? (

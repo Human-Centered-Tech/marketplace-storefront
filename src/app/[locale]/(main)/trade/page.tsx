@@ -1,5 +1,4 @@
 import type { Metadata } from "next"
-import Image from "next/image"
 import { listBarterListings, listBarterCategories } from "@/lib/data/barter"
 import { BarterSearch } from "@/components/sections/Barter/BarterSearch"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
@@ -17,32 +16,24 @@ export default async function BarterPage() {
   ])
 
   return (
-    <main>
+    <main className="bg-[#FAF9F5]">
       {/* Material Symbols for icons */}
       <link
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         rel="stylesheet"
       />
-      {/* Hero Section */}
-      <section className="relative min-h-[340px] lg:min-h-[420px] overflow-hidden">
-        <Image
-          src="/images/hero/barter-hero.jpg"
-          fill
-          alt="Sacred Exchange - beeswax candles"
-          className="object-cover object-center"
-          priority
-          quality={80}
-          sizes="100vw"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#001435]/85 via-[#001435]/60 to-[#001435]/40" />
-        <div className="relative z-10 flex flex-col items-center text-center px-4 pt-20 pb-24 lg:pt-24 lg:pb-28 max-w-5xl mx-auto">
-          <p className="label-sm text-[#F2CD69] tracking-[0.3em] mb-4 opacity-90">
-            Faith-Led Commerce
+      {/* Hero Section — shared flat-hero pattern (eyebrow → display H1 →
+          italic serif lead), matched to the Directory/Marketplace/Events
+          heroes so all four read the same. */}
+      <section className="relative py-16 lg:py-24 px-4 text-center overflow-hidden bg-[#FAF9F5]">
+        <div className="max-w-4xl mx-auto relative z-10">
+          <p className="label-sm text-gold-dark tracking-[0.3em] mb-4 font-bold opacity-80">
+            Building the New Catholic Economy®
           </p>
-          <h1 className="display-md text-white mb-6 tracking-tight drop-shadow-lg">
+          <h1 className="display-md text-navy-dark mb-6 tracking-tight">
             Sacred Exchange
           </h1>
-          <p className="font-serif text-xl lg:text-2xl italic text-white/80 max-w-2xl mx-auto leading-relaxed drop-shadow mb-8">
+          <p className="font-serif text-xl italic text-secondary max-w-2xl mx-auto leading-relaxed mb-8">
             &ldquo;Strengthening our community through faithful trade.&rdquo;
           </p>
           <LocalizedClientLink
@@ -52,6 +43,7 @@ export default async function BarterPage() {
             + Post a Listing
           </LocalizedClientLink>
         </div>
+        <div className="absolute bottom-0 left-0 w-full h-px bg-gold/30" />
       </section>
 
       {/* Search, Filters & Listings */}

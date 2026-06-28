@@ -42,137 +42,55 @@ export const AlgoliaProductSidebar = () => {
         <Modal heading="Filters" onClose={() => setIsOpen(false)}>
           <div className="px-4 space-y-4">
             <ProductListingActiveFilters />
+            <CategoryFilter />
             <PriceFilter
               defaultOpen={Boolean(
                 allSearchParams.min_price || allSearchParams.max_price
               )}
             />
-            <SizeFilter defaultOpen={Boolean(allSearchParams.size)} />
-            {/* Color/Condition hidden until products carry these attributes
-                — Algolia returns empty refinement lists today and an empty
-                filter section reads as broken. Reinstate when the catalog
-                has real values. */}
           </div>
         </Modal>
       )}
     </>
   ) : (
     <div className="space-y-4">
+      <CategoryFilter />
       <PriceFilter />
-      <SizeFilter />
     </div>
   )
 }
 
-function ConditionFilter({ defaultOpen = true }: { defaultOpen?: boolean }) {
-  const { items } = useRefinementList({
-    attribute: "variants.condition",
+// Product category refinement. Reads the "categories.name" Algolia facet,
+// which is actually populated (unlike the old variants.size/color/condition
+// facets — products carry no variants, so those returned empty lists and the
+// filters did nothing). useRefinementList applies the refinement directly to
+// the same InstantSearch query the listing renders from, so no extra wiring is
+// needed. Hidden entirely when the index has no categories so an empty box
+// never reads as broken.
+function CategoryFilter({ defaultOpen = true }: { defaultOpen?: boolean }) {
+  const { items, refine } = useRefinementList({
+    attribute: "categories.name",
     limit: 100,
     operator: "or",
+    sortBy: ["name:asc"],
   })
-  const { updateFilters, isFilterActive } = useFilters("condition")
 
-  const selectHandler = (option: string) => {
-    updateFilters(option)
-  }
+  if (!items.length) return null
+
   return (
-    <Accordion heading="Condition" defaultOpen={defaultOpen}>
+    <Accordion heading="Category" defaultOpen={defaultOpen}>
       <ul className="px-4">
-        {items.map(({ label, count }) => (
+        {items.map(({ label, count, isRefined }) => (
           <li key={label} className="mb-4">
             <FilterCheckboxOption
-              checked={isFilterActive(label)}
+              checked={isRefined}
               disabled={Boolean(!count)}
-              onCheck={selectHandler}
+              onCheck={refine}
               label={label}
+              amount={count}
             />
           </li>
         ))}
-      </ul>
-    </Accordion>
-  )
-}
-
-function ColorFilter({ defaultOpen = true }: { defaultOpen?: boolean }) {
-  const { items } = useRefinementList({
-    attribute: "variants.color",
-    limit: 100,
-    operator: "and",
-    escapeFacetValues: false,
-    sortBy: ["isRefined", "count", "name"],
-  })
-  const { updateFilters, isFilterActive } = useFilters("color")
-
-  const selectHandler = (option: string) => {
-    updateFilters(option)
-  }
-  return (
-    <Accordion heading="Color" defaultOpen={defaultOpen}>
-      <ul className="px-4">
-        {items.map(({ label, count }) => (
-          <li key={label} className="mb-4 flex items-center justify-between">
-            <FilterCheckboxOption
-              checked={isFilterActive(label)}
-              disabled={Boolean(!count)}
-              onCheck={selectHandler}
-              label={label}
-            />
-            <div
-              style={{ backgroundColor: label.toLowerCase() }}
-              className={cn(
-                "w-5 h-5 border border-primary rounded-xs",
-                Boolean(!label) && "opacity-30"
-              )}
-            />
-          </li>
-        ))}
-      </ul>
-    </Accordion>
-  )
-}
-
-function SizeFilter({ defaultOpen = true }: { defaultOpen?: boolean }) {
-  const { items } = useRefinementList({
-    attribute: "variants.size",
-    limit: 100,
-    operator: "or",
-  })
-  const updateSearchParams = useUpdateSearchParams()
-  const searchParams = useSearchParams()
-  const selected = searchParams.get("size") || ""
-
-  const selectSizeHandler = (size: string) => {
-    // Single-select: clicking the active option clears it; otherwise replaces.
-    updateSearchParams("size", selected === size ? "" : size)
-  }
-
-  return (
-    <Accordion heading="Size" defaultOpen={defaultOpen}>
-      <ul className="px-4 mt-1 space-y-2">
-        {items.map(({ label, count }) => {
-          const checked = selected === label
-          const disabled = !count
-          return (
-            <li key={label}>
-              <label
-                className={cn(
-                  "flex items-center gap-2 cursor-pointer text-sm",
-                  disabled && "opacity-50 cursor-default"
-                )}
-              >
-                <input
-                  type="radio"
-                  name="size-filter"
-                  checked={checked}
-                  disabled={disabled}
-                  onChange={() => selectSizeHandler(label)}
-                  className="accent-[#755b00]"
-                />
-                <span className={cn(checked && "font-semibold")}>{label}</span>
-              </label>
-            </li>
-          )
-        })}
       </ul>
     </Accordion>
   )

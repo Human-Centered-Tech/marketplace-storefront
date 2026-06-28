@@ -211,7 +211,7 @@ export const NetworkingEventDetail = ({
                 </span>
                 <div>
                   <h4 className="font-serif text-lg text-navy-dark mb-2">
-                    Speed Networking Rounds
+                    Networking Rounds
                   </h4>
                   <p className="text-secondary leading-relaxed">
                     Structured 1-on-1 breakout sessions. You&apos;ll be paired

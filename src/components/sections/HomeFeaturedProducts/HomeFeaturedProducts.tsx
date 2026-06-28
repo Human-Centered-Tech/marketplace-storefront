@@ -199,7 +199,7 @@ export const HomeFeaturedProducts = async ({
             href="/categories"
             className="font-sans text-[11px] font-bold uppercase tracking-[0.15em] text-[#001435] hover:text-[#755b00] transition-colors whitespace-nowrap underline decoration-[#BE9B32] underline-offset-8"
           >
-            View All Shop
+            View All →
           </LocalizedClientLink>
         </div>
         <AutoCarousel

@@ -16,7 +16,7 @@ export function FoundersVision() {
           />
           {/* Gold-gradient quote box — Pope Benedict XVI, per Brooke */}
           <div className="absolute -bottom-8 -right-8 bg-gradient-to-br from-[#F2CD69] to-[#BE9B32] p-6 rounded-2xl shadow-xl max-w-sm hidden md:block">
-            <p className="font-serif italic text-[#001435] text-sm leading-relaxed">
+            <p className="font-serif italic text-[#001435] text-base leading-relaxed">
               &ldquo;It is good for people to realize that purchasing is always a
               moral &mdash; and not simply economic &mdash; act. Hence the
               consumer has a specific social responsibility, which goes
@@ -31,7 +31,7 @@ export function FoundersVision() {
         {/* Right — Founder story */}
         <div className="space-y-8">
           <span className="font-sans text-[11px] tracking-[0.2em] uppercase text-[#001435] font-bold">
-            Our Heart &amp; Soul
+            Our Mission
           </span>
           <h2 className="font-serif text-4xl md:text-5xl font-semibold text-[#001435] leading-tight">
             A Vision for the Marketplace

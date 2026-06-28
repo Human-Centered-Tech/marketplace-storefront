@@ -124,9 +124,9 @@ export async function UpcomingEvents() {
           </div>
           <LocalizedClientLink
             href="/networking"
-            className="bg-[#001435] text-white px-8 py-3 rounded-xl font-sans text-[11px] tracking-[0.15em] uppercase font-bold hover:bg-[#17294a] transition-all inline-block text-center"
+            className="font-sans text-[11px] font-bold uppercase tracking-[0.15em] text-[#001435] hover:text-[#755b00] transition-colors whitespace-nowrap underline decoration-[#BE9B32] underline-offset-8"
           >
-            See Full Calendar
+            View All →
           </LocalizedClientLink>
         </div>
 

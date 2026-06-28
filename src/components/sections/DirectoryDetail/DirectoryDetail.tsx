@@ -51,6 +51,17 @@ export const DirectoryDetail = ({ listing }: { listing: DirectoryListing }) => {
         .filter(Boolean)
         .join(", ")
     : null
+  // Only show the Location/map block when there's something real to map:
+  // city/state/zip text, or precise coords. `listing.address` can be a
+  // non-null object with all-blank fields, so checking truthiness alone
+  // would render an empty map with a dangling "LOCATION" header.
+  const addrCoords = listing.address as
+    | { lat?: number; lng?: number }
+    | null
+    | undefined
+  const hasLocation =
+    Boolean(locationStr) ||
+    (Number.isFinite(addrCoords?.lat) && Number.isFinite(addrCoords?.lng))
 
   const isUnclaimed = !listing.owner_id
   // Featured (and Enterprise) tiers get the richer listing: owner-interview
@@ -556,7 +567,7 @@ export const DirectoryDetail = ({ listing }: { listing: DirectoryListing }) => {
             )}
 
             {/* Location Map */}
-            {listing.address && (
+            {hasLocation && listing.address && (
               <div className="bg-gray-100 rounded-xl overflow-hidden">
                 <div className="p-6">
                   <h3 className="label-sm text-[10px] text-navy-dark font-bold tracking-widest mb-2">
