@@ -143,18 +143,27 @@ async function AllCategories({
           }),
         }}
       />
-      {/* Hero Search Section */}
-      <section
-        className="relative w-full py-14 lg:py-20 flex flex-col items-center justify-center border-b border-[#c5c6cf]/10 bg-gradient-to-b from-white to-[#001435]"
-      >
-        <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl tracking-[0.15em] uppercase text-[#001435] font-bold mb-6 text-center">
-          The Marketplace
-        </h1>
-        <SearchBar variant="hero" />
+      {/* Hero Search Section — shared flat-hero pattern (eyebrow → display H1 →
+          lead), matched to the Directory/Networking heroes. The band fades to
+          cream (not navy) so the navy text stays legible to the bottom edge. */}
+      <section className="relative w-full py-16 lg:py-24 px-4 text-center overflow-hidden bg-gradient-to-b from-white to-[#faf9f5]">
+        <div className="max-w-4xl mx-auto relative z-10">
+          <p className="label-sm text-gold-dark tracking-[0.3em] mb-4 font-bold opacity-80">
+            The New Catholic Economy
+          </p>
+          <h1 className="display-md text-navy-dark mb-6 tracking-tight">
+            The Marketplace
+          </h1>
+          <p className="font-serif text-xl italic text-secondary max-w-2xl mx-auto leading-relaxed mb-8">
+            Discover and support Catholic-owned businesses across the marketplace.
+          </p>
+          <SearchBar variant="hero" />
+        </div>
+        <div className="absolute bottom-0 left-0 w-full h-px bg-gold/30" />
       </section>
 
       <div className="w-full" style={{ backgroundColor: "#faf9f5" }}>
-        <div className="max-w-7xl mx-auto px-4 lg:px-8 py-12">
+        <div className="max-w-7xl mx-auto px-4 lg:px-8 py-12 lg:py-16">
           <Suspense fallback={<ProductListingSkeleton />}>
             {bot || !ALGOLIA_ID || !ALGOLIA_SEARCH_KEY ? (
               <ProductListing

@@ -126,7 +126,7 @@ export const NetworkingEventsView = ({
     )
 
   return (
-    <section className="max-w-7xl mx-auto px-4 lg:px-8 py-12">
+    <section className="max-w-7xl mx-auto px-4 lg:px-8 py-12 lg:py-16">
       {/* Search */}
       <div className="max-w-2xl mx-auto mb-10">
         <div className="relative">

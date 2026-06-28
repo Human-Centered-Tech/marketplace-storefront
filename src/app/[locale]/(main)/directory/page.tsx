@@ -42,10 +42,10 @@ export default async function DirectoryPage() {
       </section>
 
       {/* Search */}
-      {/* Width stays max-w-5xl to match the 2-col results grid; full width
-          unification waits for the grid restructure (NEEDS-APPROVAL w/ Brooke). */}
+      {/* Full-width shell (max-w-7xl) to line up with the marketplace/events
+          bodies; the results grid inside fills it at 3 columns. */}
       <header className="pt-10 pb-12 bg-[#FAF9F5] relative overflow-hidden">
-        <div className="max-w-5xl mx-auto px-4 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 lg:px-8">
           <DirectorySearch
             initialListings={listingsResult.listings}
             initialCount={listingsResult.count}

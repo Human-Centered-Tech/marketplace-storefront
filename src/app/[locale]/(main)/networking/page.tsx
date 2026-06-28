@@ -19,7 +19,7 @@ export default async function NetworkingPage() {
       />
 
       {/* Hero Section */}
-      <section className="relative py-24 lg:py-32 px-4 text-center overflow-hidden bg-[#FAF9F5]" style={{ backgroundImage: "none" }}>
+      <section className="relative py-16 lg:py-24 px-4 text-center overflow-hidden bg-[#FAF9F5]" style={{ backgroundImage: "none" }}>
         <div className="max-w-4xl mx-auto relative z-10">
           <p className="label-sm text-gold-dark tracking-[0.3em] mb-4 font-bold opacity-80">
             Building the Mystical Body in Business
