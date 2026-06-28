@@ -1,7 +1,12 @@
 const links = {
   marketplace: [
-    { label: "Our Story", path: "#" },
-    { label: "Merchant Portal", path: "#" },
+    { label: "Our Story", path: "/about" },
+    // Vendor dashboard login (a separate app). Env-based so it's correct per
+    // environment; rendered as an external <a> by the footer's FooterLink.
+    {
+      label: "Merchant Portal",
+      path: `${process.env.NEXT_PUBLIC_VENDOR_URL || "http://localhost:5173"}/login`,
+    },
     { label: "Marketplace", path: "/categories" },
   ],
   forBusinesses: [
