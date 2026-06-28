@@ -79,18 +79,38 @@ const BENEFITS = [
   },
 ]
 
+// Real merchant testimonials (Brooke, 2026-06-28). Lightly cleaned for card
+// display; quotes + attributions are verbatim in substance.
 const TESTIMONIALS = [
   {
     quote:
-      "Catholic Owned® gave us a home where our customers understand and appreciate what we make. Sales grew 3x in our first year.",
-    name: "Maria & Joseph",
-    business: "Sacred Heart Candle Co.",
+      "The message was what really struck me — it wasn't a watered-down Catholic faith. That stuck out to me, and I thought, \"okay, these people are serious about being Catholic.\"",
+    name: "Conoon Kim",
+    business: "Covenant",
   },
   {
     quote:
-      "The onboarding was incredibly simple. We were listing products within an hour of signing up.",
-    name: "Fr. Michael",
-    business: "Monastery Goods",
+      "Catholic Owned® is the best, and I really think there is a big trend coming. Everyone wants to support companies that align with their values.",
+    name: "Thomas Lahart",
+    business: "Flight Foods",
+  },
+  {
+    quote:
+      "I just created my listing — it looks great! I love what you do and how you're connecting people, and it's all so well done. Even the signup process was quick and easy. You have really built something special!",
+    name: "Kate Sell",
+    business: "Mission Advantage Partners",
+  },
+  {
+    quote:
+      "I downloaded the app last week and met a Catholic marketing strategist the next day — an incredible conversation about faith and business and our Catholic network. We'll be working together to up our marketing game. I am feeling very blessed!",
+    name: "Barb Johnson",
+    business: "Elston Johnson & Associates",
+  },
+  {
+    quote:
+      "I'm so proud to be a part of a phenomenal group of Catholic businesses!",
+    name: "Michelle",
+    business: "Common Thread Textiles",
   },
 ]
 

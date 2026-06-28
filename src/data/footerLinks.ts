@@ -6,7 +6,6 @@ const links = {
   ],
   forBusinesses: [
     { label: "Sell on the Marketplace", path: "/sell" },
-    { label: "Service-Based Business", path: "/for-business" },
   ],
   discover: [
     { label: "Shop", path: "/categories" },
