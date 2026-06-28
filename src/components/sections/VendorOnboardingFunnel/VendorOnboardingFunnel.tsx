@@ -773,10 +773,7 @@ const RecommendedTierStep: React.FC<{
       />
       <div className="bg-[#faf9f5] rounded-xl p-8 mb-6 border border-[#BE9B32]/30">
         <div className="flex items-baseline gap-2 mb-4">
-          <span
-            className="font-serif text-5xl font-bold text-[#001435]"
-            style={{ fontFamily: "Cinzel, serif" }}
-          >
+          <span className="font-serif text-5xl font-bold text-[#001435]">
             {tier.price}
           </span>
           <span className="text-[#44474e]">{tier.period}</span>

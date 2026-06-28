@@ -132,11 +132,7 @@ export const BusinessPricingSection = ({
 
   return (
     <div>
-      {/* Google Fonts for Cinzel + Material Symbols */}
-      <link
-        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=EB+Garamond:ital,wght@0,400;0,700;1,400&family=Poppins:wght@400;600;700&display=swap"
-        rel="stylesheet"
-      />
+      {/* Google Fonts for Material Symbols */}
       <link
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         rel="stylesheet"
@@ -149,21 +145,15 @@ export const BusinessPricingSection = ({
       >
         <div className="max-w-6xl mx-auto text-center relative z-10">
           <h1
-            className="text-5xl md:text-7xl text-[#17294A] mb-6 tracking-tight leading-tight"
-            style={{ fontFamily: "Cinzel, serif", fontWeight: 700 }}
+            className="font-serif text-5xl md:text-7xl text-[#17294A] mb-6 tracking-tight leading-tight"
+            style={{ fontWeight: 700 }}
           >
             Building the New <br />
-            <span
-              className="italic font-normal text-[#695e2a]"
-              style={{ fontFamily: "EB Garamond, serif" }}
-            >
+            <span className="font-serif italic font-normal text-[#695e2a]">
               Catholic Economy&reg;
             </span>
           </h1>
-          <p
-            className="max-w-2xl mx-auto text-xl text-[#44474e] leading-relaxed"
-            style={{ fontFamily: "EB Garamond, serif" }}
-          >
+          <p className="font-serif max-w-2xl mx-auto text-xl text-[#44474e] leading-relaxed">
             Connect your business with a community committed to tradition,
             excellence, and the common good. Choose the plan that fits your
             mission.
@@ -186,10 +176,7 @@ export const BusinessPricingSection = ({
               >
                 info
               </span>
-              <p
-                className="text-xs font-bold uppercase tracking-widest text-[#17294A]"
-                style={{ fontFamily: "Poppins, sans-serif" }}
-              >
+              <p className="font-sans text-xs font-bold uppercase tracking-widest text-[#17294A]">
                 Not sure which plan? Take our 60-second business quiz to get a
                 tailored recommendation.
               </p>
@@ -210,51 +197,46 @@ export const BusinessPricingSection = ({
                 }`}
               >
                 {tier.highlight && (
-                  <div
-                    className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#BE9B32] text-[#17294A] px-6 py-1 rounded-full font-bold text-[10px] uppercase tracking-widest whitespace-nowrap"
-                    style={{ fontFamily: "Poppins, sans-serif" }}
-                  >
+                  <div className="font-sans absolute -top-4 left-1/2 -translate-x-1/2 bg-[#BE9B32] text-[#17294A] px-6 py-1 rounded-full font-bold text-[10px] uppercase tracking-widest whitespace-nowrap">
                     Most Popular
                   </div>
                 )}
                 <div className="mb-8">
                   <span
-                    className={`text-xs font-bold uppercase tracking-widest ${
+                    className={`font-sans text-xs font-bold uppercase tracking-widest ${
                       tier.enterprise
                         ? "text-[#17294A]/70"
                         : tier.highlight
                         ? "text-[#BE9B32]"
                         : "text-[#44474e]"
                     }`}
-                    style={{ fontFamily: "Poppins, sans-serif" }}
                   >
                     {tier.label}
                   </span>
                   <h3
-                    className={`text-3xl mt-2 ${
+                    className={`font-serif text-3xl mt-2 ${
                       tier.enterprise ? "text-[#17294A]" : "text-[#17294A]"
                     }`}
-                    style={{ fontFamily: "Cinzel, serif", fontWeight: 700 }}
+                    style={{ fontWeight: 700 }}
                   >
                     {tier.name}
                   </h3>
                 </div>
                 <div className="mb-8">
                   <span
-                    className={`text-5xl ${
+                    className={`font-serif text-5xl ${
                       tier.enterprise ? "text-[#17294A]" : "text-[#17294A]"
                     }`}
-                    style={{ fontFamily: "Cinzel, serif", fontWeight: 700 }}
+                    style={{ fontWeight: 700 }}
                   >
                     {tier.price}
                   </span>
                   <span
-                    className={`${
+                    className={`font-serif ${
                       tier.enterprise
                         ? "text-[#17294A]/70"
                         : "text-[#44474e]"
                     }`}
-                    style={{ fontFamily: "EB Garamond, serif" }}
                   >
                     {tier.period}
                   </span>
@@ -288,8 +270,7 @@ export const BusinessPricingSection = ({
                         {f.icon}
                       </span>
                       <span
-                        className={f.bold ? "font-bold" : ""}
-                        style={{ fontFamily: "EB Garamond, serif" }}
+                        className={`font-serif ${f.bold ? "font-bold" : ""}`}
                       >
                         {f.text}
                       </span>
@@ -298,8 +279,7 @@ export const BusinessPricingSection = ({
                 </ul>
                 <LocalizedClientLink
                   href={getTierHref(tier.id)}
-                  className={`w-full py-4 rounded-lg font-bold uppercase tracking-widest text-sm text-center block transition-colors ${tier.btnClass}`}
-                  style={{ fontFamily: "Poppins, sans-serif" }}
+                  className={`font-sans w-full py-4 rounded-lg font-bold uppercase tracking-widest text-sm text-center block transition-colors ${tier.btnClass}`}
                 >
                   Get Started
                 </LocalizedClientLink>
@@ -313,15 +293,12 @@ export const BusinessPricingSection = ({
       <section className="py-24 px-8 bg-[#f4f4f0]">
         <div className="max-w-7xl mx-auto">
           <div className="mb-12">
-            <span
-              className="text-xs font-bold uppercase tracking-widest text-[#BE9B32] block mb-2"
-              style={{ fontFamily: "Poppins, sans-serif" }}
-            >
+            <span className="font-sans text-xs font-bold uppercase tracking-widest text-[#BE9B32] block mb-2">
               Voices of Excellence
             </span>
             <h2
-              className="text-4xl text-[#17294A]"
-              style={{ fontFamily: "Cinzel, serif", fontWeight: 700 }}
+              className="font-serif text-4xl text-[#17294A]"
+              style={{ fontWeight: 700 }}
             >
               Community Testimonials
             </h2>
@@ -345,10 +322,7 @@ export const BusinessPricingSection = ({
                     </span>
                   ))}
                 </div>
-                <p
-                  className="italic text-xl text-[#17294A] mb-8 leading-relaxed"
-                  style={{ fontFamily: "EB Garamond, serif" }}
-                >
+                <p className="font-serif italic text-xl text-[#17294A] mb-8 leading-relaxed">
                   &ldquo;{t.quote}&rdquo;
                 </p>
                 <div className="flex items-center gap-4">
@@ -363,16 +337,10 @@ export const BusinessPricingSection = ({
                     </span>
                   </div>
                   <div>
-                    <p
-                      className="font-bold text-[#17294A] text-xs uppercase tracking-wider"
-                      style={{ fontFamily: "Poppins, sans-serif" }}
-                    >
+                    <p className="font-sans font-bold text-[#17294A] text-xs uppercase tracking-wider">
                       {t.name}
                     </p>
-                    <p
-                      className="text-[#44474e] text-sm italic"
-                      style={{ fontFamily: "EB Garamond, serif" }}
-                    >
+                    <p className="font-serif text-[#44474e] text-sm italic">
                       {t.business}
                     </p>
                   </div>
@@ -387,8 +355,8 @@ export const BusinessPricingSection = ({
       <section className="py-20 px-8 bg-[#FAF9F5]">
         <div className="max-w-6xl mx-auto">
           <h2
-            className="text-4xl text-center text-[#17294A] mb-16"
-            style={{ fontFamily: "Cinzel, serif", fontWeight: 700 }}
+            className="font-serif text-4xl text-center text-[#17294A] mb-16"
+            style={{ fontWeight: 700 }}
           >
             Feature Comparison
           </h2>
@@ -396,36 +364,21 @@ export const BusinessPricingSection = ({
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-[#e9e8e4]">
-                  <th
-                    className="p-6 text-lg text-[#17294A] border-b border-[#c5c6cf]/30"
-                    style={{ fontFamily: "Cinzel, serif" }}
-                  >
+                  <th className="font-serif p-6 text-lg text-[#17294A] border-b border-[#c5c6cf]/30">
                     Feature
                   </th>
-                  <th
-                    className="p-6 text-lg text-[#17294A] border-b border-[#c5c6cf]/30 text-center"
-                    style={{ fontFamily: "Cinzel, serif" }}
-                  >
+                  <th className="font-serif p-6 text-lg text-[#17294A] border-b border-[#c5c6cf]/30 text-center">
                     Local
                   </th>
-                  <th
-                    className="p-6 text-lg text-[#17294A] border-b border-[#c5c6cf]/30 text-center bg-[#e3e2df]/50"
-                    style={{ fontFamily: "Cinzel, serif" }}
-                  >
+                  <th className="font-serif p-6 text-lg text-[#17294A] border-b border-[#c5c6cf]/30 text-center bg-[#e3e2df]/50">
                     Tier 2
                   </th>
-                  <th
-                    className="p-6 text-lg text-[#17294A] border-b border-[#c5c6cf]/30 text-center"
-                    style={{ fontFamily: "Cinzel, serif" }}
-                  >
+                  <th className="font-serif p-6 text-lg text-[#17294A] border-b border-[#c5c6cf]/30 text-center">
                     Tier 3
                   </th>
                 </tr>
               </thead>
-              <tbody
-                style={{ fontFamily: "EB Garamond, serif" }}
-                className="text-[#44474e]"
-              >
+              <tbody className="font-serif text-[#44474e]">
                 {comparisonRows.map((row) => (
                   <tr key={row.feature}>
                     <td className="p-6 border-b border-[#c5c6cf]/20 font-bold text-[#17294A]">
@@ -457,15 +410,12 @@ export const BusinessPricingSection = ({
       <section className="py-24 px-8 bg-[#FAF9F5]">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
-            <span
-              className="text-xs font-bold uppercase tracking-widest text-[#BE9B32] block mb-2"
-              style={{ fontFamily: "Poppins, sans-serif" }}
-            >
+            <span className="font-sans text-xs font-bold uppercase tracking-widest text-[#BE9B32] block mb-2">
               Clarity in Mission
             </span>
             <h2
-              className="text-4xl text-[#17294A]"
-              style={{ fontFamily: "Cinzel, serif", fontWeight: 700 }}
+              className="font-serif text-4xl text-[#17294A]"
+              style={{ fontWeight: 700 }}
             >
               Frequently Asked Questions
             </h2>
@@ -473,10 +423,7 @@ export const BusinessPricingSection = ({
           <div className="space-y-4">
             {faqs.map((group) => (
               <div key={group.group} className="mb-8">
-                <h3
-                  className="text-xs font-bold uppercase tracking-widest text-[#44474e] mb-6 pb-2 border-b border-[#c5c6cf]/30"
-                  style={{ fontFamily: "Poppins, sans-serif" }}
-                >
+                <h3 className="font-sans text-xs font-bold uppercase tracking-widest text-[#44474e] mb-6 pb-2 border-b border-[#c5c6cf]/30">
                   {group.group}
                 </h3>
                 <div className="space-y-2">
@@ -486,20 +433,14 @@ export const BusinessPricingSection = ({
                       className="group bg-white border border-[#c5c6cf]/20 rounded-xl overflow-hidden transition-all duration-300 open:shadow-md"
                     >
                       <summary className="flex items-center justify-between p-6 cursor-pointer list-none [&::-webkit-details-marker]:hidden">
-                        <span
-                          className="text-lg text-[#17294A]"
-                          style={{ fontFamily: "Cinzel, serif" }}
-                        >
+                        <span className="font-serif text-lg text-[#17294A]">
                           {faq.q}
                         </span>
                         <span className="material-symbols-outlined text-[#BE9B32] transition-transform duration-300 group-open:rotate-180">
                           expand_more
                         </span>
                       </summary>
-                      <div
-                        className="px-6 pb-6 text-[#44474e] leading-relaxed"
-                        style={{ fontFamily: "EB Garamond, serif" }}
-                      >
+                      <div className="font-serif px-6 pb-6 text-[#44474e] leading-relaxed">
                         {faq.a}
                       </div>
                     </details>
@@ -515,22 +456,18 @@ export const BusinessPricingSection = ({
       <footer className="py-16 px-8 bg-[#17294A]">
         <div className="max-w-2xl mx-auto text-center">
           <h2
-            className="text-3xl lg:text-4xl text-[#FAF9F5] mb-4"
-            style={{ fontFamily: "Cinzel, serif", fontWeight: 700 }}
+            className="font-serif text-3xl lg:text-4xl text-[#FAF9F5] mb-4"
+            style={{ fontWeight: 700 }}
           >
             Ready to Join?
           </h2>
-          <p
-            className="text-[#FAF9F5]/80 mb-8 text-lg"
-            style={{ fontFamily: "EB Garamond, serif" }}
-          >
+          <p className="font-serif text-[#FAF9F5]/80 mb-8 text-lg">
             Plans start at just $99/year. Join 550+ Catholic-owned businesses
             already on the platform.
           </p>
           <LocalizedClientLink
             href="/sell/onboarding"
-            className="inline-block bg-[#BE9B32] text-[#17294A] py-4 px-10 rounded-lg font-bold text-sm uppercase tracking-widest hover:bg-[#DECF8F] transition-colors shadow-lg shadow-[#BE9B32]/20"
-            style={{ fontFamily: "Poppins, sans-serif" }}
+            className="font-sans inline-block bg-[#BE9B32] text-[#17294A] py-4 px-10 rounded-lg font-bold text-sm uppercase tracking-widest hover:bg-[#DECF8F] transition-colors shadow-lg shadow-[#BE9B32]/20"
           >
             Take the Quiz
           </LocalizedClientLink>
