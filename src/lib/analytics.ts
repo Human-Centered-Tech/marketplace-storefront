@@ -77,20 +77,12 @@ export function track(args: TrackArgs) {
     platform: detectPlatform(),
   })
 
-  // Prefer sendBeacon — fires without blocking page navigation (good for
-  // session_end / cart_add fires on page unload). Fall back to fetch.
-  try {
-    if (typeof navigator !== "undefined" && navigator.sendBeacon) {
-      const ok = navigator.sendBeacon(
-        `${backendUrl}/store/analytics/events`,
-        new Blob([body], { type: "application/json" })
-      )
-      if (ok) return
-    }
-  } catch {
-    // sendBeacon can throw if the beacon queue is full; fall through.
-  }
-
+  // Use fetch with keepalive — NOT sendBeacon. The Medusa /store/* gate
+  // requires the x-publishable-api-key header, which sendBeacon cannot set,
+  // so every beacon was silently rejected at the gate (and sendBeacon's
+  // "queued" success even suppressed this keyed fallback — which is why the
+  // analytics table was empty). keepalive lets the request survive page
+  // navigation/unload, covering the same case sendBeacon was meant for.
   void fetch(`${backendUrl}/store/analytics/events`, {
     method: "POST",
     headers: {

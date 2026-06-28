@@ -6,6 +6,7 @@ import useUpdateSearchParams from "@/hooks/useUpdateSearchParams"
 import { getProductPrice } from "@/lib/helpers/get-product-price"
 import { useState } from "react"
 import { addToCart } from "@/lib/data/cart"
+import { track } from "@/lib/analytics"
 import { Chat } from "@/components/organisms/Chat/Chat"
 import { SellerProps } from "@/types/seller"
 import { WishlistButton } from "../WishlistButton/WishlistButton"
@@ -140,6 +141,9 @@ export const ProductDetailsHeader = ({
     if (!variantId || !hasAnyPrice) return null
 
     setIsAdding(true)
+    // Conversion signal — feeds the product_view → cart_add → purchase funnel
+    // in admin/vendor analytics.
+    track({ event_type: "cart_add", entity_type: "product", entity_id: product.id })
 
     const subtotal = +(variantPrice?.calculated_price_without_tax_number || 0)
     const total = +(variantPrice?.calculated_price_number || 0)

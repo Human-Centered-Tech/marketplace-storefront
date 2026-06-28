@@ -6,6 +6,7 @@ import { OWNER_INTERVIEW_QUESTIONS } from "@/lib/owner-interview"
 import { socialLinksToArray } from "@/lib/social"
 import { SocialIcon } from "@/components/sections/DirectoryManagement/SocialIcon"
 import { SingleLocationMap } from "@/components/sections/DirectoryListing/SingleLocationMap"
+import { trackButtonClick } from "@/lib/analytics"
 
 // Canonical tier labels — MUST match the card/home/map badge labels in
 // lib/directory-tiers.ts (Verified / Featured / Enterprise). The DB column
@@ -193,6 +194,9 @@ export const DirectoryDetail = ({ listing }: { listing: DirectoryListing }) => {
             {listing.contact_phone && (
               <a
                 href={`tel:${listing.contact_phone}`}
+                onClick={() =>
+                  trackButtonClick("directory_listing", listing.id, "contact_phone")
+                }
                 className="p-3 rounded-xl bg-gray-100 text-navy-dark hover:bg-[#F2CD69]/30 transition-colors"
               >
                 <span className="material-symbols-outlined">call</span>
@@ -201,6 +205,9 @@ export const DirectoryDetail = ({ listing }: { listing: DirectoryListing }) => {
             {listing.contact_email && (
               <a
                 href={`mailto:${listing.contact_email}`}
+                onClick={() =>
+                  trackButtonClick("directory_listing", listing.id, "contact_email")
+                }
                 className="p-3 rounded-xl bg-gray-100 text-navy-dark hover:bg-[#F2CD69]/30 transition-colors"
               >
                 <span className="material-symbols-outlined">mail</span>
@@ -211,6 +218,9 @@ export const DirectoryDetail = ({ listing }: { listing: DirectoryListing }) => {
                 href={listing.website_url}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() =>
+                  trackButtonClick("directory_listing", listing.id, "contact_website")
+                }
                 className="p-3 rounded-xl bg-gray-100 text-navy-dark hover:bg-[#F2CD69]/30 transition-colors"
               >
                 <span className="material-symbols-outlined">language</span>
@@ -504,6 +514,13 @@ export const DirectoryDetail = ({ listing }: { listing: DirectoryListing }) => {
                       href={href}
                       target={external ? "_blank" : undefined}
                       rel={external ? "noopener noreferrer" : undefined}
+                      onClick={() =>
+                        trackButtonClick(
+                          "directory_listing",
+                          listing.id,
+                          `cta_${ctaType}`
+                        )
+                      }
                       className="w-full bg-gradient-to-br from-[#F2CD69] to-[#BE9B32] text-navy-dark py-4 rounded-xl label-sm text-[10px] font-bold tracking-widest flex items-center justify-center gap-3 hover:brightness-105 transition-all active:scale-95 mb-4"
                     >
                       <span className="material-symbols-outlined">
