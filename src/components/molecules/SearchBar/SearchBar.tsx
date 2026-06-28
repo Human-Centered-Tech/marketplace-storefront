@@ -58,7 +58,7 @@ export function SearchBar({
       >
         <input
           ref={inputRef}
-          className="w-full bg-[#f4f4f0] border-none rounded-full py-[16px] pl-[26px] pr-[51px] text-[14px] focus:ring-2 focus:ring-[#755b00] transition-all placeholder:text-[#75777f]"
+          className="w-full bg-[#f4f4f0] border-none rounded-full py-[11px] pl-[24px] pr-[48px] text-[14px] focus:ring-2 focus:ring-[#755b00] transition-all placeholder:text-[#75777f]"
           placeholder={placeholder || defaultPlaceholder}
           type="text"
           value={query}
