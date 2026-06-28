@@ -404,9 +404,19 @@ export async function becomeMerchant(formData: FormData) {
     }
   }
 
+  // Poll the seller login until the JWT carries a populated actor_id, and
+  // REFUSE to store a stale (empty actor_id) token — mirror becomeVendor's
+  // Step 2b guard exactly. become-merchant links the seller synchronously so
+  // this almost always succeeds on the first try, but a slow auth-identity
+  // write can briefly return an empty actor_id; storing that seeds the stale
+  // vendor cookie that later forces a second login at /api/vendor-handoff.
+  // Polling ~12x/~4s (was 4x/~900ms) and never persisting an empty-actor_id
+  // token eliminates that.
+  const REISSUE_MAX_TRIES = 12
+  const REISSUE_DELAY_MS = 350
   let vendorToken: string | null = null
-  for (let attempt = 0; attempt < 4; attempt++) {
-    if (attempt > 0) await new Promise((r) => setTimeout(r, 300))
+  for (let attempt = 0; attempt < REISSUE_MAX_TRIES; attempt++) {
+    if (attempt > 0) await new Promise((r) => setTimeout(r, REISSUE_DELAY_MS))
     const loginRes = await fetch(
       `${process.env.MEDUSA_BACKEND_URL}/auth/seller/emailpass`,
       {
@@ -418,16 +428,20 @@ export async function becomeMerchant(formData: FormData) {
     if (!loginRes.ok) continue
     const token = (await loginRes.json())?.token
     if (typeof token !== "string") continue
-    vendorToken = token
-    if (decodeActor(token)) break
+    if (decodeActor(token)) {
+      vendorToken = token
+      break
+    }
   }
 
   if (vendorToken) {
     await setVendorToken(vendorToken)
     await setVendorFlag(true)
   }
-  // If we never got a token, fall through anyway: the seller exists, and
-  // /api/vendor-handoff routes a missing/stale cookie to a recovery page.
+  // If we never got a token with a populated actor_id, fall through WITHOUT
+  // storing one: the seller exists, and /api/vendor-handoff now mints a fresh
+  // seller token from the customer session (PART B) — or, failing that, routes
+  // a missing/stale cookie to a recovery page.
 
   // Step 3: draft directory listing — mirror becomeVendor Step 4 exactly.
   //   - Claim flow: ADOPT the listing they came to claim (no duplicate slug).
@@ -539,4 +553,58 @@ export async function refreshVendorSession(formData: FormData) {
   await setVendorToken(token)
   await setVendorFlag(true)
   return { success: true, error: null }
+}
+
+/**
+ * PART B — password-less vendor session mint.
+ *
+ * Mints a fresh SELLER token from the CURRENT customer session by calling the
+ * customer-authenticated backend endpoint GET /store/account/seller-token —
+ * the missing direction of the SSO bridge (the existing /store/account/
+ * customer-token does the inverse, seller → customer).
+ *
+ * The backend endpoint is the authority on ownership: it resolves the seller
+ * the authenticated customer owns via the customer's email → member row →
+ * seller_id, and 403s (minting nothing) if the caller owns no seller. So a
+ * non-vendor calling this just gets null back — we never set a vendor cookie
+ * for someone who isn't a vendor.
+ *
+ * On success we store the freshly-minted token (which always carries a
+ * populated actor_id) and the vendor flag, exactly like becomeVendor()/login()
+ * do, and return the token so the caller (/api/vendor-handoff) can hand it off
+ * immediately — with NO second login.
+ */
+export async function mintVendorSession(): Promise<string | null> {
+  const customerHeaders = await getAuthHeaders()
+  if (!customerHeaders || !("authorization" in customerHeaders)) {
+    return null
+  }
+
+  try {
+    const res = await fetch(
+      `${process.env.MEDUSA_BACKEND_URL}/store/account/seller-token`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "x-publishable-api-key":
+            process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "",
+          ...customerHeaders,
+        },
+        cache: "no-store",
+      }
+    )
+    if (!res.ok) return null
+    const token = (await res.json())?.token
+    if (typeof token !== "string" || !token) return null
+    // Defensive: a freshly-minted token always has a populated actor_id, but
+    // never persist a stale one (it would just re-trigger the second login).
+    if (await isVendorTokenStale(token)) return null
+
+    await setVendorToken(token)
+    await setVendorFlag(true)
+    return token
+  } catch {
+    return null
+  }
 }

@@ -79,7 +79,15 @@ export async function GET(req: NextRequest) {
     // this branch (see PR #56).
     const vendorStatus = await retrieveVendorStatus()
     if (vendorStatus.isVendor) {
-      return NextResponse.redirect(`${STOREFRONT_URL}/api/vendor-handoff`)
+      // Carry return_to=/api/vendor-handoff so that if the handoff can't
+      // complete silently (e.g. opened in an in-app browser / on another
+      // device where the vendor token can't be minted) and falls back to a
+      // login, that login lands back in the handoff (→ dashboard) instead of
+      // stranding the merchant on the consumer /user page.
+      const returnTo = encodeURIComponent("/api/vendor-handoff")
+      return NextResponse.redirect(
+        `${STOREFRONT_URL}/api/vendor-handoff?return_to=${returnTo}`
+      )
     }
 
     return NextResponse.redirect(
