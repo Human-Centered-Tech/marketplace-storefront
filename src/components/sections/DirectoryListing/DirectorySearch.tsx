@@ -554,9 +554,19 @@ export const DirectorySearch = ({
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-transparent border-none focus:ring-0 font-sans text-sm py-4 pl-2"
+            className="flex-1 min-w-0 bg-transparent border-none focus:ring-0 font-sans text-sm py-4 pl-2"
             placeholder="Search business name..."
           />
+          {search && (
+            <button
+              type="button"
+              aria-label="Clear search"
+              onClick={() => setSearch("")}
+              className="material-symbols-outlined text-secondary/70 hover:text-navy-dark text-[20px] ml-1 shrink-0"
+            >
+              close
+            </button>
+          )}
         </div>
         <div className="flex-1 flex items-center px-4 border-r border-gray-100">
           <span className="material-symbols-outlined text-secondary mr-3">

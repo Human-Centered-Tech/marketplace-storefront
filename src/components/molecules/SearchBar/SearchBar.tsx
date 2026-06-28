@@ -58,7 +58,9 @@ export function SearchBar({
       >
         <input
           ref={inputRef}
-          className="w-full bg-[#f4f4f0] border-none rounded-full py-[11px] pl-[24px] pr-[48px] text-[14px] focus:ring-2 focus:ring-[#755b00] transition-all placeholder:text-[#75777f]"
+          className={`w-full bg-[#f4f4f0] border-none rounded-full py-[11px] pl-[24px] ${
+            query ? "pr-[72px]" : "pr-[48px]"
+          } text-[14px] focus:ring-2 focus:ring-[#755b00] transition-all placeholder:text-[#75777f]`}
           placeholder={placeholder || defaultPlaceholder}
           type="text"
           value={query}
@@ -68,6 +70,32 @@ export function SearchBar({
             if (e.key === "Escape") setIsExpanded(false)
           }}
         />
+        {query && (
+          <button
+            type="button"
+            aria-label="Clear search"
+            onClick={() => {
+              setQuery("")
+              inputRef.current?.focus()
+            }}
+            className="absolute right-[44px] top-1/2 -translate-y-1/2 text-[#75777f] hover:text-[#17294a] transition-colors"
+          >
+            <svg
+              aria-hidden="true"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        )}
         <button
           type="submit"
           aria-label="Search"
@@ -105,12 +133,41 @@ export function SearchBar({
       className="relative max-w-2xl w-full mx-auto px-4"
     >
       <input
-        className="w-full bg-white border-none shadow-sm rounded-xl py-5 px-8 pr-16 font-sans text-[15px] focus:ring-2 focus:ring-[#755b00] transition-all placeholder:text-[#75777f]"
+        ref={inputRef}
+        className={`w-full bg-white border-none shadow-sm rounded-xl py-5 px-8 ${
+          query ? "pr-24" : "pr-16"
+        } font-sans text-[15px] focus:ring-2 focus:ring-[#755b00] transition-all placeholder:text-[#75777f]`}
         placeholder={placeholder || defaultPlaceholder}
         type="text"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
       />
+      {query && (
+        <button
+          type="button"
+          aria-label="Clear search"
+          onClick={() => {
+            setQuery("")
+            inputRef.current?.focus()
+          }}
+          className="absolute right-[72px] top-1/2 -translate-y-1/2 text-[#75777f] hover:text-[#17294a] transition-colors"
+        >
+          <svg
+            aria-hidden="true"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      )}
       <button
         type="submit"
         aria-label="Search"

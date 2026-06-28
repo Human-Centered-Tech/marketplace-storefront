@@ -145,6 +145,16 @@ export const NetworkingEventsView = ({
               progress_activity
             </span>
           )}
+          {search && !searching && (
+            <button
+              type="button"
+              aria-label="Clear search"
+              onClick={() => setSearch("")}
+              className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-secondary hover:text-navy-dark text-xl"
+            >
+              close
+            </button>
+          )}
         </div>
       </div>
 
