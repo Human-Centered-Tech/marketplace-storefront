@@ -14,7 +14,7 @@ export const HomeFeaturedGiftGuides = async () => {
     <LocalizedClientLink
       key={g.slug}
       href={`/guides/${g.slug}`}
-      className="group block bg-white rounded-xl overflow-hidden shadow-sm border border-[#d6d0c4]/40 hover:shadow-xl transition-all h-full"
+      className="group block bg-white rounded-2xl overflow-hidden shadow-sm border border-[#d6d0c4]/40 hover:shadow-xl transition-all h-full"
     >
       <div className="aspect-[12/5] overflow-hidden relative bg-[#17294A]">
         <img
@@ -42,7 +42,7 @@ export const HomeFeaturedGiftGuides = async () => {
     <section className="pt-5 pb-10 lg:py-16 w-full bg-white px-4 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col items-start gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4 mb-4 lg:mb-8">
-          <h2 className="font-serif text-lg md:text-4xl font-semibold text-[#001435] sm:whitespace-nowrap">
+          <h2 className="font-serif text-3xl md:text-4xl font-semibold text-[#001435] sm:whitespace-nowrap">
             Catholic Owned<sup className="text-[0.5em] top-[-0.8em] relative ml-[2px]">&reg;</sup> Guides
           </h2>
           <div className="h-[1px] flex-grow mx-8 bg-[#BE9B32]/30 hidden sm:block" />

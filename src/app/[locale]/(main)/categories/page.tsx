@@ -154,7 +154,7 @@ async function AllCategories({
       </section>
 
       <div className="w-full" style={{ backgroundColor: "#faf9f5" }}>
-        <div className="max-w-screen-2xl mx-auto px-4 lg:px-8 py-12">
+        <div className="max-w-7xl mx-auto px-4 lg:px-8 py-12">
           <Suspense fallback={<ProductListingSkeleton />}>
             {bot || !ALGOLIA_ID || !ALGOLIA_SEARCH_KEY ? (
               <ProductListing

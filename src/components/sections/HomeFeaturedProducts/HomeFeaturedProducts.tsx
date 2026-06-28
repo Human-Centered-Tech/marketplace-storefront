@@ -104,7 +104,7 @@ const CompactProductCard = ({
   return (
     <LocalizedClientLink
       href={`/products/${product.handle}`}
-      className="bg-white rounded-xl overflow-hidden shadow-sm group hover:shadow-md transition-all border border-gray-100/50 block h-44 flex flex-col"
+      className="bg-white rounded-2xl overflow-hidden shadow-sm group hover:shadow-md transition-all border border-gray-100/50 block h-44 flex flex-col"
       title={`View ${title}`}
     >
       {product.thumbnail ? (

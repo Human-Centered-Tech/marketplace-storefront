@@ -104,7 +104,7 @@ export const BarterSearch = ({
     <>
       {/* Search & Filter Bar — floats over hero */}
       <section className="px-4 lg:px-8 -mt-10 relative z-20">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           <div className="bg-white rounded-xl shadow-xl p-4 md:p-6 grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
             {/* Search input */}
             <div className="md:col-span-4 relative">

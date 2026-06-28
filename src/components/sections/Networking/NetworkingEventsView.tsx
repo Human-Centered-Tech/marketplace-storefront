@@ -253,7 +253,7 @@ export const NetworkingEventsView = ({
             >
               chevron_left
             </button>
-            <h3 className="font-serif text-xl font-bold text-navy-dark">
+            <h3 className="font-serif text-lg md:text-xl font-semibold text-navy-dark">
               {monthLabel}
             </h3>
             <button

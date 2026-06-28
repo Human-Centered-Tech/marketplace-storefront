@@ -692,7 +692,7 @@ export const DirectorySearch = ({
           <span className="label-sm text-[10px] text-gold-dark font-bold tracking-[0.2em]">
             Directory Results
           </span>
-          <h2 className="font-serif text-2xl lg:text-3xl text-navy-dark mt-1">
+          <h2 className="font-serif text-2xl md:text-3xl font-semibold text-navy-dark mt-1">
             {proximityActive
               ? "Catholic Businesses Near You"
               : "Local & Global Catholic Businesses"}

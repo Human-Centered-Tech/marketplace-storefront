@@ -55,7 +55,7 @@ export const BarterListingCard = ({
   return (
     <LocalizedClientLink
       href={`/trade/${listing.id}`}
-      className="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 flex flex-col"
+      className="group bg-white rounded-2xl overflow-hidden border border-gray-100/50 shadow-sm hover:shadow-md transition-all duration-500 flex flex-col"
     >
       {/* Image */}
       <div className="aspect-[4/5] overflow-hidden relative">
@@ -85,9 +85,9 @@ export const BarterListingCard = ({
       </div>
 
       {/* Content */}
-      <div className="p-5 flex flex-col flex-grow">
+      <div className="p-6 flex flex-col flex-grow">
         <div className="flex justify-between items-start gap-2 mb-2">
-          <h3 className="font-serif text-lg font-medium text-navy-dark leading-tight line-clamp-1">
+          <h3 className="font-serif text-lg md:text-xl font-semibold text-navy-dark leading-tight line-clamp-1">
             {listing.title}
           </h3>
           <span className="material-symbols-outlined text-gold-light hover:text-gold cursor-pointer shrink-0 text-xl">
