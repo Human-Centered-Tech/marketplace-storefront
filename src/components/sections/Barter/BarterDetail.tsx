@@ -311,23 +311,11 @@ export const BarterDetail = ({
                   {messageError}
                 </p>
               )}
-              {(listing.listing_type === "barter" ||
-                listing.listing_type === "trade") && (
-                <button className="w-full bg-gray-50 border border-gold/30 text-navy-dark label-sm text-[10px] font-bold tracking-widest py-4 rounded-lg hover:bg-[#F2CD69]/10 transition-colors flex items-center justify-center gap-2">
-                  <span className="material-symbols-outlined text-lg">
-                    handshake
-                  </span>
-                  Make Trade Offer
-                </button>
-              )}
-              {listing.listing_type === "sell" && listing.price && (
-                <button className="w-full bg-[#3D7A4A] text-white label-sm text-[10px] font-bold tracking-widest py-4 rounded-lg hover:bg-[#3D7A4A]/90 transition-colors flex items-center justify-center gap-2">
-                  <span className="material-symbols-outlined text-lg">
-                    shopping_cart
-                  </span>
-                  Buy Now &mdash; {formatPrice(listing.price)}
-                </button>
-              )}
+              {/* "Buy Now" and "Make Trade Offer" are hidden for now: neither
+                  had a working flow (no handler; Sacred Exchange is peer-to-peer
+                  with no checkout). All Sacred Exchange transactions route
+                  through "Message Seller" until a real buy/offer flow exists.
+                  The price still shows in the listing details above. */}
             </div>
 
             <div className="pt-2 text-center">
