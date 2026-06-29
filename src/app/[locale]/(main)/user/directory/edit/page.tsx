@@ -14,6 +14,7 @@ export default function EditDirectoryListingPage() {
   const [categories, setCategories] = useState<DirectoryCategory[]>([])
   const [listing, setListing] = useState<DirectoryListing | null>(null)
   const [loading, setLoading] = useState(true)
+  const [signingIn, setSigningIn] = useState(false)
 
   const backendUrl =
     typeof window !== "undefined"
@@ -36,9 +37,25 @@ export default function EditDirectoryListingPage() {
       // the server-action helper which reads the cookie via next/headers.
       getMyDirectoryListing(),
     ])
-      .then(([catData, listingData]) => {
+      .then(([catData, listingResult]) => {
         setCategories(catData.categories || [])
-        if (listingData) setListing(listingData)
+        if (!listingResult.authenticated) {
+          // No customer session reached the backend — the dashboard's
+          // reverse-SSO handoff didn't establish one on this device (e.g. its
+          // token mint failed and it bare-redirected here). The data is fine
+          // (owner_id matches the account); we just need a session. Re-establish
+          // it through login and return here, instead of the "No listing found"
+          // dead-end.
+          setSigningIn(true)
+          const seg = window.location.pathname.split("/").filter(Boolean)
+          const locale = seg[0] || "us"
+          const back = `/${locale}/user/directory/edit`
+          window.location.href = `/${locale}/user?return_to=${encodeURIComponent(
+            back
+          )}`
+          return
+        }
+        if (listingResult.listing) setListing(listingResult.listing)
       })
       .catch(() => {})
       .finally(() => setLoading(false))
@@ -61,10 +78,12 @@ export default function EditDirectoryListingPage() {
     window.location.assign(`${vendorUrl}/dashboard`)
   }
 
-  if (loading) {
+  if (loading || signingIn) {
     return (
       <main className="container py-8">
-        <p className="text-secondary">Loading...</p>
+        <p className="text-secondary">
+          {signingIn ? "Signing you in…" : "Loading..."}
+        </p>
       </main>
     )
   }

@@ -119,7 +119,10 @@ export async function uploadDirectoryImage(
   return { ok: true, url: res.data.url }
 }
 
-export async function getMyDirectoryListing(): Promise<DirectoryListing | null> {
+export async function getMyDirectoryListing(): Promise<{
+  authenticated: boolean
+  listing: DirectoryListing | null
+}> {
   // /store/directory/listings/me returns the authed customer's own listing
   // regardless of verification/subscription status. The plain
   // /store/directory/listings endpoint hides not-yet-active listings for
@@ -128,8 +131,21 @@ export async function getMyDirectoryListing(): Promise<DirectoryListing | null> 
   const res = await authedBackendFetch<{ listing: DirectoryListing | null }>(
     "/store/directory/listings/me"
   )
-  if (!res.ok) return null
-  return res.data.listing ?? null
+  if (!res.ok) {
+    // Distinguish "no customer session on this device" from "signed in but no
+    // listing". Vendors reach the edit/checkout pages via a reverse-SSO handoff
+    // from the dashboard; when that handoff's token mint fails it drops them
+    // here with NO storefront customer cookie, so /me is unauthenticated. The
+    // page should send them through login to re-establish the session (the data
+    // is correct — the owner_id matches their account) instead of dead-ending
+    // on "no listing found".
+    const unauthenticated =
+      res.error === "Not signed in" ||
+      /\b401\b/.test(res.error) ||
+      /unauthor/i.test(res.error)
+    return { authenticated: !unauthenticated, listing: null }
+  }
+  return { authenticated: true, listing: res.data.listing ?? null }
 }
 
 // Read the authoritative parish-affiliation limit for a listing. The backend

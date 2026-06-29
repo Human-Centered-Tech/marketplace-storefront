@@ -145,8 +145,20 @@ export default function DirectoryCheckoutPage() {
     // in an httpOnly cookie not readable from this client component.
     // Route through the server-action helper.
     getMyDirectoryListing()
-      .then((data) => {
-        if (data) setListing(data)
+      .then((res) => {
+        if (!res.authenticated) {
+          // No customer session on this device (the dashboard handoff didn't
+          // establish one). Re-establish via login and return to this checkout
+          // (tier query included) rather than rendering an empty page.
+          const seg = window.location.pathname.split("/").filter(Boolean)
+          const locale = seg[0] || "us"
+          const back = window.location.pathname + window.location.search
+          window.location.href = `/${locale}/user?return_to=${encodeURIComponent(
+            back
+          )}`
+          return
+        }
+        if (res.listing) setListing(res.listing)
       })
       .catch(() => {})
       .finally(() => setLoading(false))
