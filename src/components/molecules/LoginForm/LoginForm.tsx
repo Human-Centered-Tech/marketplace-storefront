@@ -80,7 +80,24 @@ const Form = () => {
       return
     }
     setError("")
-    router.push(resolveReturnTo())
+
+    const dest = resolveReturnTo()
+    // Merchants with no specific destination land in their vendor dashboard,
+    // not the consumer /user page. login() sets the readable `_is_vendor`
+    // cookie when seller auth succeeds; route those through /api/vendor-handoff,
+    // which already holds the freshly-minted vendor token (clean handoff, no
+    // loop — non-vendors that reach it just bounce to /user). Only the bare
+    // /user default is overridden — an explicit return_to or an embedded
+    // /user/* page (e.g. the directory-edit recovery's
+    // return_to=/user/directory/edit) is intentional and respected.
+    const isVendor =
+      typeof document !== "undefined" &&
+      document.cookie.split("; ").some((c) => c === "_is_vendor=true")
+    if (dest === "/user" && isVendor) {
+      window.location.href = "/api/vendor-handoff"
+      return
+    }
+    router.push(dest)
   }
 
   // Used by register link to carry the return_to forward.
