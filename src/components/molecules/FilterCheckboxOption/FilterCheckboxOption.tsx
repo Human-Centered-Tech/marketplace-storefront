@@ -1,5 +1,5 @@
-import { Checkbox } from '@/components/atoms';
 import { cn } from '@/lib/utils';
+import { TickThinIcon } from '@/icons';
 
 export const FilterCheckboxOption = ({
   label,
@@ -15,22 +15,37 @@ export const FilterCheckboxOption = ({
   disabled?: boolean;
 }) => {
   return (
-    // A <div>, not a <label>: the Checkbox atom renders its own <label>+<input>,
-    // so wrapping it in another <label> nests labels (invalid HTML). That made a
-    // single row-click re-dispatch and call onCheck twice — toggling on then off,
-    // so a checked category could never be unchecked. A div with onClick fires
-    // exactly once.
-    <div
-      role="checkbox"
-      aria-checked={checked}
-      aria-disabled={disabled || undefined}
+    // ONE <label> wrapping ONE real <input>, toggled via the input's onChange.
+    // The previous version wrapped the shared Checkbox atom — which renders its
+    // OWN <label>+<input> — so a click on the box re-dispatched through the
+    // nested label and fired the handler twice (toggle on, then off): a checked
+    // category could never be unchecked. onChange fires exactly once per change,
+    // for clicks on the box OR the text, so this can't double-fire.
+    <label
       className={cn(
         'flex gap-4 items-center cursor-pointer select-none',
         disabled && '!cursor-default'
       )}
-      onClick={() => (disabled ? null : onCheck(label))}
     >
-      <Checkbox checked={checked} disabled={disabled} />
+      <span
+        className={cn(
+          'checkbox-wrapper',
+          checked && '!bg-action',
+          disabled && '!bg-disabled !border-disabled !cursor-default'
+        )}
+      >
+        {checked && !disabled && <TickThinIcon size={20} />}
+        <input
+          type="checkbox"
+          className={cn(
+            'w-[20px] h-[20px] opacity-0 cursor-pointer',
+            disabled && 'cursor-default'
+          )}
+          checked={checked}
+          disabled={disabled}
+          onChange={() => (disabled ? null : onCheck(label))}
+        />
+      </span>
       <p
         className={cn(
           'label-md !font-normal',
@@ -45,6 +60,6 @@ export const FilterCheckboxOption = ({
           </span>
         )}
       </p>
-    </div>
+    </label>
   );
 };
