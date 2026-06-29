@@ -101,6 +101,17 @@ export const NetworkingEventDetail = ({
         </div>
       </header>
 
+      {/* Event graphic (admin-uploaded; omitted when none) */}
+      {event.image_url && (
+        <div className="px-4 lg:px-24 mt-8">
+          <img
+            src={event.image_url}
+            alt={event.title}
+            className="w-full max-h-[440px] object-cover rounded-2xl shadow-sm"
+          />
+        </div>
+      )}
+
       {/* Content Grid */}
       <div className="px-4 lg:px-24 grid grid-cols-1 lg:grid-cols-12 gap-12 mt-12">
         {/* Main Content (8 cols) */}

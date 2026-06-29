@@ -2,6 +2,7 @@ export type NetworkingEvent = {
   id: string
   title: string
   description: string | null
+  image_url: string | null
   event_date: string
   duration_minutes: number
   zoom_meeting_id: string | null

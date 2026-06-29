@@ -48,11 +48,19 @@ export const NetworkingEventCard = ({
       <div className="flex flex-col md:flex-row gap-6 lg:gap-8 items-center">
         {/* Event image placeholder */}
         <div className="w-full md:w-64 h-48 rounded-lg overflow-hidden shrink-0 relative bg-gray-100">
-          <div className="w-full h-full flex items-center justify-center bg-navy-dark/5">
-            <span className="material-symbols-outlined text-5xl text-navy-dark/20">
-              groups
-            </span>
-          </div>
+          {event.image_url ? (
+            <img
+              src={event.image_url}
+              alt={event.title}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-navy-dark/5">
+              <span className="material-symbols-outlined text-5xl text-navy-dark/20">
+                groups
+              </span>
+            </div>
+          )}
           <div className="absolute top-4 left-4 bg-navy-dark px-3 py-1 rounded label-sm text-[10px] font-bold text-[#F2CD69] tracking-widest">
             {date.monthDay}
           </div>
