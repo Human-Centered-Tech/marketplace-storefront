@@ -138,7 +138,7 @@ export const NetworkingEventsView = ({
             placeholder="Search events..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-12 pr-12 py-3 bg-white border border-gray-200 rounded-lg focus:border-navy-dark focus:ring-0 font-serif text-lg outline-none shadow-sm transition-all"
+            className="w-full pl-12 pr-12 py-3.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#755b00] focus:border-transparent font-sans text-[15px] outline-none shadow-sm transition-all placeholder:text-secondary"
           />
           {searching && (
             <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-secondary text-xl animate-spin">

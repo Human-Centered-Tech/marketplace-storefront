@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react"
 import { BarterListing, BarterCategory } from "@/types/barter"
 import { listBarterListings } from "@/lib/data/barter"
 import { BarterListingCard } from "./BarterListingCard"
+import { FilterSelect } from "@/components/molecules/FilterSelect/FilterSelect"
 
 type BarterSearchProps = {
   initialListings: BarterListing[]
@@ -102,14 +103,16 @@ export const BarterSearch = ({
 
   return (
     <>
-      {/* Search & Filter Bar — sits below the flat hero, aligned to the other
-          page bodies (max-w-7xl) rather than floating over a banner image. */}
+      {/* Search & Filter Bar — unified with the directory bar: a single white
+          rounded card with sans fields separated by dividers, a leading search
+          icon, a clear (×) button, and branded dropdowns (FilterSelect) so the
+          open menus are styled to the brand instead of the raw native list. */}
       <section className="px-4 lg:px-8 pt-8 lg:pt-10 relative z-20">
         <div className="max-w-7xl mx-auto">
-          <div className="bg-white rounded-xl shadow-xl p-4 md:p-6 grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+          <div className="bg-white rounded-2xl shadow-xl p-2 flex flex-col md:flex-row items-stretch gap-2 border border-gray-100/50">
             {/* Search input */}
-            <div className="md:col-span-4 relative">
-              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-secondary text-xl">
+            <div className="flex-[2] flex items-center px-4 md:border-r border-gray-100">
+              <span className="material-symbols-outlined text-secondary mr-3 text-xl">
                 search
               </span>
               <input
@@ -117,71 +120,83 @@ export const BarterSearch = ({
                 placeholder="Search sacred goods..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 bg-transparent border-b border-gold-light focus:border-navy-dark focus:ring-0 font-serif text-lg transition-all outline-none"
+                className="flex-1 min-w-0 bg-transparent border-none focus:ring-0 font-sans text-sm py-4 outline-none"
               />
+              {search && (
+                <button
+                  type="button"
+                  aria-label="Clear search"
+                  onClick={() => setSearch("")}
+                  className="material-symbols-outlined text-secondary/70 hover:text-navy-dark text-[20px] ml-1 shrink-0"
+                >
+                  close
+                </button>
+              )}
             </div>
 
             {/* Category */}
-            <div className="md:col-span-2">
-              <select
+            <div className="flex-1 flex items-center px-4 md:border-r border-gray-100">
+              <FilterSelect
+                icon="category"
+                placeholder="Category"
                 value={categoryId}
-                onChange={(e) => setCategoryId(e.target.value)}
-                className="w-full bg-transparent border-b border-gold-light focus:border-navy-dark focus:ring-0 label-sm py-3 appearance-none cursor-pointer"
-              >
-                <option value="">Category</option>
-                {categories.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </option>
-                ))}
-              </select>
+                onChange={setCategoryId}
+                options={[
+                  { value: "", label: "All Categories" },
+                  ...categories.map((cat) => ({ value: cat.id, label: cat.name })),
+                ]}
+              />
             </div>
 
             {/* Listing Type */}
-            <div className="md:col-span-2">
-              <select
+            <div className="flex-1 flex items-center px-4 md:border-r border-gray-100">
+              <FilterSelect
+                icon="sell"
+                placeholder="Listing Type"
                 value={listingType}
-                onChange={(e) => setListingType(e.target.value)}
-                className="w-full bg-transparent border-b border-gold-light focus:border-navy-dark focus:ring-0 label-sm py-3 appearance-none cursor-pointer"
-              >
-                <option value="">Listing Type</option>
-                <option value="sell">Sell</option>
-                <option value="trade">Trade</option>
-                <option value="free">Free</option>
-              </select>
+                onChange={setListingType}
+                options={[
+                  { value: "", label: "All Types" },
+                  { value: "sell", label: "Sell" },
+                  { value: "trade", label: "Trade" },
+                  { value: "free", label: "Free" },
+                ]}
+              />
             </div>
 
             {/* Condition */}
-            <div className="md:col-span-2">
-              <select
+            <div className="flex-1 flex items-center px-4 md:border-r border-gray-100">
+              <FilterSelect
+                icon="grade"
+                placeholder="Condition"
                 value={condition}
-                onChange={(e) => setCondition(e.target.value)}
-                className="w-full bg-transparent border-b border-gold-light focus:border-navy-dark focus:ring-0 label-sm py-3 appearance-none cursor-pointer"
-              >
-                <option value="">Condition</option>
-                <option value="new">New</option>
-                <option value="like_new">Like New</option>
-                <option value="good">Good</option>
-                <option value="fair">Fair</option>
-                <option value="poor">Poor</option>
-              </select>
+                onChange={setCondition}
+                options={[
+                  { value: "", label: "Any Condition" },
+                  { value: "new", label: "New" },
+                  { value: "like_new", label: "Like New" },
+                  { value: "good", label: "Good" },
+                  { value: "fair", label: "Fair" },
+                  { value: "poor", label: "Poor" },
+                ]}
+              />
             </div>
 
-            {/* Clear filters button */}
-            <div className="md:col-span-2">
+            {/* Clear filters */}
+            <div className="flex items-center px-2 shrink-0">
               {hasActiveFilters ? (
                 <button
                   onClick={clearFilters}
-                  className="w-full flex items-center justify-center gap-2 bg-navy-dark text-white py-3 rounded-lg label-sm hover:bg-navy transition-all active:scale-95"
+                  className="w-full md:w-auto flex items-center justify-center gap-2 bg-navy-dark text-white px-6 py-4 rounded-xl label-sm text-[10px] font-bold tracking-widest hover:bg-navy transition-all active:scale-95"
                 >
                   <span className="material-symbols-outlined text-sm">close</span>
                   Clear
                 </button>
               ) : (
-                <button className="w-full flex items-center justify-center gap-2 bg-navy-dark text-white py-3 rounded-lg label-sm hover:bg-navy transition-all active:scale-95 opacity-60 cursor-default">
+                <div className="w-full md:w-auto flex items-center justify-center gap-2 text-secondary px-6 py-4 label-sm text-[10px] font-bold tracking-widest opacity-60">
                   <span className="material-symbols-outlined text-sm">tune</span>
                   Filters
-                </button>
+                </div>
               )}
             </div>
           </div>
