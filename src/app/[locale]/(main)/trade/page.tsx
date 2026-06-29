@@ -25,7 +25,7 @@ export default async function BarterPage() {
       {/* Hero Section — shared flat-hero pattern (eyebrow → display H1 →
           italic serif lead), matched to the Directory/Marketplace/Events
           heroes so all four read the same. */}
-      <section className="relative py-16 lg:py-24 px-4 text-center overflow-hidden bg-[#FAF9F5]">
+      <section className="relative py-16 lg:py-24 px-4 text-center overflow-hidden bg-gradient-to-b from-white to-[#faf9f5]">
         <div className="max-w-4xl mx-auto relative z-10">
           <p className="label-sm text-gold-dark tracking-[0.3em] mb-4 font-bold opacity-80">
             Building the New Catholic Economy®
