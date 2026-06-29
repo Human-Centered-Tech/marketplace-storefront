@@ -545,7 +545,7 @@ export const DirectorySearch = ({
       )}
 
       {/* Search Bar — floating card */}
-      <div className="bg-white rounded-2xl shadow-xl p-2 flex flex-col md:flex-row items-stretch gap-2 border border-gray-100/50">
+      <div className="bg-white rounded-xl shadow-lg p-2 flex flex-col md:flex-row items-stretch gap-2 border border-gray-100">
         <div className="flex-1 flex items-center px-4 border-r border-gray-100">
           <span className="material-symbols-outlined text-secondary mr-3">
             search
@@ -704,7 +704,7 @@ export const DirectorySearch = ({
         <button
           onClick={() => runSearch(0, false)}
           disabled={!algoliaEnabled}
-          className="bg-gold text-navy-dark px-10 py-4 rounded-xl label-sm text-[10px] font-bold tracking-widest active:scale-95 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
+          className="bg-navy-dark text-white px-10 py-4 rounded-xl label-sm text-[10px] font-bold tracking-widest hover:bg-navy active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Search
         </button>

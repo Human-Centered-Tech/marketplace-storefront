@@ -109,7 +109,7 @@ export const BarterSearch = ({
           open menus are styled to the brand instead of the raw native list. */}
       <section className="px-4 lg:px-8 pt-8 lg:pt-10 relative z-20">
         <div className="max-w-7xl mx-auto">
-          <div className="bg-white rounded-2xl shadow-xl p-2 flex flex-col md:flex-row items-stretch gap-2 border border-gray-100/50">
+          <div className="bg-white rounded-xl shadow-lg p-2 flex flex-col md:flex-row items-stretch gap-2 border border-gray-100">
             {/* Search input */}
             <div className="flex-[2] flex items-center px-4 md:border-r border-gray-100">
               <span className="material-symbols-outlined text-secondary mr-3 text-xl">

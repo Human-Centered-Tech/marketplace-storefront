@@ -134,7 +134,7 @@ export function SearchBar({
     >
       <input
         ref={inputRef}
-        className={`w-full bg-white border-none shadow-sm rounded-xl py-5 px-8 ${
+        className={`w-full bg-white border border-gray-100 shadow-lg rounded-xl py-5 px-8 ${
           query ? "pr-24" : "pr-16"
         } font-sans text-[15px] focus:ring-2 focus:ring-[#755b00] transition-all placeholder:text-[#75777f]`}
         placeholder={placeholder || defaultPlaceholder}
@@ -171,7 +171,7 @@ export function SearchBar({
       <button
         type="submit"
         aria-label="Search"
-        className="absolute right-8 top-1/2 -translate-y-1/2 bg-[#001435] text-white p-3 rounded-lg flex items-center justify-center hover:bg-[#17294a] transition-colors"
+        className="absolute right-8 top-1/2 -translate-y-1/2 bg-navy-dark text-white p-3 rounded-xl flex items-center justify-center hover:bg-navy transition-colors"
       >
         <svg
           aria-hidden="true"
