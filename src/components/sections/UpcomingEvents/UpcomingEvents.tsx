@@ -42,6 +42,7 @@ function EventCard({
   cta,
   color,
   href,
+  imageUrl,
 }: {
   month: string
   day: string
@@ -51,30 +52,51 @@ function EventCard({
   cta: string
   color: "navy" | "gold"
   href: string
+  imageUrl?: string | null
 }) {
   return (
     <div className="flex bg-white rounded-xl shadow-sm border border-[#c5c6cf]/10 overflow-hidden hover:shadow-md transition-all">
-      <div
-        className="w-32 flex flex-col items-center justify-center shrink-0"
-        style={{
-          backgroundColor: color === "navy" ? "#001435" : "#BE9B32",
-        }}
-      >
-        <span
-          className={`font-sans text-[11px] tracking-[0.15em] uppercase ${
-            color === "navy" ? "text-white/70" : "text-[#001435]/60"
-          }`}
+      {imageUrl ? (
+        // With a graphic, the left panel is the image and the date rides on it
+        // as a badge (matches the events-page card treatment).
+        <div className="w-32 shrink-0 relative bg-gray-100">
+          <img
+            src={imageUrl}
+            alt={name}
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+          <div className="absolute top-3 left-3 bg-[#001435]/85 px-2.5 py-1 rounded text-center">
+            <span className="block font-sans text-[10px] tracking-[0.15em] uppercase text-white/70">
+              {month}
+            </span>
+            <span className="block font-serif text-lg font-bold text-white leading-none">
+              {day}
+            </span>
+          </div>
+        </div>
+      ) : (
+        <div
+          className="w-32 flex flex-col items-center justify-center shrink-0"
+          style={{
+            backgroundColor: color === "navy" ? "#001435" : "#BE9B32",
+          }}
         >
-          {month}
-        </span>
-        <span
-          className={`font-serif text-4xl font-bold ${
-            color === "navy" ? "text-white" : "text-[#001435]"
-          }`}
-        >
-          {day}
-        </span>
-      </div>
+          <span
+            className={`font-sans text-[11px] tracking-[0.15em] uppercase ${
+              color === "navy" ? "text-white/70" : "text-[#001435]/60"
+            }`}
+          >
+            {month}
+          </span>
+          <span
+            className={`font-serif text-4xl font-bold ${
+              color === "navy" ? "text-white" : "text-[#001435]"
+            }`}
+          >
+            {day}
+          </span>
+        </div>
+      )}
       <div className="p-8 space-y-3">
         <h3 className="font-serif text-xl font-bold text-[#001435]">{name}</h3>
         <p className="text-sm text-[#75777f] flex items-center gap-2">
@@ -138,6 +160,7 @@ export async function UpcomingEvents() {
                 return (
                   <EventCard
                     key={event.id}
+                    imageUrl={event.image_url}
                     month={month}
                     day={day}
                     name={event.title}
