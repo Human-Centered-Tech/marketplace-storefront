@@ -441,6 +441,16 @@ export async function completeOAuthSignIn(token: string): Promise<boolean> {
     await setAuthToken(token)
     const cacheTag = await getCacheTag("customers")
     revalidateTag(cacheTag)
+    // Bind any pre-existing guest cart to the now-signed-in customer — the same
+    // step login()/signup() do. Without this an OAuth (Google/Apple) shopper
+    // keeps a customer_id=null cart, which is exactly how a typed checkout email
+    // detaches the order to a guest. (Backend cart-identity guard backstops this
+    // at complete; this binds it earlier so the receipt/customer resolve too.)
+    try {
+      await transferCart()
+    } catch {
+      // non-fatal
+    }
     return true
   } catch {
     return false

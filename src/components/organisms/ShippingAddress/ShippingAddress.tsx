@@ -77,10 +77,14 @@ const ShippingAddress = ({
       setFormAddress(cart?.shipping_address, cart?.email)
     }
 
-    if (cart && !cart.email && customer?.email) {
+    // Logged-in shopper: the checkout email is ALWAYS the account email (the
+    // field below is locked). Forcing it here means a stale/mismatched cart
+    // email can never reach the order — pairs with the backend cart-identity
+    // guard so a logged-in checkout can't detach to a guest under a typed email.
+    if (customer?.email) {
       setFormAddress(undefined, customer.email)
     }
-  }, [cart]) // Add cart as a dependency
+  }, [cart, customer?.email])
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -187,14 +191,17 @@ const ShippingAddress = ({
       </div>
       <div className="grid grid-cols-2 gap-4 my-4">
         <Input
-          label="Email"
+          label={customer ? "Email (your account)" : "Email"}
           name="email"
           type="email"
           title="Enter a valid email address."
           autoComplete="email"
-          value={formData.email}
+          value={customer?.email ?? formData.email}
           onChange={handleChange}
           required
+          // Logged in → lock to the account email (readOnly keeps it in the
+          // submitted FormData, unlike disabled). Guests must type a valid one.
+          readOnly={!!customer}
           data-testid="shipping-email-input"
         />
         <Input
