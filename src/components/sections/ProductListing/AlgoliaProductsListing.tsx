@@ -105,6 +105,7 @@ export const AlgoliaProductsListing = ({
         the re-render and the count UI flickers.
       */}
       <Configure
+        key={`page-${algoliaPage}-${filters}`}
         query={query}
         filters={filters}
         hitsPerPage={PRODUCT_LIMIT}
@@ -265,7 +266,7 @@ const ProductsListing = ({
         <ProductListingActiveFilters />
       </div>
       <div className="md:flex gap-4">
-        <div className="w-[280px] flex-shrink-0 hidden md:block">
+        <div className="w-full md:w-[280px] flex-shrink-0">
           <AlgoliaProductSidebar />
         </div>
         <div className="w-full">

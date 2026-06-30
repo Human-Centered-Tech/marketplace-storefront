@@ -24,6 +24,7 @@ export const AlgoliaProductSidebar = () => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768)
     }
+    handleResize() // set correct state on mount, before any resize fires
     window.addEventListener("resize", handleResize)
     return () => window.removeEventListener("resize", handleResize)
   }, [])
