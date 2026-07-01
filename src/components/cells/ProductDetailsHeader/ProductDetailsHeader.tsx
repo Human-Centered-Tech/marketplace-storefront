@@ -74,10 +74,29 @@ export const ProductDetailsHeader = ({
   // Check if product has any valid prices in current region
   const hasAnyPrice = cheapestPrice !== null && cheapestVariant !== null
 
+  // Per-product default-variant hint: a merchant can set metadata.default_size
+  // (a Size option value, e.g. '16" x 20"') to pre-select that size instead of
+  // the cheapest. Falls back to the cheapest variant for every other product,
+  // so this only affects products that opt in.
+  const defaultSize =
+    typeof product.metadata?.default_size === "string"
+      ? (product.metadata.default_size as string)
+      : null
+  const hintVariant = defaultSize
+    ? product.variants?.find((v) =>
+        (v.options ?? []).some(
+          (o: any) =>
+            (o.option?.title || "").toLowerCase() === "size" &&
+            o.value === defaultSize
+        )
+      )
+    : null
+  const baseVariant = hintVariant ?? cheapestVariant
+
   // set default variant
   const selectedVariant = hasAnyPrice
     ? {
-        ...optionsAsKeymap(cheapestVariant.options ?? null),
+        ...optionsAsKeymap(baseVariant?.options ?? null),
         ...allSearchParams,
       }
     : allSearchParams
