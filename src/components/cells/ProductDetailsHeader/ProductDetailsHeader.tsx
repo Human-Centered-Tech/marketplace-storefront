@@ -125,6 +125,25 @@ export const ProductDetailsHeader = ({
     }
   )
 
+  // Display dimension-style sizes smallest→largest (by area), triptych last —
+  // Medusa doesn't preserve the import order of option values. Only reorders
+  // when every value is a size; leaves other options (Color, Language) as-is.
+  const sortSizeValues = (
+    values?: HttpTypes.StoreProductOptionValue[] | null
+  ): HttpTypes.StoreProductOptionValue[] => {
+    const arr = [...(values || [])]
+    const key = (v?: string | null): number | null => {
+      const s = (v || "").toString()
+      if (/triptych/i.test(s)) return Number.POSITIVE_INFINITY
+      const m = s.match(/(\d+)\s*"?\s*x\s*(\d+)/i)
+      return m ? parseInt(m[1], 10) * parseInt(m[2], 10) : null
+    }
+    if (arr.some((v) => key(v.value) === null)) return arr
+    return arr.sort(
+      (a, b) => (key(a.value) as number) - (key(b.value) as number)
+    )
+  }
+
   // get selected variant id
   const variantId =
     product.variants?.find(({ options }: { options: any }) =>
@@ -267,7 +286,7 @@ export const ProductDetailsHeader = ({
                   {selectedVariant[title.toLowerCase()]}
                 </span>
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {(values || []).map(({ id: valId, value }) => {
+                  {sortSizeValues(values).map(({ id: valId, value }) => {
                     const isSelected =
                       selectedVariant[title.toLowerCase()] === value
                     const isColor = title.toLowerCase() === "color"
