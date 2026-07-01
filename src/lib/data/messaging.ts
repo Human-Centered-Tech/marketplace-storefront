@@ -44,6 +44,10 @@ export type Conversation = {
   last_message_preview: string | null
   created_at: string
   updated_at: string
+  // Backend-resolved display fields (relative to the viewer). Optional because
+  // older backends / fail-soft responses may omit them; the UI falls back.
+  counterparty_name?: string | null
+  context_title?: string | null
 }
 
 export type MessageAttachment = {

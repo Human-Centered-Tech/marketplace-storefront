@@ -171,10 +171,15 @@ export const UserMessagesSection = ({
     }
   }
 
-  const otherParticipantId = (c: Conversation) =>
-    c.participant_a_id === currentUserId
-      ? c.participant_b_id
-      : c.participant_a_id
+  // Who the other participant is. Prefer the backend-resolved name (store name
+  // for a seller, person's name for a buyer); never fall back to the raw id.
+  const counterpartyName = (c: Conversation) => {
+    const name = c.counterparty_name?.trim()
+    if (name) return name
+    return c.context_type === "product" || c.context_type === "storefront"
+      ? "Seller"
+      : "Member"
+  }
 
   const contextLabel = (c: Conversation) => {
     switch (c.context_type) {
@@ -188,6 +193,11 @@ export const UserMessagesSection = ({
         return "Conversation"
     }
   }
+
+  // Prefer the specific product / trade title when the backend resolved it,
+  // otherwise the generic context label.
+  const contextHeading = (c: Conversation) =>
+    c.context_title?.trim() || contextLabel(c)
 
   if (loading) {
     return (
@@ -221,8 +231,8 @@ export const UserMessagesSection = ({
                   }`}
                 >
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-[10px] font-bold tracking-widest text-[#BE9B32] uppercase">
-                      {contextLabel(c)}
+                    <span className="text-[10px] font-bold tracking-widest text-[#BE9B32] uppercase truncate">
+                      {contextHeading(c)}
                     </span>
                     {c.last_message_at && (
                       <span className="text-[10px] text-secondary">
@@ -231,7 +241,7 @@ export const UserMessagesSection = ({
                     )}
                   </div>
                   <p className="font-medium text-sm text-[#17294A] truncate">
-                    {otherParticipantId(c).slice(0, 16)}…
+                    {counterpartyName(c)}
                   </p>
                   {c.last_message_preview && (
                     <p className="text-xs text-secondary truncate mt-1">
@@ -255,10 +265,10 @@ export const UserMessagesSection = ({
           <>
             <header className="p-4 border-b border-[#d6d0c4]/40">
               <p className="text-[10px] font-bold tracking-widest text-[#BE9B32] uppercase mb-1">
-                {contextLabel(selected)}
+                {contextHeading(selected)}
               </p>
               <h3 className="font-serif text-lg font-semibold text-[#17294A]">
-                {otherParticipantId(selected).slice(0, 16)}…
+                {counterpartyName(selected)}
               </h3>
             </header>
 
