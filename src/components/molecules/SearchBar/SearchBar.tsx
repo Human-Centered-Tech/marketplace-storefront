@@ -59,7 +59,7 @@ export function SearchBar({
         <input
           ref={inputRef}
           className={`w-full bg-[#f4f4f0] border-none rounded-full py-[11px] pl-[24px] ${
-            query ? "pr-[72px]" : "pr-[48px]"
+            query ? "pr-[80px]" : "pr-[48px]"
           } text-[14px] focus:ring-2 focus:ring-[#755b00] transition-all placeholder:text-[#75777f]`}
           placeholder={placeholder || defaultPlaceholder}
           type="text"
@@ -78,7 +78,7 @@ export function SearchBar({
               setQuery("")
               inputRef.current?.focus()
             }}
-            className="absolute right-[44px] top-1/2 -translate-y-1/2 text-[#75777f] hover:text-[#17294a] transition-colors"
+            className="absolute right-[52px] top-1/2 -translate-y-1/2 text-[#75777f] hover:text-[#17294a] transition-colors"
           >
             <svg
               aria-hidden="true"
@@ -135,7 +135,7 @@ export function SearchBar({
       <input
         ref={inputRef}
         className={`w-full bg-white border border-gray-100 shadow-lg rounded-xl py-5 px-8 ${
-          query ? "pr-24" : "pr-16"
+          query ? "pr-28" : "pr-16"
         } font-sans text-[15px] focus:ring-2 focus:ring-[#755b00] transition-all placeholder:text-[#75777f]`}
         placeholder={placeholder || defaultPlaceholder}
         type="text"
@@ -150,7 +150,7 @@ export function SearchBar({
             setQuery("")
             inputRef.current?.focus()
           }}
-          className="absolute right-[72px] top-1/2 -translate-y-1/2 text-[#75777f] hover:text-[#17294a] transition-colors"
+          className="absolute right-[88px] top-1/2 -translate-y-1/2 text-[#75777f] hover:text-[#17294a] transition-colors"
         >
           <svg
             aria-hidden="true"

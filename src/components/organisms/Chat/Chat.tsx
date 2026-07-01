@@ -78,7 +78,11 @@ export const Chat = ({
         className={buttonClassNames}
       >
         {icon ? (
-          <MessageIcon size={20} />
+          // Stroke follows the button's text color (currentColor) so the
+          // envelope is visible in the default state too — not just on hover.
+          // Without this the icon defaults to near-black and disappears into
+          // the navy button until hover flips the background.
+          <MessageIcon size={20} color="currentColor" />
         ) : loading ? (
           "Starting…"
         ) : (

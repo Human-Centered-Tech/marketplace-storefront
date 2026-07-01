@@ -95,15 +95,12 @@ export const ProductDetailsTabs = ({
           {activeTab === "Shipping Info" && (
             <div className="font-serif text-[#001435] leading-relaxed space-y-4">
               <p>
-                Free standard shipping on all orders within the continental U.S.
-                Expedited shipping options are available at an additional cost.
-                Orders typically ship within 3-5 business days.
+                Shipping is included on all orders within the continental U.S. —
+                there is no separate shipping charge at checkout.
               </p>
               <p>
-                We offer a 30-day return policy. If you are not completely
-                satisfied with your purchase, you can return the item for a full
-                refund or exchange, provided it is in its original condition and
-                packaging.
+                Ship times vary by item and seller. Message the seller if you
+                need a specific delivery timeframe.
               </p>
             </div>
           )}
