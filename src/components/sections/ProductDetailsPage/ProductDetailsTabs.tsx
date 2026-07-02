@@ -4,17 +4,21 @@ import { useState } from "react"
 import { AdditionalAttributeProps } from "@/types/product"
 import { sanitizeHtml } from "@/lib/util/sanitize-html"
 
-const tabs = ["Description", "Reviews", "Shipping Info"] as const
+const tabs = ["Description", "Reviews", "Shipping & Return Policy"] as const
 type Tab = (typeof tabs)[number]
 
 export const ProductDetailsTabs = ({
   description,
   shippingInfo,
   attributes,
+  refundPolicy,
 }: {
   description: string
   shippingInfo: string
   attributes: AdditionalAttributeProps[]
+  // Seller-set return/refund policy (plain text). Null = none posted →
+  // the tab shows a fallback prompting the buyer to message the seller.
+  refundPolicy?: string | null
 }) => {
   const [activeTab, setActiveTab] = useState<Tab>("Description")
 
@@ -92,7 +96,7 @@ export const ProductDetailsTabs = ({
             </div>
           )}
 
-          {activeTab === "Shipping Info" && (
+          {activeTab === "Shipping & Return Policy" && (
             <div className="font-serif text-[#001435] leading-relaxed space-y-4">
               <p>
                 Shipping is included on all orders within the continental U.S. —
@@ -102,6 +106,19 @@ export const ProductDetailsTabs = ({
                 Ship times vary by item and seller. Message the seller if you
                 need a specific delivery timeframe.
               </p>
+              <div className="mt-6 pt-6 border-t border-[#755b00]/10">
+                <h4 className="font-sans text-[11px] uppercase tracking-[0.2em] text-[#755b00] mb-3">
+                  Return Policy
+                </h4>
+                {refundPolicy && refundPolicy.trim().length > 0 ? (
+                  <p className="whitespace-pre-line">{refundPolicy}</p>
+                ) : (
+                  <p className="text-[#75777f]">
+                    This seller hasn't posted a return policy. Message the
+                    seller for their return terms before purchasing.
+                  </p>
+                )}
+              </div>
             </div>
           )}
         </div>

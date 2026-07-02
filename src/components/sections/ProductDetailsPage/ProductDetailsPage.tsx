@@ -4,6 +4,7 @@ import { getProductSocialCounts } from "@/lib/data/social-counts"
 import { listProducts } from "@/lib/data/products"
 import { listProductVendorTags } from "@/lib/data/vendor-tags"
 import { retrieveVendorStatus } from "@/lib/data/vendor"
+import { getSellerStorefrontByHandle } from "@/lib/data/seller"
 import NotFound from "@/app/not-found"
 import { ProductDetailsTabs } from "./ProductDetailsTabs"
 import { ProductTagsRow } from "./ProductTagsRow"
@@ -79,6 +80,20 @@ export const ProductDetailsPage = async ({
   // Fails open to zeros; the badge row hides itself when nothing qualifies.
   const socialCounts = await getProductSocialCounts(prod.id)
 
+  // Seller's return/refund policy for the "Shipping & Return Policy" tab.
+  // Fails open to null (tab shows a fallback) so a missing storefront
+  // extension never breaks the PDP.
+  let sellerRefundPolicy: string | null = null
+  try {
+    if (prod.seller?.handle) {
+      sellerRefundPolicy =
+        (await getSellerStorefrontByHandle(prod.seller.handle)).refund_policy ??
+        null
+    }
+  } catch {
+    // storefront extension unavailable — leave as null
+  }
+
   return (
     <>
       {isOwnerPreview && (
@@ -140,6 +155,7 @@ export const ProductDetailsPage = async ({
         description={prod?.description || ""}
         shippingInfo=""
         attributes={(prod as any)?.attribute_values || []}
+        refundPolicy={sellerRefundPolicy}
       />
 
       {vendorTags.length > 0 && <ProductTagsRow tags={vendorTags} />}
