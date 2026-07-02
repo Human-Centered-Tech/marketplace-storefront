@@ -41,7 +41,30 @@ export async function GET(req: Request) {
     return new Response("Upstream error", { status: 502 })
   }
 
-  return new Response(upstream.body, {
+  // Don't hand upstream.body to Response directly: when the browser drops
+  // the EventSource (tab close, nav) or the upstream socket dies, the raw
+  // pipe rejects and Next reports "failed to pipe response" to Sentry for
+  // every ordinary disconnect. Re-wrap so those end as a clean close.
+  const reader = upstream.body.getReader()
+  const body = new ReadableStream({
+    async pull(controller) {
+      try {
+        const { done, value } = await reader.read()
+        if (done) controller.close()
+        else controller.enqueue(value)
+      } catch {
+        // client disconnect or upstream termination — normal for SSE
+        try {
+          controller.close()
+        } catch {}
+      }
+    },
+    cancel() {
+      reader.cancel().catch(() => {})
+    },
+  })
+
+  return new Response(body, {
     status: 200,
     headers: {
       "Content-Type": "text/event-stream",

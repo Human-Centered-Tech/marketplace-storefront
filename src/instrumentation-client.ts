@@ -28,6 +28,8 @@ if (dsn) {
       /Loading chunk \d+ failed/,
       // Expected 429 from our own rate limiter
       /RATE_LIMITED/i,
+      // Crypto-wallet browser extensions probing pages we don't integrate with
+      /Failed to connect to MetaMask/i,
     ],
   })
 }
