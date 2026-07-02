@@ -3,6 +3,7 @@ import { EB_Garamond, DM_Sans } from "next/font/google"
 import "./globals.css"
 import { Toaster } from "@medusajs/ui"
 import { retrieveCart } from "@/lib/data/cart"
+import GoogleAnalytics from "@/components/analytics/GoogleAnalytics"
 import { Providers } from "./providers"
 
 // Brand title/serif font (Brooke 3/2026 direction): EB Garamond replaces
@@ -176,6 +177,8 @@ export default async function RootLayout({
       >
         <Providers cart={cart}>{children}</Providers>
         <Toaster position="top-right" />
+        {/* GA4 — renders nothing unless NEXT_PUBLIC_GA_ID is set. */}
+        <GoogleAnalytics />
       </body>
     </html>
   )
