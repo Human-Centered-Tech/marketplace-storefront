@@ -50,6 +50,12 @@ const nextConfig: NextConfig = {
         destination: "/:locale/guides/:path*",
         permanent: true,
       },
+      // /landing circulates externally as the business signup link, but the
+      // sales page shipped at /sell (the interim /for-business page was
+      // removed as redundant). Keep those shared links working instead of
+      // 404ing (Sentry JAVASCRIPT-NEXTJS-M).
+      { source: "/landing", destination: "/sell", permanent: true },
+      { source: "/:locale/landing", destination: "/:locale/sell", permanent: true },
     ]
   },
   experimental: {
