@@ -359,6 +359,7 @@ export async function becomeMerchant(formData: FormData) {
   // Step 1: create / link the seller onto the customer's auth identity.
   // Idempotent — a repeat call just returns the existing seller.
   let sellerId: string | undefined
+  let directToken: string | null = null
   try {
     const res = await fetch(
       `${process.env.MEDUSA_BACKEND_URL}/store/account/become-merchant`,
@@ -379,6 +380,9 @@ export async function becomeMerchant(formData: FormData) {
     }
     const data = await res.json()
     sellerId = data?.seller_id
+    // become-merchant now returns a ready seller token — use it directly
+    // instead of the racy seller-login poll below.
+    directToken = typeof data?.token === "string" ? data.token : null
   } catch (error: any) {
     return { success: false, error: error.toString() }
   }
@@ -414,8 +418,11 @@ export async function becomeMerchant(formData: FormData) {
   // token eliminates that.
   const REISSUE_MAX_TRIES = 12
   const REISSUE_DELAY_MS = 350
-  let vendorToken: string | null = null
-  for (let attempt = 0; attempt < REISSUE_MAX_TRIES; attempt++) {
+  // Prefer the token become-merchant returned directly (deterministic — no race);
+  // only fall back to polling seller-login if it's absent or has an empty actor_id.
+  let vendorToken: string | null =
+    directToken && decodeActor(directToken) ? directToken : null
+  for (let attempt = 0; !vendorToken && attempt < REISSUE_MAX_TRIES; attempt++) {
     if (attempt > 0) await new Promise((r) => setTimeout(r, REISSUE_DELAY_MS))
     const loginRes = await fetch(
       `${process.env.MEDUSA_BACKEND_URL}/auth/seller/emailpass`,
