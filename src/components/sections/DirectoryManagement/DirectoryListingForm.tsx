@@ -13,6 +13,7 @@ import { GalleryUploadField } from "./GalleryUploadField"
 import { US_STATES, US_STATE_CODES } from "@/lib/us-states"
 import { SocialIcon } from "./SocialIcon"
 import { socialFromUrl } from "@/lib/social"
+import { normalizeExternalUrl } from "@/lib/helpers/external-url"
 
 type DirectoryFormData = {
   business_name: string
@@ -261,7 +262,9 @@ export const DirectoryListingForm = ({
         ),
         contact_email: form.contact_email || undefined,
         contact_phone: form.contact_phone || undefined,
-        website_url: form.website_url || undefined,
+        // Normalize so protocol-less entries ("www.example.com") don't render
+        // as relative links on the public detail page.
+        website_url: normalizeExternalUrl(form.website_url) || undefined,
         address: {
           street: form.street || undefined,
           city: form.city || undefined,

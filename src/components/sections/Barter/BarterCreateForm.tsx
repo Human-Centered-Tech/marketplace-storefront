@@ -2,10 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import {
-  createBarterListing,
-  uploadBarterImage,
-} from "@/lib/data/barter"
+import { createBarterListing } from "@/lib/data/barter"
 import type { BarterCategory } from "@/types/barter"
 
 const MAX_IMAGES = 8
@@ -132,12 +129,27 @@ export const BarterCreateForm = ({
 
     const listingId = result.data.listing.id
 
-    // Upload images serially so sort_order is stable
+    // Upload images serially so sort_order is stable. Files go through
+    // /api/barter/upload as multipart — server actions can't carry
+    // multi-megabyte payloads.
     for (let i = 0; i < images.length; i++) {
-      const up = await uploadBarterImage(listingId, images[i].dataUrl, i)
-      if (!up.ok) {
+      const fd = new FormData()
+      fd.append("file", images[i].file)
+      fd.append("listing_id", listingId)
+      fd.append("sort_order", String(i))
+      const up = await fetch("/api/barter/upload", {
+        method: "POST",
+        body: fd,
+      }).catch(() => null)
+      if (!up?.ok) {
+        const msg = up
+          ? await up
+              .json()
+              .then((b) => b.error || b.message)
+              .catch(() => null)
+          : null
         setError(
-          `Listing created but image ${i + 1} failed: ${up.error || "unknown"}`
+          `Listing created but image ${i + 1} failed: ${msg || "unknown"}`
         )
       }
     }

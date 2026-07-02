@@ -7,6 +7,7 @@ import { socialLinksToArray } from "@/lib/social"
 import { SocialIcon } from "@/components/sections/DirectoryManagement/SocialIcon"
 import { SingleLocationMap } from "@/components/sections/DirectoryListing/SingleLocationMap"
 import { trackButtonClick } from "@/lib/analytics"
+import { normalizeExternalUrl } from "@/lib/helpers/external-url"
 
 // Canonical tier labels — MUST match the card/home/map badge labels in
 // lib/directory-tiers.ts (Verified / Featured / Enterprise). The DB column
@@ -215,7 +216,7 @@ export const DirectoryDetail = ({ listing }: { listing: DirectoryListing }) => {
             )}
             {listing.website_url && (
               <a
-                href={listing.website_url}
+                href={normalizeExternalUrl(listing.website_url)!}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() =>
@@ -498,11 +499,11 @@ export const DirectoryDetail = ({ listing }: { listing: DirectoryListing }) => {
                     href = `/sellers/${shopHandle}`
                     label = "Visit Our Shop"
                   } else if (listing.website_url) {
-                    href = listing.website_url
+                    href = normalizeExternalUrl(listing.website_url)
                     label = "Visit Website"
                   }
                 } else {
-                  href = listing.cta_url || null
+                  href = normalizeExternalUrl(listing.cta_url)
                 }
 
                 if (!href) return null
