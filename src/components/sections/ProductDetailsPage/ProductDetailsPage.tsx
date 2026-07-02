@@ -94,6 +94,16 @@ export const ProductDetailsPage = async ({
     // storefront extension unavailable — leave as null
   }
 
+  // A product can override its seller's store-wide policy (e.g. a made-to-order
+  // item with a longer lead time), stored in product.metadata. Prefer the
+  // per-product policy when set; otherwise fall back to the store default.
+  const rawProductPolicy = (prod as any).metadata?.shipping_return_policy
+  const productPolicyOverride =
+    typeof rawProductPolicy === "string" && rawProductPolicy.trim()
+      ? rawProductPolicy.trim()
+      : null
+  const effectiveReturnPolicy = productPolicyOverride ?? sellerRefundPolicy
+
   return (
     <>
       {isOwnerPreview && (
@@ -155,7 +165,7 @@ export const ProductDetailsPage = async ({
         description={prod?.description || ""}
         shippingInfo=""
         attributes={(prod as any)?.attribute_values || []}
-        refundPolicy={sellerRefundPolicy}
+        refundPolicy={effectiveReturnPolicy}
       />
 
       {vendorTags.length > 0 && <ProductTagsRow tags={vendorTags} />}
