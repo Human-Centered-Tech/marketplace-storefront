@@ -111,6 +111,12 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "picsum.photos",
       },
+      // Shopify-hosted product images from CSV imports (Pax Rosa etc.) —
+      // thumbnails in the DB/Algolia point straight at Shopify's CDN.
+      {
+        protocol: "https",
+        hostname: "cdn.shopify.com",
+      },
       ...(process.env.NEXT_PUBLIC_MINIO_ENDPOINT ? [{
         protocol: "https" as const,
         hostname: process.env.NEXT_PUBLIC_MINIO_ENDPOINT,
