@@ -66,6 +66,7 @@ export const DirectoryDetail = ({ listing }: { listing: DirectoryListing }) => {
     (Number.isFinite(addrCoords?.lat) && Number.isFinite(addrCoords?.lng))
 
   const isUnclaimed = !listing.owner_id
+  const websiteHref = normalizeExternalUrl(listing.website_url)
   // Featured (and Enterprise) tiers get the richer listing: owner-interview
   // section, multiple parish affiliations, and the gold CTA button. Verified
   // and lower tiers show none of those + a single parish affiliation.
@@ -214,9 +215,9 @@ export const DirectoryDetail = ({ listing }: { listing: DirectoryListing }) => {
                 <span className="material-symbols-outlined">mail</span>
               </a>
             )}
-            {listing.website_url && (
+            {websiteHref && (
               <a
-                href={normalizeExternalUrl(listing.website_url)!}
+                href={websiteHref}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() =>
@@ -498,8 +499,8 @@ export const DirectoryDetail = ({ listing }: { listing: DirectoryListing }) => {
                   if (hasShop) {
                     href = `/sellers/${shopHandle}`
                     label = "Visit Our Shop"
-                  } else if (listing.website_url) {
-                    href = normalizeExternalUrl(listing.website_url)
+                  } else if (websiteHref) {
+                    href = websiteHref
                     label = "Visit Website"
                   }
                 } else {

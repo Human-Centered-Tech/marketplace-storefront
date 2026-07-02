@@ -13,5 +13,9 @@ export const normalizeExternalUrl = (
   if (/^https?:\/\//i.test(trimmed)) return trimmed
   if (trimmed.startsWith("//")) return `https:${trimmed}`
   if (trimmed.startsWith("/")) return trimmed // internal path
+  // Junk guard: seed data holds values like "NA" or "Coming soon…" in URL
+  // fields. Without a dot it can't be a hostname — hide the link instead
+  // of fabricating https://NA.
+  if (!trimmed.includes(".")) return null
   return `https://${trimmed}`
 }
