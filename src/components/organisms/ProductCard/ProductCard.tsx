@@ -66,7 +66,7 @@ export const ProductCard = ({
             alt={`${productName} image`}
             width={400}
             height={500}
-            sizes="(min-width: 1024px) 25vw, (min-width: 768px) 50vw, 100vw"
+            sizes="(min-width: 1024px) 25vw, 50vw"
             className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-105"
           />
         ) : (
@@ -77,12 +77,12 @@ export const ProductCard = ({
             alt={`${productName} image placeholder`}
             width={400}
             height={500}
-            sizes="(min-width: 1024px) 25vw, (min-width: 768px) 50vw, 100vw"
+            sizes="(min-width: 1024px) 25vw, 50vw"
             className="object-cover w-full h-full"
           />
         )}
         {categoryName && (
-          <span className="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 text-[10px] font-bold tracking-widest uppercase text-[#75777f]">
+          <span className="absolute top-2 left-2 md:top-4 md:left-4 bg-white/90 backdrop-blur px-2 py-0.5 md:px-3 md:py-1 text-[9px] md:text-[10px] font-bold tracking-widest uppercase text-[#75777f]">
             {categoryName}
           </span>
         )}
@@ -96,7 +96,7 @@ export const ProductCard = ({
               wishlist.toggle(productId)
             }}
             aria-label={favorited ? "Remove from wishlist" : "Add to wishlist"}
-            className="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/90 backdrop-blur flex items-center justify-center shadow-sm hover:bg-white transition-colors"
+            className="absolute top-2 right-2 md:top-3 md:right-3 w-8 h-8 md:w-9 md:h-9 rounded-full bg-white/90 backdrop-blur flex items-center justify-center shadow-sm hover:bg-white transition-colors"
           >
             {favorited ? (
               <HeartFilledIcon size={18} color="#DB2777" />
@@ -108,22 +108,24 @@ export const ProductCard = ({
       </LocalizedClientLink>
 
       {/* Title + price + Add to Cart */}
-      <div className="mt-6 flex flex-col flex-1">
+      <div className="mt-3 md:mt-6 flex flex-col flex-1">
         <LocalizedClientLink
           href={`/products/${product.handle}`}
           aria-label={`Go to ${productName} page`}
           title={`Go to ${productName} page`}
         >
-          <h4 className="text-base font-semibold text-[#001435] leading-snug line-clamp-2 min-h-[2.75rem]">
+          <h4 className="text-sm md:text-base font-semibold text-[#001435] leading-snug line-clamp-2 min-h-[2.25rem] md:min-h-[2.75rem]">
             {productName}
           </h4>
         </LocalizedClientLink>
         {productSubtitle && (
-          <p className="text-sm italic text-[#75777f] leading-snug line-clamp-1 mt-0.5">
+          <p className="text-xs md:text-sm italic text-[#75777f] leading-snug line-clamp-1 mt-0.5">
             {productSubtitle}
           </p>
         )}
-        <p className="font-serif text-2xl text-[#001435] mt-1">{priceLabel}</p>
+        <p className="font-serif text-lg md:text-2xl text-[#001435] mt-1">
+          {priceLabel}
+        </p>
         {/* Routes to the product detail page where the real add-to-cart
             flow lives (variant picker, stock check, optimistic cart
             update). Direct add-from-card would need to either auto-pick
@@ -132,10 +134,10 @@ export const ProductCard = ({
             mt-auto pins the wrapper to the bottom of the flex column;
             pt-8 inside the wrapper guarantees ≥2rem of breathing room
             above the button regardless of the overall card height. */}
-        <div className="mt-auto pt-4">
+        <div className="mt-auto pt-3 md:pt-4">
           <LocalizedClientLink
             href={`/products/${product.handle}`}
-            className="w-full py-3 bg-gradient-to-r from-[#F2CD69] to-[#BE9B32] hover:brightness-110 text-white text-sm font-bold tracking-wide rounded-full transition-all duration-300 uppercase shadow-sm text-center block"
+            className="w-full py-2 md:py-3 bg-gradient-to-r from-[#F2CD69] to-[#BE9B32] hover:brightness-110 text-white text-xs md:text-sm font-bold tracking-wide rounded-full transition-all duration-300 uppercase shadow-sm text-center block"
           >
             View Product
           </LocalizedClientLink>

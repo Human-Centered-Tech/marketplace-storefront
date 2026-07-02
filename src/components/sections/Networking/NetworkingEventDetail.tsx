@@ -52,6 +52,14 @@ export const NetworkingEventDetail = ({
     Math.round((rsvpCount / event.max_participants) * 100)
   )
 
+  // Admin-editable agenda saved to event.metadata.format. When present, it
+  // replaces the default 3-step agenda below. Preserve the author's line
+  // breaks with whitespace-pre-line.
+  const customFormat =
+    typeof event.metadata?.format === "string"
+      ? event.metadata.format.trim()
+      : ""
+
   const handleRsvp = async () => {
     setRsvpLoading(true)
     setRsvpError("")
@@ -201,51 +209,58 @@ export const NetworkingEventDetail = ({
             <h2 className="font-serif text-2xl text-navy-dark mb-8 tracking-wide">
               Event Format
             </h2>
-            <div className="space-y-10">
-              <div className="flex gap-6">
-                <span className="text-gold font-serif text-4xl opacity-50 shrink-0">
-                  01
-                </span>
-                <div>
-                  <h4 className="font-serif text-lg text-navy-dark mb-2">
-                    Opening Prayer
-                  </h4>
-                  <p className="text-secondary leading-relaxed">
-                    We begin by centering our work in Christ. A brief reflection
-                    on the dignity of labor and the Vocation of Business.
-                  </p>
+            {customFormat ? (
+              <p className="text-secondary leading-relaxed whitespace-pre-line">
+                {customFormat}
+              </p>
+            ) : (
+              <div className="space-y-10">
+                <div className="flex gap-6">
+                  <span className="text-gold font-serif text-4xl opacity-50 shrink-0">
+                    01
+                  </span>
+                  <div>
+                    <h4 className="font-serif text-lg text-navy-dark mb-2">
+                      Opening Prayer
+                    </h4>
+                    <p className="text-secondary leading-relaxed">
+                      We begin by centering our work in Christ. A brief
+                      reflection on the dignity of labor and the Vocation of
+                      Business.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-6">
+                  <span className="text-gold font-serif text-4xl opacity-50 shrink-0">
+                    02
+                  </span>
+                  <div>
+                    <h4 className="font-serif text-lg text-navy-dark mb-2">
+                      Networking Rounds
+                    </h4>
+                    <p className="text-secondary leading-relaxed">
+                      Structured 1-on-1 breakout sessions. You&apos;ll be paired
+                      with complementary businesses for focused conversation and
+                      connection.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-6">
+                  <span className="text-gold font-serif text-4xl opacity-50 shrink-0">
+                    03
+                  </span>
+                  <div>
+                    <h4 className="font-serif text-lg text-navy-dark mb-2">
+                      Closing Reflection
+                    </h4>
+                    <p className="text-secondary leading-relaxed">
+                      A final group gathering to share insights, prayer
+                      intentions, and professional leads within the community.
+                    </p>
+                  </div>
                 </div>
               </div>
-              <div className="flex gap-6">
-                <span className="text-gold font-serif text-4xl opacity-50 shrink-0">
-                  02
-                </span>
-                <div>
-                  <h4 className="font-serif text-lg text-navy-dark mb-2">
-                    Networking Rounds
-                  </h4>
-                  <p className="text-secondary leading-relaxed">
-                    Structured 1-on-1 breakout sessions. You&apos;ll be paired
-                    with complementary businesses for focused conversation and
-                    connection.
-                  </p>
-                </div>
-              </div>
-              <div className="flex gap-6">
-                <span className="text-gold font-serif text-4xl opacity-50 shrink-0">
-                  03
-                </span>
-                <div>
-                  <h4 className="font-serif text-lg text-navy-dark mb-2">
-                    Closing Reflection
-                  </h4>
-                  <p className="text-secondary leading-relaxed">
-                    A final group gathering to share insights, prayer intentions,
-                    and professional leads within the community.
-                  </p>
-                </div>
-              </div>
-            </div>
+            )}
           </section>
 
           {/* Zoom Link (if available) */}

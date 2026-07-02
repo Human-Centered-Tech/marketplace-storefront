@@ -126,68 +126,58 @@ export function SearchBar({
     )
   }
 
-  // Hero variant
+  // Hero variant — standardized search bar (matches the Directory): a gray
+  // magnifying-glass icon inside the input on the left, and a navy "Search"
+  // button on the right, housed in a white floating card.
   return (
-    <form
-      onSubmit={handleSearch}
-      className="relative max-w-2xl w-full mx-auto px-4"
-    >
-      <input
-        ref={inputRef}
-        className={`w-full bg-white border border-gray-100 shadow-lg rounded-xl py-5 px-8 ${
-          query ? "pr-28" : "pr-16"
-        } font-sans text-[15px] focus:ring-2 focus:ring-[#755b00] transition-all placeholder:text-[#75777f]`}
-        placeholder={placeholder || defaultPlaceholder}
-        type="text"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-      />
-      {query && (
+    <form onSubmit={handleSearch} className="max-w-2xl w-full mx-auto px-4">
+      <div className="flex items-stretch gap-2 bg-white border border-gray-100 shadow-lg rounded-xl p-2 focus-within:ring-2 focus-within:ring-[#755b00] transition-all">
+        <div className="relative flex-1 flex items-center">
+          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-secondary pointer-events-none">
+            search
+          </span>
+          <input
+            ref={inputRef}
+            className="w-full bg-transparent border-none focus:ring-0 font-sans text-[15px] py-3 pl-11 pr-9 placeholder:text-[#75777f]"
+            placeholder={placeholder || defaultPlaceholder}
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+          {query && (
+            <button
+              type="button"
+              aria-label="Clear search"
+              onClick={() => {
+                setQuery("")
+                inputRef.current?.focus()
+              }}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-[#75777f] hover:text-[#17294a] transition-colors"
+            >
+              <svg
+                aria-hidden="true"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          )}
+        </div>
         <button
-          type="button"
-          aria-label="Clear search"
-          onClick={() => {
-            setQuery("")
-            inputRef.current?.focus()
-          }}
-          className="absolute right-[88px] top-1/2 -translate-y-1/2 text-[#75777f] hover:text-[#17294a] transition-colors"
+          type="submit"
+          className="bg-navy-dark text-white px-8 rounded-lg label-sm text-[10px] font-bold tracking-widest hover:bg-navy active:scale-95 transition-all shrink-0"
         >
-          <svg
-            aria-hidden="true"
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <line x1="18" y1="6" x2="6" y2="18" />
-            <line x1="6" y1="6" x2="18" y2="18" />
-          </svg>
+          Search
         </button>
-      )}
-      <button
-        type="submit"
-        aria-label="Search"
-        className="absolute right-8 top-1/2 -translate-y-1/2 bg-navy-dark text-white p-3 rounded-xl flex items-center justify-center hover:bg-navy transition-colors"
-      >
-        <svg
-          aria-hidden="true"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <circle cx="11" cy="11" r="8" />
-          <line x1="21" y1="21" x2="16.65" y2="16.65" />
-        </svg>
-      </button>
+      </div>
     </form>
   )
 }

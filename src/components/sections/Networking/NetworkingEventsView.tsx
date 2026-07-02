@@ -127,34 +127,45 @@ export const NetworkingEventsView = ({
 
   return (
     <section className="max-w-7xl mx-auto px-4 lg:px-8 py-12 lg:py-16">
-      {/* Search */}
+      {/* Search — standardized: gray magnifying-glass inside the input on the
+          left, navy "Search" button on the right. Typing still live-filters
+          (debounced); the button forces an immediate search. */}
       <div className="max-w-2xl mx-auto mb-10">
-        <div className="relative">
-          <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-secondary text-xl">
-            search
-          </span>
-          <input
-            type="text"
-            placeholder="Search events..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-12 pr-12 py-3.5 bg-white border border-gray-100 rounded-xl focus:ring-2 focus:ring-[#755b00] focus:border-transparent font-sans text-[15px] outline-none shadow-lg transition-all placeholder:text-secondary"
-          />
-          {searching && (
-            <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-secondary text-xl animate-spin">
-              progress_activity
+        <div className="flex items-stretch gap-2">
+          <div className="relative flex-1">
+            <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-secondary text-xl">
+              search
             </span>
-          )}
-          {search && !searching && (
-            <button
-              type="button"
-              aria-label="Clear search"
-              onClick={() => setSearch("")}
-              className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-secondary hover:text-navy-dark text-xl"
-            >
-              close
-            </button>
-          )}
+            <input
+              type="text"
+              placeholder="Search events..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-12 pr-12 py-3.5 bg-white border border-gray-100 rounded-xl focus:ring-2 focus:ring-[#755b00] focus:border-transparent font-sans text-[15px] outline-none shadow-lg transition-all placeholder:text-secondary"
+            />
+            {searching && (
+              <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-secondary text-xl animate-spin">
+                progress_activity
+              </span>
+            )}
+            {search && !searching && (
+              <button
+                type="button"
+                aria-label="Clear search"
+                onClick={() => setSearch("")}
+                className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-secondary hover:text-navy-dark text-xl"
+              >
+                close
+              </button>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={() => setDebouncedSearch(search)}
+            className="bg-navy-dark text-white px-8 rounded-xl label-sm text-[10px] font-bold tracking-widest hover:bg-navy active:scale-95 transition-all shrink-0"
+          >
+            Search
+          </button>
         </div>
       </div>
 

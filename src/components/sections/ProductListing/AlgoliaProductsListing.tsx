@@ -9,7 +9,7 @@ import {
   ProductsPagination,
 } from "@/components/organisms"
 import { client } from "@/lib/client"
-import { Configure, useHits } from "react-instantsearch"
+import { Configure, useHits, usePagination } from "react-instantsearch"
 import { InstantSearchNext } from "react-instantsearch-nextjs"
 import { useSearchParams } from "next/navigation"
 import { getFacedFilters } from "@/lib/helpers/get-faced-filters"
@@ -95,22 +95,25 @@ export const AlgoliaProductsListing = ({
     : baseFilter
 
   return (
-    <InstantSearchNext searchClient={client} indexName="products">
+    <InstantSearchNext
+      searchClient={client}
+      indexName="products"
+      // Seed the Algolia page from the URL so a direct load of ?page=2 is
+      // server-rendered on the correct slice. uiState `page` is 1-indexed
+      // (unlike Configure's 0-indexed `page`), so pass urlPage as-is.
+      initialUiState={{ products: { page: urlPage } }}
+    >
       {/*
         Server-side Algolia pagination: hitsPerPage scopes useHits() to
-        just the current page, and `page` (0-indexed) selects which
-        slice. `key` forces a remount when the page changes so the
-        InstantSearch state resets cleanly — without it, Algolia's
-        internal state can hold onto the prior page's results during
-        the re-render and the count UI flickers.
+        just the current page. The active page is driven by
+        <AlgoliaPageSync> below via the pagination connector's refine(),
+        which is the reliable way to control the slice on client-side
+        navigation — a `page` prop on <Configure> is overridden by the
+        pagination uiState and silently reused the prior page's hits
+        (page 2 showing page 1's items).
       */}
-      <Configure
-        key={`page-${algoliaPage}-${filters}`}
-        query={query}
-        filters={filters}
-        hitsPerPage={PRODUCT_LIMIT}
-        page={algoliaPage}
-      />
+      <Configure query={query} filters={filters} hitsPerPage={PRODUCT_LIMIT} />
+      <AlgoliaPageSync page={algoliaPage} />
       <ProductsListing
         locale={locale}
         currency_code={currency_code}
@@ -120,6 +123,23 @@ export const AlgoliaProductsListing = ({
       />
     </InstantSearchNext>
   )
+}
+
+// Drives the Algolia result page from the URL's ?page= param. Uses the
+// pagination connector's refine() (0-indexed). Mounting this connector also
+// registers the pagination widget, which is what makes the pagination uiState
+// (initialUiState + this refine) the authority on the active page — a
+// <Configure page> prop alone does not survive that merge.
+const AlgoliaPageSync = ({ page }: { page: number }) => {
+  const { refine, currentRefinement } = usePagination()
+
+  useEffect(() => {
+    if (currentRefinement !== page) {
+      refine(page)
+    }
+  }, [page, currentRefinement, refine])
+
+  return null
 }
 
 const ProductsListing = ({
@@ -279,7 +299,7 @@ const ProductsListing = ({
             </div>
           ) : (
             <div className="w-full">
-              <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-16 gap-x-8">
+              <ul className="grid grid-cols-2 lg:grid-cols-3 gap-x-3 gap-y-8 md:gap-x-8 md:gap-y-16">
                 {products.map(
                   (hit) =>
                     apiProducts?.find((p: any) => p.id === hit.objectID) && (
