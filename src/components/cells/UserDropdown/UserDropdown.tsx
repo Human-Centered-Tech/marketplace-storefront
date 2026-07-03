@@ -26,7 +26,9 @@ export const UserDropdown = ({
 
   return (
     <div
-      className="relative"
+      // lg-only `relative`: on mobile the Dropdown must position against the
+      // sticky header (nearest positioned ancestor), not this icon wrapper.
+      className="lg:relative"
       onMouseOver={() => setOpen(true)}
       onMouseLeave={() => setOpen(false)}
       onFocus={() => setOpen(true)}
