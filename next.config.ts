@@ -123,6 +123,13 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "cdn.shopify.com",
       },
+      // Etsy-hosted product images (merchants reusing their Etsy listing
+      // photos) — 20 in the catalog as of 7/3; cards rendered blank without
+      // this. Full-catalog host sweep 7/3: v3-cdn + shopify + etsy only.
+      {
+        protocol: "https",
+        hostname: "i.etsystatic.com",
+      },
       ...(process.env.NEXT_PUBLIC_MINIO_ENDPOINT ? [{
         protocol: "https" as const,
         hostname: process.env.NEXT_PUBLIC_MINIO_ENDPOINT,
