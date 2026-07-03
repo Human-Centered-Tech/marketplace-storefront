@@ -95,6 +95,21 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
+  // v3.catholicowned.com still resolves to this app (kept alive through the
+  // 6/29 cutover for old mobile builds + already-sent email links). Serving
+  // it as a 200 mirror made Google index every page twice with no canonical —
+  // 134 "Duplicate without user-selected canonical" pages in Search Console
+  // (7/3). 301 to the canonical host instead. Note the static-asset return
+  // above runs first, so /.well-known/* association files keep serving 200
+  // from v3 — old app builds' universal links depend on them.
+  if (request.headers.get("host") === "v3.catholicowned.com") {
+    const url = request.nextUrl.clone()
+    url.protocol = "https"
+    url.host = "www.catholicowned.com"
+    url.port = ""
+    return NextResponse.redirect(url, 301)
+  }
+
   const cacheIdCookie = request.cookies.get("_medusa_cache_id")
   const urlSegment = request.nextUrl.pathname.split("/")[1]
   const looksLikeLocale = /^[a-z]{2}$/i.test(urlSegment || "")

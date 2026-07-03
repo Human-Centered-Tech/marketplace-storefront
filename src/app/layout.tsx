@@ -71,6 +71,11 @@ export const metadata: Metadata = {
     process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
   ),
   alternates: {
+    // Every page self-canonicalizes to its own path on metadataBase ("./" is
+    // resolved per-route by Next). Without this, only the homepage had a
+    // canonical, so Google treated the v3 mirror + query variants as
+    // duplicates with no user-selected canonical (Search Console 7/3).
+    canonical: "./",
     languages: {
       "x-default": process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000",
     },
