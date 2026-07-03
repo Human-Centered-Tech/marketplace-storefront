@@ -1,10 +1,6 @@
 'use client';
 
 import { HttpTypes } from '@medusajs/types';
-import {
-  CategoryNavbar,
-  HeaderCategoryNavbar,
-} from '@/components/molecules';
 import { CloseIcon, HamburgerMenuIcon } from '@/icons';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -63,7 +59,9 @@ export const MobileNavbar = ({
               <CloseIcon size={20} />
             </button>
           </div>
-          {/* Main nav links */}
+          {/* Main nav links only — the full category tree was dropped from
+              the menu (Liam 7/3); categories live on /categories where the
+              filter UI handles them. */}
           <nav className='flex flex-col gap-1 mt-4 mb-4'>
             {[
               { href: '/categories', label: 'Shop' },
@@ -81,18 +79,6 @@ export const MobileNavbar = ({
               </LocalizedClientLink>
             ))}
           </nav>
-          <div className='border mt-2 rounded-sm'>
-            <HeaderCategoryNavbar
-              onClose={closeMenuHandler}
-              categories={parentCategories}
-            />
-            <div className='border-t pt-2'>
-              <CategoryNavbar
-                onClose={closeMenuHandler}
-                categories={childrenCategories}
-              />
-            </div>
-          </div>
         </div>,
         document.body
       )}
