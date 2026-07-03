@@ -40,7 +40,11 @@ export const UserDropdown = ({
       >
         <ProfileIcon size={20} />
       </LocalizedClientLink>
-      <Dropdown show={open}>
+      {/* Desktop-only: this is a hover menu with no touch dismissal (closes on
+          mouseleave), so on mobile it opened full-width over the page and stuck
+          there (Matteo 7/3). On phones the profile icon just navigates to
+          /user, which lists the same destinations. */}
+      <Dropdown show={open} className="max-lg:hidden">
         {user ? (
           <div className="p-1">
             <div className="lg:w-[200px]">

@@ -107,8 +107,11 @@ export function DirectoryMapView({
 
   return (
     <div className="flex flex-col lg:flex-row h-[calc(100vh-280px)] min-h-[500px] rounded-xl overflow-hidden border border-gray-200">
-      {/* Left panel - scrollable listings */}
-      <div className="w-full lg:w-[400px] overflow-y-auto bg-[#FAF9F5] shrink-0 border-r border-gray-200">
+      {/* Left panel - scrollable listings. Mobile: capped below the map —
+          uncapped it grew with the results and starved the flex-1 map of
+          height inside the overflow-hidden column (map vanished with 3+
+          listings; Matteo 7/3). */}
+      <div className="w-full lg:w-[400px] overflow-y-auto bg-[#FAF9F5] shrink-0 border-r border-gray-200 order-2 max-h-[45%] lg:order-none lg:max-h-none">
         <div className="p-4 space-y-4">
           {listings.length === 0 ? (
             <p className="text-center text-secondary py-8 text-sm">
@@ -175,8 +178,9 @@ export function DirectoryMapView({
         </div>
       </div>
 
-      {/* Right panel - Google map */}
-      <div className="flex-1 relative bg-gray-100">
+      {/* Right panel - Google map (on mobile it renders on top, above the
+          capped list; min-h guards against any zero-height flex edge case). */}
+      <div className="flex-1 relative bg-gray-100 order-1 min-h-[220px] lg:order-none lg:min-h-0">
         {loading ? (
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-center text-secondary">

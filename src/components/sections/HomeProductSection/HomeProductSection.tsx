@@ -17,14 +17,14 @@ export const HomeProductSection = async ({
     <section className="py-16 lg:py-24 w-full bg-[#faf9f5] px-4 lg:px-8">
       <div className="max-w-7xl mx-auto">
       {/* Header row: title — gold line — View All */}
-      <div className="flex items-center justify-between mb-12">
-        <h2 className="font-serif text-3xl md:text-4xl font-bold text-[#001435] whitespace-nowrap">
+      <div className="flex items-center justify-between gap-4 mb-12">
+        <h2 className="font-serif text-3xl md:text-4xl font-bold text-[#001435] sm:whitespace-nowrap">
           {heading}
         </h2>
         <div className="h-[1px] flex-grow mx-8 bg-[#BE9B32]/30 hidden sm:block" />
         <LocalizedClientLink
           href="/categories"
-          className="font-sans text-[11px] font-bold uppercase tracking-[0.15em] text-[#001435] hover:text-[#755b00] transition-colors whitespace-nowrap underline decoration-[#BE9B32] underline-offset-8"
+          className="font-sans text-[11px] font-bold uppercase tracking-[0.15em] text-[#001435] hover:text-[#755b00] transition-colors whitespace-nowrap shrink-0 underline decoration-[#BE9B32] underline-offset-8"
         >
           View All Shop
         </LocalizedClientLink>

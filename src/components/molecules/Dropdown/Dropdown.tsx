@@ -1,9 +1,11 @@
 export const Dropdown = ({
   children,
   show,
+  className = '',
 }: {
   children: React.ReactNode;
   show: boolean;
+  className?: string;
 }) => {
   if (!show) return null;
 
@@ -14,7 +16,7 @@ export const Dropdown = ({
   // (the "half-visible cart" bug). Desktop (lg+) keeps the original anchored
   // dropdown.
   return (
-    <div className='absolute left-2 right-2 top-full max-h-[calc(100dvh-140px)] overflow-y-auto lg:left-auto lg:-right-2 lg:top-auto lg:max-h-none lg:overflow-visible lg:w-max bg-primary text-primary z-20 rounded-md shadow-lg'>
+    <div className={`absolute left-2 right-2 top-full max-h-[calc(100dvh-140px)] overflow-y-auto lg:left-auto lg:-right-2 lg:top-auto lg:max-h-none lg:overflow-visible lg:w-max bg-primary text-primary z-20 rounded-md shadow-lg ${className}`}>
       {children}
     </div>
   );
