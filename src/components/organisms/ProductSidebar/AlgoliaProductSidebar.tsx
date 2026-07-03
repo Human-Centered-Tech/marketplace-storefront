@@ -22,7 +22,9 @@ export const AlgoliaProductSidebar = () => {
 
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 768)
+      // < lg (1024): tablets get the Filters button + modal too — the fixed
+      // 280px sidebar ate a third of an iPad-portrait screen (Matteo 7/3).
+      setIsMobile(window.innerWidth < 1024)
     }
     handleResize() // set correct state on mount, before any resize fires
     window.addEventListener("resize", handleResize)

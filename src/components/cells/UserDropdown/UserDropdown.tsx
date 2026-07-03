@@ -11,7 +11,8 @@ import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedL
 import { ProfileIcon } from "@/icons"
 import { HttpTypes } from "@medusajs/types"
 import { useUnreadMessages } from "@/lib/hooks/useUnreadMessages"
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
+import { usePathname } from "next/navigation"
 
 export const UserDropdown = ({
   user,
@@ -21,11 +22,36 @@ export const UserDropdown = ({
   isVendor?: boolean
 }) => {
   const [open, setOpen] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const pathname = usePathname()
 
   const unreadCount = useUnreadMessages()
 
+  // Touch devices at desktop widths (iPad landscape ≥ lg) fire mouseover on
+  // tap but never mouseleave, so the hover menu stuck open — e.g. over the
+  // account page's own side nav ("two menus", Matteo 7/3). Close it whenever
+  // the route changes and on any tap outside.
+  useEffect(() => {
+    setOpen(false)
+  }, [pathname])
+
+  useEffect(() => {
+    if (!open) return
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
+        setOpen(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [open])
+
   return (
     <div
+      ref={containerRef}
       // lg-only `relative`: on mobile the Dropdown must position against the
       // sticky header (nearest positioned ancestor), not this icon wrapper.
       className="lg:relative"

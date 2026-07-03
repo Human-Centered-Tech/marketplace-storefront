@@ -140,8 +140,10 @@ export const ProductDetailsPage = async ({
 
       {/* Main product area — 12-column grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
-        {/* Left column: Gallery (7 cols) */}
-        <div className="lg:col-span-7">
+        {/* Left column: Gallery (7 cols). Tablet (md–lg): the full-width 4:5
+            gallery filled the whole screen (Matteo 7/3) — cap and center it,
+            mirroring the mobile app's iPad gallery fix. */}
+        <div className="lg:col-span-7 md:max-lg:w-full md:max-lg:max-w-[480px] md:max-lg:mx-auto">
           <ProductGallery
             images={prod?.images || []}
             thumbnail={prod?.thumbnail}

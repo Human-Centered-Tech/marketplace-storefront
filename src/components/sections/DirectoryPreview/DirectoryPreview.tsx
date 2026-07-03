@@ -90,8 +90,13 @@ function DirectoryCard({
         )}
       </div>
       <div className="p-8 flex-grow space-y-4">
-        <div className="flex justify-between items-start">
-          <h3 className="font-serif text-2xl font-bold text-[#001435] group-hover:text-[#755b00] transition-colors">
+        <div className="flex justify-between items-start gap-3">
+          {/* Long business names made preview cards balloon (Matteo 7/3) —
+              cap at 2 lines; the full name is on the listing page. */}
+          <h3
+            className="font-serif text-2xl font-bold text-[#001435] group-hover:text-[#755b00] transition-colors line-clamp-2 break-words"
+            title={name}
+          >
             {name}
           </h3>
           <StarRating />

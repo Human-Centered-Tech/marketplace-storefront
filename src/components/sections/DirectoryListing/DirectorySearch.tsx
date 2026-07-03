@@ -545,8 +545,10 @@ export const DirectorySearch = ({
       )}
 
       {/* Search Bar — floating card */}
-      <div className="bg-white rounded-xl shadow-lg p-2 flex flex-col md:flex-row items-stretch gap-2 border border-gray-100">
-        <div className="flex-1 flex items-center px-4 border-r border-gray-100">
+      {/* Tablet: five segments can't share one row (fields were cut off,
+          Matteo 7/3) — let them wrap; min-widths decide the break points. */}
+      <div className="bg-white rounded-xl shadow-lg p-2 flex flex-col md:flex-row md:flex-wrap items-stretch gap-2 border border-gray-100">
+        <div className="flex-1 md:min-w-[240px] flex items-center px-4 border-r border-gray-100">
           <span className="material-symbols-outlined text-secondary mr-3">
             search
           </span>
@@ -568,7 +570,7 @@ export const DirectorySearch = ({
             </button>
           )}
         </div>
-        <div className="flex-1 flex items-center px-4 border-r border-gray-100">
+        <div className="flex-1 md:min-w-[200px] flex items-center px-4 border-r border-gray-100">
           <span className="material-symbols-outlined text-secondary mr-3">
             category
           </span>
@@ -647,7 +649,7 @@ export const DirectorySearch = ({
             <polyline points="6 9 12 15 18 9" />
           </svg>
         </div>
-        <div className="flex-1 flex items-center px-4">
+        <div className="flex-1 md:min-w-[220px] flex items-center px-4">
           <span className="material-symbols-outlined text-secondary mr-3">
             location_on
           </span>

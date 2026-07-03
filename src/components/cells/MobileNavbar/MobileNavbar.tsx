@@ -6,7 +6,8 @@ import {
   HeaderCategoryNavbar,
 } from '@/components/molecules';
 import { CloseIcon, HamburgerMenuIcon } from '@/icons';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 
 export const MobileNavbar = ({
@@ -17,6 +18,9 @@ export const MobileNavbar = ({
   parentCategories: HttpTypes.StoreProductCategory[];
 }) => {
   const [openMenu, setOpenMenu] = useState(false);
+  // Portal target only exists client-side.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   const closeMenuHandler = () => {
     setOpenMenu(false);
@@ -33,7 +37,11 @@ export const MobileNavbar = ({
       >
         <HamburgerMenuIcon />
       </button>
-      {openMenu && (
+      {/* Portaled to <body>: the header's backdrop-blur makes it a containing
+          block for fixed descendants on iOS Safari, so rendered in place this
+          "full-screen" panel was only header-tall — a white strip showing just
+          the X and the first link, page visible beneath (Matteo 7/3). */}
+      {openMenu && mounted && createPortal(
         <div
           id='mobile-menu'
           role='dialog'
@@ -44,7 +52,7 @@ export const MobileNavbar = ({
              menu show through it — the "transparency" bug. The panel's own
              bg-primary is fully opaque; overflow-y-auto keeps long category
              lists scrollable on short screens. */
-          className='fixed w-full h-full bg-primary p-2 top-0 left-0 z-[60] overflow-y-auto'
+          className='lg:hidden fixed w-full h-full bg-primary p-2 top-0 left-0 z-[60] overflow-y-auto'
         >
           <div className='flex justify-end'>
             <button
@@ -85,7 +93,8 @@ export const MobileNavbar = ({
               />
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

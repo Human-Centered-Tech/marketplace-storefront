@@ -282,11 +282,11 @@ const ProductsListing = ({
         page={page}
         pageSize={PRODUCT_LIMIT}
       />
-      <div className="hidden md:block">
+      <div className="hidden lg:block">
         <ProductListingActiveFilters />
       </div>
-      <div className="md:flex gap-4">
-        <div className="w-full md:w-[280px] flex-shrink-0">
+      <div className="lg:flex gap-4">
+        <div className="w-full lg:w-[280px] flex-shrink-0">
           <AlgoliaProductSidebar />
         </div>
         <div className="w-full">
