@@ -23,10 +23,12 @@ import {
 // Tier-aware "Book a call" Calendly links. Enterprise (Tier 3 / $2,999) books
 // the enterprise call; every other tier books the general membership call;
 // the financial dead-end books the Arimathea partner intro call.
+// Routed to Brooke's calendar 7/6 (sales hire not confirmed yet) — swap the
+// account back when a dedicated salesperson takes these calls.
 const CALENDLY_MEMBERSHIP_URL =
-  "https://calendly.com/business-catholicowned/catholic-owned-membership"
+  "https://calendly.com/brooke_catholicowned/catholic-owned-membership"
 const CALENDLY_ENTERPRISE_URL =
-  "https://calendly.com/business-catholicowned/catholic-owned-enterprise"
+  "https://calendly.com/brooke_catholicowned/catholic-owned-enterprise"
 const ARIMATHEA_CALENDLY_URL =
   "https://calendly.com/daren-arimatheainvesting/catholic-owned-discussion"
 const CALENDLY_BY_TIER: Partial<Record<RecommendedTierKey, string>> = {
