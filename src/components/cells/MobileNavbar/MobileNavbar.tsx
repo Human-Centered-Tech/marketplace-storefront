@@ -68,6 +68,7 @@ export const MobileNavbar = ({
               { href: '/directory', label: 'Directory' },
               { href: '/networking', label: 'Events' },
               { href: '/trade', label: 'Trade' },
+              { href: '/parishes', label: 'My Parishes' },
             ].map(({ href, label }) => (
               <LocalizedClientLink
                 key={href}
