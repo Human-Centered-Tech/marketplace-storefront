@@ -443,8 +443,7 @@ const FoundingPillarsStep: React.FC<{ onAgree: () => void }> = ({
         Our Founding Pillars
       </h2>
       <p className="text-[15px] lg:text-base text-[#001435] font-medium mb-3">
-        Every Featured &amp; Verified business must align with our signature
-        Founding Pillars:
+        Every Member must align with our signature Founding Pillars:
       </p>
       <p className="text-[13px] text-[#44474e] mb-8">
         Check each pillar to affirm that you and your business meet it.

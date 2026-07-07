@@ -203,8 +203,7 @@ export default function SellPage() {
               Our Founding Pillars
             </h2>
             <p className="text-[15px] lg:text-base text-[#001435] font-medium mb-8">
-              Every Featured &amp; Verified business must align with our
-              signature Founding Pillars:
+              Every Member must align with our signature Founding Pillars:
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">

@@ -15,7 +15,7 @@ const SECTIONS: { heading: string; items: FAQ[] }[] = [
     items: [
       {
         q: "Who sells on Catholic Owned?",
-        a: "Every merchant on Catholic Owned is a verified Catholic-owned or Catholic-aligned business. We check each business before they go live, and display a Verified Business badge on every approved listing.",
+        a: "Every merchant on Catholic Owned is a Catholic-owned or Catholic-aligned business. We check each business before they go live, and display a member badge on every approved listing.",
       },
       {
         q: "Do I need an account to shop?",
@@ -54,7 +54,7 @@ const SECTIONS: { heading: string; items: FAQ[] }[] = [
       },
       {
         q: "What does it cost to sell?",
-        a: "Every marketplace seller needs an active Business Directory listing. Plans start at $50/year (Verified tier) and scale up to Featured ($400/year) and Enterprise ($2,000/year). See the full comparison on our pricing page.",
+        a: "Every marketplace seller needs an active Business Directory listing. Plans start at $50/year (Essential tier) and scale up to Featured ($400/year) and Enterprise ($2,000/year). See the full comparison on our pricing page.",
       },
       {
         q: "Do you take a commission?",
@@ -75,7 +75,7 @@ const SECTIONS: { heading: string; items: FAQ[] }[] = [
       },
       {
         q: "What are parish affiliations?",
-        a: "Businesses can be affiliated with one or more parishes. Your Verified tier includes 1 parish, Featured includes up to 3, and Enterprise includes up to 10. Parish affiliations help shoppers find businesses connected to their own community.",
+        a: "Businesses can be affiliated with one or more parishes. Your Essential tier includes 1 parish, Featured includes up to 3, and Enterprise includes up to 25. Parish affiliations help shoppers find businesses connected to their own community.",
       },
       {
         q: "What happens if I cancel my subscription?",
