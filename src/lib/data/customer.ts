@@ -405,9 +405,52 @@ export const updateCustomerPassword = async (
   return res
 }
 
+/**
+ * Accept a reverse-SSO handoff from the vendor dashboard.
+ *
+ * `token` is a deliberately short-lived (5m) bearer minted by the backend at
+ * GET /store/account/customer-token. It exists only to carry the customer
+ * identity across the SSO boundary in a URL fragment — it must NOT become the
+ * persisted session, or the storefront would 401 the moment it expires (e.g. a
+ * vendor still mid-edit on their directory listing). Exchange it for a
+ * normal-length session token before persisting, mirroring the OAuth flow.
+ */
 export async function acceptCustomerHandoff(token: string) {
-  await setAuthToken(token)
+  const sessionToken = await exchangeHandoffForSession(token)
+  await setAuthToken(sessionToken)
   await setVendorFlag(true)
+}
+
+/**
+ * Trade the short-lived SSO handoff token for a normal-length customer session
+ * token via Medusa's /auth/token/refresh (re-mints for the same actor with the
+ * backend's default JWT expiry). Falls back to the original token if the
+ * refresh fails, so the handoff still succeeds — just with the shorter window.
+ */
+async function exchangeHandoffForSession(token: string): Promise<string> {
+  try {
+    const res = await fetch(
+      `${process.env.MEDUSA_BACKEND_URL}/auth/token/refresh`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          authorization: `Bearer ${token}`,
+          "x-publishable-api-key": process.env
+            .NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY as string,
+        },
+      }
+    )
+
+    if (!res.ok) {
+      return token
+    }
+
+    const { token: refreshed } = (await res.json()) as { token?: string }
+    return refreshed || token
+  } catch {
+    return token
+  }
 }
 
 export const sendResetPasswordEmail = async (email: string) => {
