@@ -118,6 +118,12 @@ export const Header = async () => {
         >
           Trade
         </LocalizedClientLink>
+        <LocalizedClientLink
+          href="/parishes"
+          className="text-[13px] font-medium uppercase tracking-[0.1em] text-primary hover:text-action transition-colors"
+        >
+          My Parishes
+        </LocalizedClientLink>
       </nav>
     </header>
   )
