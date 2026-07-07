@@ -137,7 +137,7 @@ export const DirectoryDetail = ({ listing }: { listing: DirectoryListing }) => {
                 .map((badge) => (
                   <span
                     key={badge!.id}
-                    className="px-3 py-1 rounded-full label-sm text-[10px] font-bold tracking-widest"
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full label-sm text-[10px] font-bold tracking-widest"
                     style={{
                       backgroundColor: badge!.color || "#F2CD69",
                       color: "#17294A",
@@ -148,7 +148,7 @@ export const DirectoryDetail = ({ listing }: { listing: DirectoryListing }) => {
                       <img
                         src={badge!.icon_url}
                         alt=""
-                        className="inline-block w-3 h-3 mr-1 -mt-0.5"
+                        className="inline-block w-5 h-5 object-contain"
                       />
                     )}
                     {badge!.name}

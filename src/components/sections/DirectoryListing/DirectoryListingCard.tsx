@@ -243,12 +243,20 @@ export const DirectoryListingCard = ({
               .map((badge) => (
                 <span
                   key={badge!.id}
-                  className="text-[9px] font-bold px-2 py-0.5 rounded uppercase"
+                  className="inline-flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded uppercase"
                   style={{
                     backgroundColor: badge!.color || "#F2CD69",
                     color: "#17294A",
                   }}
+                  title={badge!.description || badge!.name}
                 >
+                  {badge!.icon_url && (
+                    <img
+                      src={badge!.icon_url}
+                      alt=""
+                      className="w-3.5 h-3.5 object-contain"
+                    />
+                  )}
                   {badge!.name}
                 </span>
               ))}
