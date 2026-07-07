@@ -98,6 +98,15 @@ function CategoryFilter({ defaultOpen = true }: { defaultOpen?: boolean }) {
 // (no feedback loop). Refining on max_price means "show products whose priciest
 // variant is at or below $X"; for the single-price products that dominate the
 // catalog that's exactly "price ≤ $X".
+// Ceiling for the price slider. The catalog has a long tail of high-priced
+// Sacred Art originals ($1k–26k+), which stretched the slider's real max so
+// far that the handle had no usable resolution over the sub-$500 band where
+// the vast majority of products sit (Brooke 7/6: "cap at a reasonable max").
+// The slider now tops out here and the top position means "and up" — no upper
+// bound — so those expensive originals are still reachable, they just don't
+// wreck the scale for everyone else. Only applied when the real max exceeds it.
+const PRICE_SLIDER_CAP = 500
+
 function PriceFilter({ defaultOpen = true }: { defaultOpen?: boolean }) {
   const { start, range, refine, canRefine } = useRange({
     attribute: "max_price",
@@ -105,11 +114,14 @@ function PriceFilter({ defaultOpen = true }: { defaultOpen?: boolean }) {
 
   const min = Number.isFinite(range.min) ? Math.floor(range.min as number) : 0
   const max = Number.isFinite(range.max) ? Math.ceil(range.max as number) : 0
+  // Capped ceiling the slider actually renders to. Reaching it clears the
+  // upper bound entirely (shows everything, including products above the cap).
+  const sliderMax = Math.min(max, PRICE_SLIDER_CAP)
 
   // `start` is [lower, upper]; an unset upper bound comes back as Infinity.
   const activeUpper = Number.isFinite(start[1])
-    ? Math.min(start[1] as number, max)
-    : max
+    ? Math.min(start[1] as number, sliderMax)
+    : sliderMax
 
   const [value, setValue] = useState<number>(activeUpper)
 
@@ -121,15 +133,21 @@ function PriceFilter({ defaultOpen = true }: { defaultOpen?: boolean }) {
 
   // No usable range to filter on (no results, or every product is the same
   // price) — hide rather than render a dead, full-width slider.
-  if (!canRefine || max <= min) return null
+  if (!canRefine || sliderMax <= min) return null
+
+  const atCeiling = value >= sliderMax
+  // "$500+" only when the cap is actually hiding a longer tail; if the real
+  // max is at/under the cap, the ceiling is a true max, so no "+".
+  const ceilingLabel =
+    max > sliderMax ? `$${sliderMax}+` : `$${sliderMax}`
 
   const commit = () => {
     // At the ceiling = no constraint; clear so the count reflects everything.
-    refine(value >= max ? [undefined, undefined] : [undefined, value])
+    refine(atCeiling ? [undefined, undefined] : [undefined, value])
   }
 
   // Coarser step on wide ranges so the handle stays usable.
-  const step = Math.max(1, Math.round((max - min) / 50))
+  const step = Math.max(1, Math.round((sliderMax - min) / 50))
 
   return (
     <Accordion heading="Price" defaultOpen={defaultOpen}>
@@ -137,7 +155,7 @@ function PriceFilter({ defaultOpen = true }: { defaultOpen?: boolean }) {
         <input
           type="range"
           min={min}
-          max={max}
+          max={sliderMax}
           step={step}
           value={value}
           onChange={(e) => setValue(parseInt(e.target.value))}
@@ -145,12 +163,12 @@ function PriceFilter({ defaultOpen = true }: { defaultOpen?: boolean }) {
           onTouchEnd={commit}
           onKeyUp={commit}
           aria-label="Maximum price"
-          aria-valuetext={value >= max ? `$${max}+` : `$${value}`}
+          aria-valuetext={atCeiling ? ceilingLabel : `$${value}`}
           className="w-full accent-[#755b00] cursor-pointer"
         />
         <div className="flex justify-between text-xs font-bold text-[#44474e]">
           <span>${min}</span>
-          <span>{value >= max ? `$${max}+` : `$${value}`}</span>
+          <span>{atCeiling ? ceilingLabel : `$${value}`}</span>
         </div>
       </div>
     </Accordion>
