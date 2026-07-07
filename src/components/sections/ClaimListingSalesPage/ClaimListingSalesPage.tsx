@@ -45,13 +45,13 @@ export const ClaimListingSalesPage = ({
         .join(", ")
     : null
 
-  // Start the claim at the onboarding questionnaire so the claimant is
-  // assigned a recommended_tier (which the claim checkout charges), then
-  // continues into registration + back to the claim checkout. claim_listing
-  // + return_to are carried through the funnel onto the register links.
-  const claimStartHref = `/sell/onboarding?claim_listing=${listing.id}&return_to=${encodeURIComponent(
-    `/directory/${listing.id}/claim/checkout`
-  )}`
+  // Claim-flow rebuild (7/7): the claim starts at the ATTESTATION step — a
+  // regular account + rightful-owner checkbox, NO merchant onboarding.
+  // Grandfathered members finish free; others pick a membership and ownership
+  // transfers at payment (the listing stays visible as-is until then).
+  // Product merchants who want a storefront get that path offered separately
+  // on the claim step.
+  const claimStartHref = `/directory/${listing.id}/claim/start`
 
   return (
     <main className="bg-[#FAF9F5] min-h-screen">

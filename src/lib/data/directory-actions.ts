@@ -214,6 +214,45 @@ export async function removeParishAffiliation(
   return { ok: true }
 }
 
+/**
+ * Claim-flow rebuild (7/7): submit the rightful-owner attestation for an
+ * unclaimed listing. Grandfathered (already-paid Bubble) members get ownership
+ * immediately; everyone else gets an attested intent and proceeds to the
+ * membership checkout (ownership transfers when payment lands).
+ */
+export async function claimListing(listingId: string): Promise<
+  | {
+      ok: true
+      status: "completed" | "attested"
+      grandfathered: boolean
+      message?: string
+    }
+  | { ok: false; error: string; code?: "claim_pending" | "already_claimed" }
+> {
+  const res = await authedBackendFetch<{
+    status: "completed" | "attested"
+    grandfathered: boolean
+    message?: string
+  }>(`/store/directory/listings/${listingId}/claim`, {
+    method: "POST",
+    body: JSON.stringify({ attested: true }),
+  })
+  if (!res.ok) {
+    const code = res.error.includes("already claimed")
+      ? ("already_claimed" as const)
+      : res.error.includes("already in progress")
+        ? ("claim_pending" as const)
+        : undefined
+    return { ok: false, error: res.error, code }
+  }
+  return {
+    ok: true,
+    status: res.data.status,
+    grandfathered: res.data.grandfathered,
+    message: res.data.message,
+  }
+}
+
 export async function createDirectorySubscriptionCheckout(payload: {
   listing_id: string
   tier: string
