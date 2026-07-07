@@ -20,7 +20,7 @@ const TIER_DETAILS: Record<
     annual: "$99/year",
     features: [
       "Edit your listing",
-      "Verified badge",
+      "Member badge",
       "Higher search ranking than unclaimed listings",
       "Eligible for promotions and guides",
       "Community networking access",
@@ -92,7 +92,7 @@ const TIER_DETAILS: Record<
 
   // Legacy tiers (kept for in-flight subscriptions until customer migration).
   verified: {
-    name: "Verified",
+    name: "Essential",
     price: "$50",
     annual: "$50/year",
     features: [
@@ -100,7 +100,7 @@ const TIER_DETAILS: Record<
       "1 parish affiliation",
       "Search visibility",
       "Marketplace product listings",
-      "Verified business badge",
+      "Member business badge",
     ],
   },
   featured: {
@@ -108,7 +108,7 @@ const TIER_DETAILS: Record<
     price: "$400",
     annual: "$400/year",
     features: [
-      "Everything in Verified",
+      "Everything in Essential",
       "Featured placement in directory",
       "3 parish affiliations",
       "Priority search ranking",

@@ -60,6 +60,9 @@ type DirectoryHit = {
     | "tier2_business"
     | "tier3"
     | "tier4"
+  // Canva billing plan — drives the Essential/Merchant/Local badge split.
+  // Indexed in the Algolia record (see algolia-directory.ts).
+  pricing_tier?: string | null
   // Canva claim flow — true for paid claimants, false for unclaimed
   // prefill stubs. The card uses this (via owner_id) to render the
   // Unclaimed treatment.
@@ -93,6 +96,7 @@ function hitToListing(hit: DirectoryHit): DirectoryListing {
       : undefined,
     category_ids: hit.category_ids ?? undefined,
     subscription_tier: hit.subscription_tier,
+    pricing_tier: (hit.pricing_tier as DirectoryListing["pricing_tier"]) ?? null,
     // Filled with defaults — Algolia is the source of truth for "what's
     // searchable". Unclaimed stubs index too, distinguished by
     // is_claimed; that flag drives the card's Unclaimed badge via the

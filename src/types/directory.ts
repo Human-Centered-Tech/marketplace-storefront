@@ -67,6 +67,18 @@ export type DirectoryListing = {
     | "tier2_business"
     | "tier3"
     | "tier4"
+  // The Canva billing plan, distinct from subscription_tier (visibility tier).
+  // Drives the Essential vs Merchant vs Local badge distinction for
+  // verified-tier listings. Optional: unclaimed/legacy listings may lack it.
+  pricing_tier?:
+    | "local"
+    | "merchant"
+    | "tier2_startup"
+    | "tier2_nonprofit"
+    | "tier2_business"
+    | "tier3"
+    | "tier4"
+    | null
   subscription_status: "active" | "expired" | "cancelled" | "pending"
   stripe_subscription_id: string | null
   subscription_expires_at: string | null

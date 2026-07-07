@@ -3,7 +3,7 @@
 const tiers = [
   {
     id: "verified",
-    name: "Verified",
+    name: "Essential",
     price: "$50/year",
     parishes: 1,
     features: ["Basic listing", "1 parish affiliation", "Search visibility"],

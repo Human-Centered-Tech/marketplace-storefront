@@ -9,7 +9,8 @@ const NEARBY_RADIUS_KM = 80 // ~50 mi, matches default user-facing radius
 function getBadge(listing: DirectoryListing) {
   const badge = getTierBadge(
     listing.subscription_tier,
-    listing.verification_status
+    listing.verification_status,
+    listing.pricing_tier
   )
   if (!badge) return null
   // The home DirectoryCard pill renders gold or navy only; collapse outline.
@@ -44,7 +45,6 @@ function DirectoryCard({
   imageUrl,
   badge,
   badgeColor,
-  isVerified,
   href,
 }: {
   name: string
@@ -53,7 +53,6 @@ function DirectoryCard({
   imageUrl: string | null
   badge: string | null
   badgeColor: string
-  isVerified: boolean
   href: string
 }) {
   return (
@@ -101,19 +100,13 @@ function DirectoryCard({
           </h3>
           <StarRating />
         </div>
+        {/* Category only. The tier pill (top-left of the image) is the single
+            badge now — the old "Verified" chip here was the double badge Brooke
+            flagged and reintroduced the word "Verified". */}
         <div className="flex gap-2">
           <span className="bg-[#755b00]/10 text-[#755b00] text-[10px] px-2 py-1 rounded font-bold uppercase tracking-[0.1em]">
             {category}
           </span>
-          {isVerified && (
-            <span className="bg-[#001435]/10 text-[#001435] text-[10px] px-2 py-1 rounded font-bold uppercase tracking-[0.1em] flex items-center gap-1">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="#001435">
-                <path d="M12 1l3.22 3.22H20v4.78L23 12l-3 3v4.78h-4.78L12 23l-3.22-3.22H4v-4.78L1 12l3-3V4.22h4.78L12 1z" />
-                <path d="M10 14.5l-2.5-2.5-1 1 3.5 3.5 7-7-1-1-6 6z" fill="white" />
-              </svg>
-              Verified
-            </span>
-          )}
         </div>
         <p className="text-[#44474e] flex items-center gap-2 text-sm">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#75777f" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -244,7 +237,6 @@ export async function DirectoryPreview({
                 imageUrl={listing.cover_image_url}
                 badge={badge?.text || null}
                 badgeColor={badge?.color || "navy"}
-                isVerified={listing.verification_status === "approved"}
                 href={`/directory/${listing.id}`}
               />
             )

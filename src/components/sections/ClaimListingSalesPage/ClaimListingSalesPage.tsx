@@ -10,9 +10,9 @@ const BENEFITS: { icon: string; title: string; body: string }[] = [
   },
   {
     icon: "verified",
-    title: "Earn a Verified badge",
+    title: "Earn your member badge",
     body:
-      "Stand out in search results with the trusted Catholic Owned Verified mark on your listing.",
+      "Stand out in search results with the trusted Catholic Owned member mark on your listing.",
   },
   {
     icon: "trending_up",

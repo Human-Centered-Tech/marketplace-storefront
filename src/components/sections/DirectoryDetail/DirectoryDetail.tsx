@@ -8,16 +8,7 @@ import { SocialIcon } from "@/components/sections/DirectoryManagement/SocialIcon
 import { SingleLocationMap } from "@/components/sections/DirectoryListing/SingleLocationMap"
 import { trackButtonClick } from "@/lib/analytics"
 import { normalizeExternalUrl } from "@/lib/helpers/external-url"
-
-// Canonical tier labels — MUST match the card/home/map badge labels in
-// lib/directory-tiers.ts (Verified / Featured / Enterprise). The DB column
-// `subscription_tier` is constrained to these three values; owner-less
-// listings render the "Unclaimed" pill below instead of a tier label.
-const tierLabels: Record<string, string> = {
-  verified: "Verified",
-  featured: "Featured",
-  enterprise: "Enterprise",
-}
+import { getTierBadge } from "@/lib/directory-tiers"
 
 const dayLabels: Record<string, string> = {
   monday: "Monday",
@@ -130,22 +121,16 @@ export const DirectoryDetail = ({ listing }: { listing: DirectoryListing }) => {
                 </span>
               ) : (
                 <span className="bg-[#F2CD69] text-navy-dark px-3 py-1 rounded-full label-sm text-[10px] font-bold tracking-widest">
-                  {tierLabels[listing.subscription_tier] || "Verified"}
+                  {getTierBadge(
+                    listing.subscription_tier,
+                    listing.verification_status,
+                    listing.pricing_tier
+                  )?.label || "Essential"}
                 </span>
               )}
-              {!isUnclaimed && listing.verification_status === "approved" && (
-                <div className="flex items-center text-navy-dark gap-1">
-                  <span
-                    className="material-symbols-outlined text-lg"
-                    style={{ fontVariationSettings: "'FILL' 1" }}
-                  >
-                    verified
-                  </span>
-                  <span className="label-sm text-[10px] font-medium tracking-wider">
-                    Verified Business
-                  </span>
-                </div>
-              )}
+              {/* The old "Verified Business" trust line here was the second
+                  badge on the detail page (Brooke 7/6) — the tier pill above is
+                  the single badge now. */}
               {listing.badges
                 ?.map((lb) => lb.badge)
                 .filter(Boolean)
@@ -241,8 +226,8 @@ export const DirectoryDetail = ({ listing }: { listing: DirectoryListing }) => {
                 This is an unclaimed listing.
               </p>
               <p className="text-secondary text-sm">
-                Are you the owner? Claim this listing to make edits, earn a
-                Verified badge, and move up in search results. Reaching out as a
+                Are you the owner? Claim this listing to make edits, earn your
+                member badge, and move up in search results. Reaching out as a
                 customer? Tell them you found them on Catholic Owned!
               </p>
             </div>

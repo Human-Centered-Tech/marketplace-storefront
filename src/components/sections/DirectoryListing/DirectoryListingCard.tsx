@@ -19,20 +19,25 @@ export const DirectoryListingCard = ({
     (listing.subscription_tier === "enterprise" ||
       listing.subscription_tier === "tier3" ||
       listing.subscription_tier === "tier4")
-  // Status icon shown on the card image: a gold star for featured/promoted
-  // members, a navy check-circle for verified (claimed + approved) businesses.
-  // Featured takes precedence. Matches the directory map pin colours.
+  // Status icon shown on the card image: Enterprise gets a distinct premium
+  // medal, Featured a gold star, and claimed+approved (Essential/Merchant/
+  // Local) a navy check-circle. Enterprise > Featured > verified precedence.
+  // Matches the directory map pin colours.
   const isFeaturedBiz =
-    !isUnclaimed && (isEnterprise || listing.subscription_tier === "featured")
+    !isUnclaimed &&
+    !isEnterprise &&
+    listing.subscription_tier === "featured"
   const isVerifiedBiz =
     !isUnclaimed &&
+    !isEnterprise &&
     !isFeaturedBiz &&
     listing.verification_status === "approved"
   // Public tier badge — single source of truth shared with the home preview.
   const tierBadge = getTierBadge(
     listing.subscription_tier,
-    listing.verification_status
-  ) ?? { label: "Verified", color: "navy" as const }
+    listing.verification_status,
+    listing.pricing_tier
+  ) ?? { label: "Essential", color: "navy" as const }
   // Distance shipped from DirectorySearch's hitToListing — only rendered
   // when showDistance is on (i.e., proximity is from explicit user input,
   // not the silent Denver default).
@@ -57,13 +62,14 @@ export const DirectoryListingCard = ({
         href={`/directory/${listing.id}`}
         className="col-span-1 lg:col-span-2 bg-white rounded-2xl overflow-hidden shadow-sm group hover:shadow-xl transition-all border border-gold/20 relative block"
       >
-        {/* Enterprise badge */}
+        {/* Enterprise badge — a premium medal (distinct from the Featured
+            star, per Brooke 7/6). */}
         <div className="absolute top-4 right-4 z-10 bg-gold text-navy-dark px-3 py-1 rounded-full flex items-center gap-1 shadow-lg">
           <span
             className="material-symbols-outlined text-xs"
             style={{ fontVariationSettings: "'FILL' 1" }}
           >
-            star
+            workspace_premium
           </span>
           <span className="label-sm text-[10px] font-bold tracking-widest">
             Enterprise
@@ -105,12 +111,12 @@ export const DirectoryListingCard = ({
             </div>
           )}
           <div className="p-8 flex-1 flex flex-col justify-center">
+            {/* Category only — the gold "Enterprise" pill on the image already
+                labels the tier; the old "Verified Merchant" chip here was the
+                double badge Brooke flagged (and reintroduced "Verified"). */}
             <div className="flex items-center gap-2 mb-3">
-              <span className="bg-green-50 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded border border-green-100 uppercase">
-                Verified Merchant
-              </span>
               <span className="text-secondary text-xs">
-                &bull; {listing.category?.name || "Business"}
+                {listing.category?.name || "Business"}
               </span>
             </div>
             <h3 className="font-serif text-2xl lg:text-3xl font-bold text-navy-dark mb-2">
@@ -159,18 +165,24 @@ export const DirectoryListingCard = ({
         isUnclaimed ? "border-gray-200 opacity-80" : "border-gray-100/50"
       }`}
     >
-      {/* Status icon — gold star (featured) / navy check-circle (verified),
-          on a white chip so it reads on any cover image. */}
-      {(isFeaturedBiz || isVerifiedBiz) && (
+      {/* Status icon — Enterprise medal (gold) / Featured star (gold) /
+          Essential-Merchant-Local check-circle (navy), on a white chip so it
+          reads on any cover image. Enterprise's medal is distinct from the
+          Featured star (Brooke 7/6). */}
+      {(isEnterprise || isFeaturedBiz || isVerifiedBiz) && (
         <span className="absolute top-3 right-3 z-10 w-7 h-7 rounded-full bg-white/95 shadow-md flex items-center justify-center">
           <span
             className="material-symbols-outlined text-[18px]"
             style={{
               fontVariationSettings: "'FILL' 1",
-              color: isFeaturedBiz ? "#BE9B32" : "#17294A",
+              color: isEnterprise || isFeaturedBiz ? "#BE9B32" : "#17294A",
             }}
           >
-            {isFeaturedBiz ? "star" : "check_circle"}
+            {isEnterprise
+              ? "workspace_premium"
+              : isFeaturedBiz
+                ? "star"
+                : "check_circle"}
           </span>
         </span>
       )}

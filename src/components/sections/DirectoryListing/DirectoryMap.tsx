@@ -144,11 +144,6 @@ export function DirectoryMapView({
                         {listing.business_name}
                       </h3>
                       <div className="flex items-center gap-2">
-                        {listing.verification_status === "approved" && (
-                          <span className="bg-green-50 text-green-700 text-[8px] font-bold px-1.5 py-0.5 rounded border border-green-100 uppercase">
-                            Verified
-                          </span>
-                        )}
                         <span className="text-secondary label-sm text-[8px] tracking-wider">
                           {listing.category?.name || "Business"}
                         </span>

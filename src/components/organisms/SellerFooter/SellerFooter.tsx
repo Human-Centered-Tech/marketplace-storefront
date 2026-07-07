@@ -15,7 +15,7 @@ export const SellerFooter = ({ seller }: { seller: SellerProps }) => {
         {/* {seller.verified && (
           <div className="flex items-center gap-2">
             <DoneIcon size={20} />
-            Verified seller
+            Member seller
           </div>
         )} */}
         <Divider square />

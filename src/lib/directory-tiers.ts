@@ -1,39 +1,55 @@
 // Single source of truth for a directory tier -> public badge (label + color).
 //
-// This replaces two divergent maps that disagreed for the SAME tier: the home
-// "From the Directory" preview labeled the enterprise tier "Pillar Founding
-// Member" while the directory search page labeled it "Enterprise" — which is
-// the "badges are off and weird throughout the directory" Brooke flagged.
-// Change a label here once and it updates everywhere (home preview, search
-// cards, map).
+// Canonical taxonomy (Brooke 7/6, "get rid of Verified everywhere"): the five
+// public badges are Enterprise / Featured / Essential / Merchant / Local, plus
+// "Unclaimed" for owner-less listings (handled at the call site, not here).
 //
-// Canonical taxonomy (product decision, locked): the directory has ONE public
-// tier vocabulary — Verified / Featured / Enterprise — plus "Unclaimed" for
-// owner-less listings (handled at the call site, not here). The DB column
-// `subscription_tier` is constrained to verified|featured|enterprise (see
-// backend Migration20260521120000); the Canva billing tiers (local / merchant /
-// tier2_* / tier3 / tier4) live in a separate `pricing_tier` column and never
-// reach this badge map, so they are intentionally NOT keyed here.
+// The badge is derived from TWO columns:
+//   - subscription_tier: the visibility tier (verified | featured | enterprise)
+//     — drives Algolia ranking + parish limits.
+//   - pricing_tier: the Canva billing plan (local | merchant | tier2_* | tier3
+//     | tier4) — distinguishes a plain "verified" listing (Essential) from a
+//     Merchant (product seller) or Local (local-only service) listing, which
+//     otherwise all share subscription_tier=verified.
+//
+// "Verified" is intentionally NOT a label anymore — a claimed+approved listing
+// with no premium tier reads as "Essential".
 
 export type TierBadgeColor = "gold" | "navy" | "outline"
 export type TierBadge = { label: string; color: TierBadgeColor }
 
-const TIER_BADGES: Record<string, TierBadge> = {
-  verified: { label: "Verified", color: "navy" },
-  featured: { label: "Featured", color: "navy" },
-  enterprise: { label: "Enterprise", color: "gold" },
-}
-
 // A recognized tier wins; a claimed + approved listing with no special tier
-// falls back to "Verified"; anything else (e.g. unclaimed) returns null so the
+// falls back to "Essential"; anything else (e.g. unclaimed) returns null so the
 // caller can omit the badge.
 export function getTierBadge(
   tier?: string | null,
-  verificationStatus?: string | null
+  verificationStatus?: string | null,
+  pricingTier?: string | null
 ): TierBadge | null {
-  if (tier && TIER_BADGES[tier]) return TIER_BADGES[tier]
-  if (verificationStatus === "approved") {
-    return { label: "Verified", color: "navy" }
+  const t = tier ?? ""
+  const p = pricingTier ?? ""
+
+  if (t === "enterprise" || t === "tier3" || t === "tier4") {
+    return { label: "Enterprise", color: "gold" }
+  }
+  if (
+    t === "featured" ||
+    t === "tier2_startup" ||
+    t === "tier2_nonprofit" ||
+    t === "tier2_business"
+  ) {
+    return { label: "Featured", color: "navy" }
+  }
+  // Verified-level plans. subscription_tier is normally "verified" for these,
+  // with pricing_tier carrying the distinction; check both defensively.
+  if (t === "merchant" || p === "merchant") {
+    return { label: "Merchant", color: "navy" }
+  }
+  if (t === "local" || p === "local") {
+    return { label: "Local", color: "navy" }
+  }
+  if (t === "verified" || verificationStatus === "approved") {
+    return { label: "Essential", color: "navy" }
   }
   return null
 }

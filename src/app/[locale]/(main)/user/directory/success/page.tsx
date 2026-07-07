@@ -4,7 +4,9 @@ import { useSearchParams } from "next/navigation"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 
 const TIER_NAMES: Record<string, string> = {
-  verified: "Verified",
+  verified: "Essential",
+  local: "Local",
+  merchant: "Merchant",
   featured: "Featured",
   enterprise: "Enterprise",
 }
@@ -12,7 +14,7 @@ const TIER_NAMES: Record<string, string> = {
 export default function DirectorySuccessPage() {
   const searchParams = useSearchParams()
   const tier = searchParams.get("tier") || "verified"
-  const tierName = TIER_NAMES[tier] || "Verified"
+  const tierName = TIER_NAMES[tier] || "Essential"
 
   return (
     <main className="container pt-40 pb-16">
