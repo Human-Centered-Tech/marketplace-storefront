@@ -34,8 +34,14 @@ export const SellerPageHeader = ({
 
         <div className="max-w-7xl mx-auto px-8 -mt-32 relative z-10 pb-12">
           <div className="bg-white p-10 rounded-xl shadow-[0_32px_32px_-4px_rgba(23,41,74,0.08)] flex flex-col md:flex-row items-center md:items-end gap-10">
-            {/* Seller Avatar */}
-            <div className="w-40 h-40 bg-[#17294a] rounded-xl flex items-center justify-center shadow-lg border-2 border-[#755b00]/20 overflow-hidden shrink-0">
+            {/* Seller Avatar. White behind a real logo so transparent logos
+                don't sit on navy (Matteo 7/7); the letter placeholder keeps the
+                navy fill since its gold glyph needs a dark background. */}
+            <div
+              className={`w-40 h-40 rounded-xl flex items-center justify-center shadow-lg border-2 border-[#755b00]/20 overflow-hidden shrink-0 ${
+                seller.photo ? "bg-white" : "bg-[#17294a]"
+              }`}
+            >
               {seller.photo ? (
                 <SellerAvatar photo={seller.photo} size={160} alt={seller.name} />
               ) : (
