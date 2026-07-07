@@ -42,8 +42,14 @@ export const NetworkingEventDetail = ({
   const [rsvpSuccess, setRsvpSuccess] = useState(false)
   const [rsvpError, setRsvpError] = useState("")
 
-  const rsvpCount =
-    event.rsvps?.filter((r) => r.status === "confirmed").length ?? 0
+  // Prefer the server-derived confirmed count (the public payload no longer
+  // ships raw rsvps). +1 optimistically once the viewer's own RSVP lands so
+  // the "N joined" number reflects it without a refetch.
+  const baseRsvpCount =
+    event.confirmed_rsvp_count ??
+    event.rsvps?.filter((r) => r.status === "confirmed").length ??
+    0
+  const rsvpCount = baseRsvpCount + (rsvpSuccess ? 1 : 0)
   const spotsLeft = event.max_participants - rsvpCount
   const isPast = new Date(event.event_date) < new Date()
   const isFull = spotsLeft <= 0
@@ -149,7 +155,7 @@ export const NetworkingEventDetail = ({
                     ? "Check your email for the calendar invite."
                     : isPast
                       ? "Thank you to all who attended."
-                      : "Reserve your spot for this networking session."}
+                      : "Reserve your spot for this event."}
                 </p>
                 {!isPast && !rsvpSuccess && !isFull && (
                   <button
@@ -236,7 +242,7 @@ export const NetworkingEventDetail = ({
                   </span>
                   <div>
                     <h4 className="font-serif text-lg text-navy-dark mb-2">
-                      Networking Rounds
+                      Connection Rounds
                     </h4>
                     <p className="text-secondary leading-relaxed">
                       Structured 1-on-1 breakout sessions. You&apos;ll be paired
@@ -342,7 +348,18 @@ export const NetworkingEventDetail = ({
               </div>
             )}
             {rsvpError && (
-              <p className="text-sm text-red-600 mt-3">{rsvpError}</p>
+              <p className="text-sm mt-3">
+                {rsvpError === "SIGN_IN_REQUIRED" ? (
+                  <LocalizedClientLink
+                    href="/user"
+                    className="text-gold-dark underline hover:text-navy-dark transition-colors"
+                  >
+                    Sign in to RSVP for this event
+                  </LocalizedClientLink>
+                ) : (
+                  <span className="text-red-600">{rsvpError}</span>
+                )}
+              </p>
             )}
           </div>
 
@@ -374,7 +391,7 @@ export const NetworkingEventDetail = ({
                     {event.duration_minutes} minutes
                   </p>
                   <p className="text-xs text-secondary">
-                    Speed networking format
+                    Live virtual session
                   </p>
                 </div>
               </div>

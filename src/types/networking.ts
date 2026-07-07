@@ -11,6 +11,10 @@ export type NetworkingEvent = {
   status: "draft" | "published" | "in_progress" | "completed" | "cancelled"
   created_by: string | null
   metadata: Record<string, unknown> | null
+  event_type?: "general" | "featured"
+  // Public confirmed-RSVP count derived server-side (the raw rsvps rows are
+  // not returned to the storefront — they carry attendee PII).
+  confirmed_rsvp_count?: number
   rsvps?: NetworkingRSVP[]
   created_at: string
   updated_at: string
