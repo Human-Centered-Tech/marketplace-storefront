@@ -8,7 +8,15 @@ export const SellerReview = ({ review }: { review: SingleProductReview }) => {
     <div className="mb-4 border-b pb-4 flex gap-4">
       <div className="mb-4 w-1/6 items-center">
         <p className="label-md text-secondary mb-2 truncate">
-          {review.customer.first_name} {review.customer.last_name}
+          {/* "First name + last initial." — full last names stay private (Liam 7/8) */}
+          {[
+            review.customer.first_name,
+            review.customer.last_name?.trim()
+              ? `${review.customer.last_name.trim().charAt(0).toUpperCase()}.`
+              : null,
+          ]
+            .filter(Boolean)
+            .join(" ")}
         </p>
         <StarRating starSize={12} rate={Number(review.rating.toFixed(1))} />
         <p className="text-sm text-secondary mt-2">

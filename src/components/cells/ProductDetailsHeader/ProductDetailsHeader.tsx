@@ -483,25 +483,6 @@ export const ProductDetailsHeader = ({
           title="Carefully Packaged"
           description="Shipped with care to ensure your order arrives in perfect condition."
         />
-        <ProductHighlight
-          icon={
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="text-[#755b00]"
-            >
-              <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-            </svg>
-          }
-          title="Support the Faithful"
-          description="Every purchase directly supports a Catholic-owned small business."
-        />
       </div>
 
       {/* Seller message */}
