@@ -11,6 +11,7 @@ import { ProductTags } from "./ProductTags/ProductTags"
 import { ProdutMeasurementRow } from "./ProdutMeasurementRow/ProdutMeasurementRow"
 import { ProductCarouselIndicator } from "./ProductCarouselIndicator/ProductCarouselIndicator"
 import { Modal } from "./Modal/Modal"
+import { ImageLightbox } from "./ImageLightbox/ImageLightbox"
 import { ReportListingForm } from "./ReportListingForm/ReportListingForm"
 import { SellerInfo } from "./SellerInfo/SellerInfo"
 import { TabsList } from "./TabsList/TabsList"
@@ -48,6 +49,7 @@ export {
   ProdutMeasurementRow,
   ProductCarouselIndicator,
   Modal,
+  ImageLightbox,
   ReportListingForm,
   SellerInfo,
   TabsList,

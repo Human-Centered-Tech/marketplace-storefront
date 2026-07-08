@@ -1,6 +1,11 @@
 "use client"
 
+import { useState } from "react"
 import { DirectoryListing } from "@/types/directory"
+import {
+  ImageLightbox,
+  LightboxImage,
+} from "@/components/molecules/ImageLightbox/ImageLightbox"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 import { OWNER_INTERVIEW_QUESTIONS } from "@/lib/owner-interview"
 import { socialLinksToArray } from "@/lib/social"
@@ -39,6 +44,15 @@ const ctaLabels: Record<string, string> = {
 }
 
 export const DirectoryDetail = ({ listing }: { listing: DirectoryListing }) => {
+  // Fullscreen viewer state — set to a list of images + start index when the
+  // user clicks any photo (gallery thumbnail, owner photo, devotional image);
+  // null = closed. Gallery clicks pass the whole gallery so arrows/keys page
+  // through it; owner/devotional open as a single image.
+  const [lightbox, setLightbox] = useState<{
+    images: LightboxImage[]
+    index: number
+  } | null>(null)
+
   const locationStr = listing.address
     ? [listing.address.city, listing.address.state, listing.address.zip]
         .filter(Boolean)
@@ -273,11 +287,28 @@ export const DirectoryDetail = ({ listing }: { listing: DirectoryListing }) => {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
                     {listing.owner_interview.photo_url && (
                       <div className="md:col-span-1">
-                        <img
-                          src={listing.owner_interview.photo_url}
-                          alt="Owner"
-                          className="w-full aspect-square object-cover rounded-xl"
-                        />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setLightbox({
+                              images: [
+                                {
+                                  url: listing.owner_interview!.photo_url!,
+                                  alt: "Owner",
+                                },
+                              ],
+                              index: 0,
+                            })
+                          }
+                          aria-label="View owner photo fullscreen"
+                          className="block w-full rounded-xl overflow-hidden cursor-zoom-in group"
+                        >
+                          <img
+                            src={listing.owner_interview.photo_url}
+                            alt="Owner"
+                            className="w-full aspect-square object-cover rounded-xl group-hover:scale-105 transition-transform duration-500"
+                          />
+                        </button>
                       </div>
                     )}
                     <div
@@ -321,11 +352,28 @@ export const DirectoryDetail = ({ listing }: { listing: DirectoryListing }) => {
                   <div className="h-px w-full bg-gold/30 mb-8" />
                   <div className="bg-gray-50 p-6 rounded-xl grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
                     {listing.devotional.image_url && (
-                      <img
-                        src={listing.devotional.image_url}
-                        alt="Devotional"
-                        className="w-full aspect-square object-cover rounded-xl md:col-span-1"
-                      />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setLightbox({
+                            images: [
+                              {
+                                url: listing.devotional!.image_url!,
+                                alt: "Devotional",
+                              },
+                            ],
+                            index: 0,
+                          })
+                        }
+                        aria-label="View devotional image fullscreen"
+                        className="block w-full rounded-xl overflow-hidden cursor-zoom-in group md:col-span-1"
+                      >
+                        <img
+                          src={listing.devotional.image_url}
+                          alt="Devotional"
+                          className="w-full aspect-square object-cover rounded-xl group-hover:scale-105 transition-transform duration-500"
+                        />
+                      </button>
                     )}
                     <div
                       className={
@@ -387,16 +435,29 @@ export const DirectoryDetail = ({ listing }: { listing: DirectoryListing }) => {
                 <div className="h-px w-full bg-gold/30 mb-8" />
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {listing.gallery_urls.map((url, i) => (
-                    <div
+                    <button
                       key={i}
-                      className="aspect-square rounded-xl overflow-hidden group"
+                      type="button"
+                      onClick={() =>
+                        setLightbox({
+                          images: listing.gallery_urls!.map((u, j) => ({
+                            url: u,
+                            alt: `${listing.business_name} photo ${j + 1}`,
+                          })),
+                          index: i,
+                        })
+                      }
+                      aria-label={`View ${listing.business_name} photo ${
+                        i + 1
+                      } fullscreen`}
+                      className="aspect-square rounded-xl overflow-hidden group cursor-zoom-in"
                     >
                       <img
                         src={url}
                         alt={`${listing.business_name} photo ${i + 1}`}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                       />
-                    </div>
+                    </button>
                   ))}
                 </div>
               </div>
@@ -605,6 +666,15 @@ export const DirectoryDetail = ({ listing }: { listing: DirectoryListing }) => {
           </div>
         </div>
       </section>
+
+      {/* Fullscreen image viewer — mounted only while open */}
+      {lightbox && (
+        <ImageLightbox
+          images={lightbox.images}
+          initialIndex={lightbox.index}
+          onClose={() => setLightbox(null)}
+        />
+      )}
     </div>
   )
 }
