@@ -71,6 +71,13 @@ export const AlgoliaProductsListing = ({
     // narrowed to just their products.
     if (!owner_preview) {
       clauses.push("seller.store_status:ACTIVE")
+      // Vendors that never finished Stripe payout onboarding can't take
+      // orders (add-to-cart 400s server-side). The indexer stamps
+      // accepts_orders:false on their products; NOT-false (vs :true) keeps
+      // records the indexer hasn't restamped yet visible until the full
+      // reindex. Owner preview skips this so a vendor mid-onboarding can
+      // still see their own catalog.
+      clauses.push("NOT accepts_orders:false")
     }
     clauses.push(`supported_countries:${locale}`)
   }

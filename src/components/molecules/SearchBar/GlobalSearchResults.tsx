@@ -97,6 +97,9 @@ export function GlobalSearchResults({
                   query: q,
                   hitsPerPage: 6,
                   facetFilters: [["seller.store_status:ACTIVE"]],
+                  // Hide un-payout-onboarded vendors (tri-state; see
+                  // AlgoliaProductsListing).
+                  filters: "NOT accepts_orders:false",
                 },
                 { indexName: "directory_listings", query: q, hitsPerPage: 4 },
               ],

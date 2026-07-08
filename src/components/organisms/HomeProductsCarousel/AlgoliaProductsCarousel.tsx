@@ -21,11 +21,14 @@ export const AlgoliaProductsCarousel = ({
 }) => {
   // Only ACTIVE stores show. INACTIVE = vendor still in draft (no payment
   // / not gone live yet); SUSPENDED = admin-blocked.
+  // NOT accepts_orders:false — hide un-payout-onboarded vendors' products
+  // (tri-state on purpose: unstamped records stay visible until the full
+  // reindex; see AlgoliaProductsListing for the longer story).
   const filters = `${
     seller_handle
       ? `NOT seller:null AND seller.handle:${seller_handle} AND `
       : "NOT seller:null AND "
-  }seller.store_status:ACTIVE AND supported_countries:${locale} AND variants.prices.currency_code:${currency_code}`
+  }seller.store_status:ACTIVE AND NOT accepts_orders:false AND supported_countries:${locale} AND variants.prices.currency_code:${currency_code}`
 
   return (
     <InstantSearchNext searchClient={client} indexName="products">
