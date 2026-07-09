@@ -7,7 +7,22 @@ import { becomeVendor } from "@/lib/data/vendor"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 
-export const BecomeVendorForm = ({ email }: { email: string }) => {
+export const BecomeVendorForm = ({
+  email,
+  claimListingId,
+  recommendedTier,
+  pillarsAffirmed,
+  defaultBusinessName,
+}: {
+  email: string
+  // Funnel context forwarded through /user/register → become-vendor for
+  // logged-in claimants; becomeVendor/becomeMerchant attach the claimed
+  // listing instead of auto-creating a duplicate draft.
+  claimListingId?: string
+  recommendedTier?: string
+  pillarsAffirmed?: boolean
+  defaultBusinessName?: string
+}) => {
   const [error, setError] = useState("")
   const [success, setSuccess] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -20,6 +35,9 @@ export const BecomeVendorForm = ({ email }: { email: string }) => {
 
     const formData = new FormData(e.currentTarget)
     formData.set("email", email)
+    if (claimListingId) formData.set("claim_listing", claimListingId)
+    if (recommendedTier) formData.set("recommended_tier", recommendedTier)
+    if (pillarsAffirmed) formData.set("founding_pillars_affirmed", "true")
 
     const res = await becomeVendor(formData)
 
@@ -60,8 +78,15 @@ export const BecomeVendorForm = ({ email }: { email: string }) => {
           label="Business / Company Name"
           name="name"
           placeholder="Your business name"
+          defaultValue={defaultBusinessName}
           required
         />
+        {claimListingId && (
+          <p className="text-xs text-secondary -mt-3">
+            You&apos;re claiming this business&apos;s directory listing — it
+            will be attached to your merchant account.
+          </p>
+        )}
         <div>
           <label className="label-md font-medium text-primary block mb-1">
             Email

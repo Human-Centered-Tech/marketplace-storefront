@@ -109,6 +109,13 @@ export async function becomeVendor(formData: FormData) {
   // auto-create would either collide on the slug or leave them with a
   // duplicate listing. Presence of this id means "claim flow — skip Step 4".
   const claimListingId = formData.get("claim_listing") as string | null
+  // Funnel context. For a brand-new registration signup() persists these on
+  // customer.metadata; for a logged-in convert (become-vendor page) nothing
+  // else does, so persist them here — go-live's tier preselection reads
+  // metadata.recommended_tier.
+  const recommendedTier = formData.get("recommended_tier") as string | null
+  const pillarsAffirmed =
+    (formData.get("founding_pillars_affirmed") as string | null) === "true"
 
   // Guard against the email coming through as undefined or as the
   // literal string "undefined" (which is what FormData.set() does when
@@ -285,6 +292,29 @@ export async function becomeVendor(formData: FormData) {
               }),
             }
           )
+        }
+
+        // Persist funnel context on customer.metadata for logged-in converts
+        // (new registrations get this from signup()). Medusa merges metadata
+        // keys on update, so this can't clobber unrelated keys. Best-effort.
+        if (recommendedTier || pillarsAffirmed) {
+          await fetch(`${process.env.MEDUSA_BACKEND_URL}/store/customers/me`, {
+            method: "POST",
+            headers: baseHeaders,
+            body: JSON.stringify({
+              metadata: {
+                ...(recommendedTier
+                  ? { recommended_tier: recommendedTier }
+                  : {}),
+                ...(pillarsAffirmed
+                  ? {
+                      founding_pillars_affirmed: true,
+                      founding_pillars_affirmed_at: new Date().toISOString(),
+                    }
+                  : {}),
+              },
+            }),
+          }).catch(() => {})
         }
       }
     } catch {

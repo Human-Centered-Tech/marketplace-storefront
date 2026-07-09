@@ -3,6 +3,7 @@ import { LoginForm, UserNavigation } from "@/components/molecules"
 import { BecomeVendorForm } from "@/components/molecules/BecomeVendorForm/BecomeVendorForm"
 import { RefreshMerchantSessionForm } from "@/components/molecules/RefreshMerchantSessionForm/RefreshMerchantSessionForm"
 import { retrieveVendorStatus } from "@/lib/data/vendor"
+import { getDirectoryListing } from "@/lib/data/directory"
 import { requiresEmailVerification } from "@/lib/util/email-verification"
 import type { Metadata } from "next"
 
@@ -13,7 +14,15 @@ export const metadata: Metadata = {
 export default async function BecomeVendorPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ session_refresh?: string }>
+  searchParams?: Promise<{
+    session_refresh?: string
+    // Funnel context forwarded by /user/register for logged-in customers —
+    // claim_listing especially must survive to becomeMerchant, or the claim
+    // is silently lost (the 7/9 walk-through bug).
+    claim_listing?: string
+    recommended_tier?: string
+    pillars_affirmed?: string
+  }>
 }) {
   const user = await retrieveCustomer()
 
@@ -21,6 +30,16 @@ export default async function BecomeVendorPage({
 
   const params = (await searchParams) || {}
   const sessionRefresh = params.session_refresh === "1"
+
+  // Claim flow: pre-fill the business name from the listing being claimed,
+  // mirroring what the register page does for logged-out claimants.
+  let claimBusinessName: string | undefined
+  if (params.claim_listing) {
+    const listing = await getDirectoryListing(params.claim_listing).catch(
+      () => null
+    )
+    claimBusinessName = listing?.business_name || undefined
+  }
 
   const vendorStatus = await retrieveVendorStatus()
   const isAlreadyVendor = vendorStatus.isVendor
@@ -82,7 +101,13 @@ export default async function BecomeVendorPage({
                 Start selling on Catholic Owned. Fill out the form below to
                 apply for a merchant account.
               </p>
-              <BecomeVendorForm email={user.email} />
+              <BecomeVendorForm
+                email={user.email}
+                claimListingId={params.claim_listing}
+                recommendedTier={params.recommended_tier}
+                pillarsAffirmed={params.pillars_affirmed === "1"}
+                defaultBusinessName={claimBusinessName}
+              />
             </>
           )}
         </div>

@@ -1,6 +1,9 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
-import { getDirectoryListing } from "@/lib/data/directory"
+import {
+  getDirectoryClaimStatus,
+  getDirectoryListing,
+} from "@/lib/data/directory"
 import { DirectoryDetail } from "@/components/sections/DirectoryDetail/DirectoryDetail"
 import { TrackPageView } from "@/components/sections/Analytics/TrackPageView"
 import { buildSocialMetadata } from "@/lib/helpers/seo"
@@ -40,6 +43,12 @@ export default async function DirectoryDetailPage({ params }: Props) {
     notFound()
   }
 
+  // Claim-in-progress treatment: only relevant while unclaimed. Best-effort —
+  // a failed status fetch just leaves the normal Claim CTA.
+  const claimStatus = !listing.owner_id
+    ? await getDirectoryClaimStatus(listing.id)
+    : null
+
   return (
     <main className="bg-[#FAF9F5]">
       <link
@@ -47,7 +56,11 @@ export default async function DirectoryDetailPage({ params }: Props) {
         rel="stylesheet"
       />
       <TrackPageView entity_type="directory_listing" entity_id={listing.id} />
-      <DirectoryDetail listing={listing} />
+      <DirectoryDetail
+        listing={listing}
+        claimPending={!!claimStatus?.claim_pending}
+        claimMine={!!claimStatus?.mine}
+      />
     </main>
   )
 }
