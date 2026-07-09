@@ -253,6 +253,46 @@ export async function claimListing(listingId: string): Promise<
   }
 }
 
+/**
+ * Claim-intent breadcrumb (7/9): fire-and-forget ping recording how far a
+ * claimant got in the merchant funnel, so drop-offs surface in admin Claim
+ * Attempts instead of vanishing (the Suzi failure mode). Anonymous-friendly:
+ * unlike the helpers above it does NOT require a session — auth is forwarded
+ * when present so the intent picks up the customer id.
+ */
+export async function recordClaimProgress(
+  listingId: string,
+  payload: { intent_id?: string | null; step?: string; email?: string }
+): Promise<{ intent_id: string | null } | null> {
+  const BACKEND_URL = process.env.MEDUSA_BACKEND_URL || "http://localhost:9000"
+  try {
+    const authHeaders = await getAuthHeaders()
+    const res = await fetch(
+      `${BACKEND_URL}/store/directory/listings/${listingId}/claim/progress`,
+      {
+        method: "POST",
+        headers: {
+          ...(authHeaders as Record<string, string>),
+          "Content-Type": "application/json",
+          "x-publishable-api-key": process.env
+            .NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY as string,
+        },
+        body: JSON.stringify({
+          intent_id: payload.intent_id || undefined,
+          step: payload.step,
+          email: payload.email,
+        }),
+        cache: "no-store",
+      }
+    )
+    if (!res.ok) return null
+    return (await res.json()) as { intent_id: string | null }
+  } catch {
+    // Breadcrumbs must never break the funnel.
+    return null
+  }
+}
+
 export async function createDirectorySubscriptionCheckout(payload: {
   listing_id: string
   tier: string

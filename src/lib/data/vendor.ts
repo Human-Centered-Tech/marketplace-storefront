@@ -109,6 +109,9 @@ export async function becomeVendor(formData: FormData) {
   // auto-create would either collide on the slug or leave them with a
   // duplicate listing. Presence of this id means "claim flow — skip Step 4".
   const claimListingId = formData.get("claim_listing") as string | null
+  // Breadcrumb intent recorded by the funnel's progress hooks (7/9) —
+  // forwarded to attach, which marks it completed.
+  const claimIntentId = formData.get("claim_intent_id") as string | null
   // Funnel context. For a brand-new registration signup() persists these on
   // customer.metadata; for a logged-in convert (become-vendor page) nothing
   // else does, so persist them here — go-live's tier preselection reads
@@ -277,7 +280,13 @@ export async function becomeVendor(formData: FormData) {
         if (claimListingId) {
           await fetch(
             `${process.env.MEDUSA_BACKEND_URL}/store/directory/listings/${claimListingId}/attach`,
-            { method: "POST", headers: baseHeaders }
+            {
+              method: "POST",
+              headers: baseHeaders,
+              body: JSON.stringify(
+                claimIntentId ? { claim_intent_id: claimIntentId } : {}
+              ),
+            }
           )
         } else {
           await fetch(
@@ -373,6 +382,7 @@ export async function becomeMerchant(formData: FormData) {
   const email = ((formData.get("email") as string) || "").trim().toLowerCase()
   const password = formData.get("password") as string
   const claimListingId = formData.get("claim_listing") as string | null
+  const claimIntentId = formData.get("claim_intent_id") as string | null
 
   const customerHeaders = await getAuthHeaders()
   if (!customerHeaders || !("authorization" in customerHeaders)) {
@@ -489,7 +499,13 @@ export async function becomeMerchant(formData: FormData) {
     if (claimListingId) {
       await fetch(
         `${process.env.MEDUSA_BACKEND_URL}/store/directory/listings/${claimListingId}/attach`,
-        { method: "POST", headers: baseHeaders }
+        {
+          method: "POST",
+          headers: baseHeaders,
+          body: JSON.stringify(
+            claimIntentId ? { claim_intent_id: claimIntentId } : {}
+          ),
+        }
       )
     } else {
       await fetch(`${process.env.MEDUSA_BACKEND_URL}/store/directory/listings`, {

@@ -35,7 +35,13 @@ export const BecomeVendorForm = ({
 
     const formData = new FormData(e.currentTarget)
     formData.set("email", email)
-    if (claimListingId) formData.set("claim_listing", claimListingId)
+    if (claimListingId) {
+      formData.set("claim_listing", claimListingId)
+      // Breadcrumb intent from the funnel's progress hooks (7/9) — attach
+      // marks it completed.
+      const intentId = sessionStorage.getItem(`claim_intent_${claimListingId}`)
+      if (intentId) formData.set("claim_intent_id", intentId)
+    }
     if (recommendedTier) formData.set("recommended_tier", recommendedTier)
     if (pillarsAffirmed) formData.set("founding_pillars_affirmed", "true")
 

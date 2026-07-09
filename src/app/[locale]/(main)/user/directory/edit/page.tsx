@@ -96,6 +96,34 @@ export default function EditDirectoryListingPage() {
     )
   }
 
+  // Pay-to-edit (Brooke, 7/9): a merchant-path claim keeps the listing live
+  // with its pre-claim content; paying the membership is what unlocks
+  // editing. The backend PUT also enforces this (402) — this screen just
+  // says it up front instead of letting them fill the form and lose it.
+  if ((listing as any).metadata?.claim_payment_due) {
+    return (
+      <main className="container py-8">
+        <h1 className="heading-xl uppercase mb-6">Edit Directory Listing</h1>
+        <div className="max-w-2xl border border-[#BE9B32]/40 bg-[#BE9B32]/10 rounded-xl p-8">
+          <h2 className="heading-md text-primary mb-2">
+            Your claim is confirmed — choose a membership to unlock editing
+          </h2>
+          <p className="text-secondary mb-6">
+            {listing.business_name} now belongs to your account, and it stays
+            visible in the directory exactly as it is today. Once you choose
+            your membership, you can update every detail of your listing.
+          </p>
+          <a
+            href="/user/directory/subscription"
+            className="bg-navy text-white px-6 py-3 rounded-sm text-sm uppercase font-medium inline-block"
+          >
+            Choose your membership
+          </a>
+        </div>
+      </main>
+    )
+  }
+
   const addr = listing.address as any
   const interview = listing.owner_interview as any
   const devotional = listing.devotional as any

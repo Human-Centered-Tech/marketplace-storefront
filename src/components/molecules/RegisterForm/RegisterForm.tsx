@@ -13,6 +13,7 @@ import { registerFormSchema, vendorRegisterFormSchema, RegisterFormData } from "
 import { MARKETING_SOURCES } from "./marketing-sources"
 import { signup, login, retrieveCustomer } from "@/lib/data/customer"
 import { becomeVendor, becomeMerchant } from "@/lib/data/vendor"
+import { recordClaimProgress } from "@/lib/data/directory-actions"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
@@ -163,6 +164,10 @@ const Form = ({
         convertFormData.append("password", data.password)
         if (claimListingId) {
           convertFormData.append("claim_listing", claimListingId)
+          const intentId = sessionStorage.getItem(
+            `claim_intent_${claimListingId}`
+          )
+          if (intentId) convertFormData.append("claim_intent_id", intentId)
         }
 
         const convertRes = await becomeMerchant(convertFormData)
@@ -192,6 +197,10 @@ const Form = ({
       // (the claimed listing is attached to them on payment instead).
       if (claimListingId) {
         vendorFormData.append("claim_listing", claimListingId)
+        const intentId = sessionStorage.getItem(
+          `claim_intent_${claimListingId}`
+        )
+        if (intentId) vendorFormData.append("claim_intent_id", intentId)
       }
 
       const vendorRes = await becomeVendor(vendorFormData)
@@ -253,6 +262,26 @@ const Form = ({
               placeholder="john@example.com"
               error={errors.email as FieldError}
               {...register("email")}
+              // Claim-intent breadcrumb (7/9): capture the claimant's email as
+              // soon as it's typed, so a drop-off AFTER this point leaves a
+              // contactable "started" intent in admin (the Suzi failure mode
+              // was a claim lost with no trace at all). Fire-and-forget.
+              onBlur={(e) => {
+                register("email").onBlur(e)
+                if (!claimListingId) return
+                const email = (e.target as HTMLInputElement).value
+                if (!email || !email.includes("@")) return
+                const key = `claim_intent_${claimListingId}`
+                recordClaimProgress(claimListingId, {
+                  intent_id: sessionStorage.getItem(key),
+                  step: "register_email_entered",
+                  email,
+                })
+                  .then((r) => {
+                    if (r?.intent_id) sessionStorage.setItem(key, r.intent_id)
+                  })
+                  .catch(() => {})
+              }}
             />
             {vendorFlow && (
               <div>

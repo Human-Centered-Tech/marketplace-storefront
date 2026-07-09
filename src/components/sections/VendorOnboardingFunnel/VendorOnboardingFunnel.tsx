@@ -1,7 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
+import { recordClaimProgress } from "@/lib/data/directory-actions"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 import {
   EmployeeRange,
@@ -82,6 +83,23 @@ export const VendorOnboardingFunnel = () => {
     ? `&claim_listing=${encodeURIComponent(claimListing)}` +
       (returnTo ? `&return_to=${encodeURIComponent(returnTo)}` : "")
     : ""
+
+  // Claim-intent breadcrumbs (7/9): record each funnel step for a claim so a
+  // drop-off leaves a "started" intent in admin Claim Attempts. The intent id
+  // rides in sessionStorage and is finally passed through register → attach,
+  // which completes it. Fire-and-forget; never blocks the funnel.
+  useEffect(() => {
+    if (!claimListing) return
+    const key = `claim_intent_${claimListing}`
+    recordClaimProgress(claimListing, {
+      intent_id: sessionStorage.getItem(key),
+      step: `funnel_${state.step}`,
+    })
+      .then((r) => {
+        if (r?.intent_id) sessionStorage.setItem(key, r.intent_id)
+      })
+      .catch(() => {})
+  }, [claimListing, state.step])
 
   const reset = () => setState(initialState)
 
