@@ -1,15 +1,35 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
-import {
-  getDirectoryClaimStatus,
-  getDirectoryListing,
-} from "@/lib/data/directory"
+import { getDirectoryListing } from "@/lib/data/directory"
+import { getAuthHeaders } from "@/lib/data/cookies"
+import { sdk } from "@/lib/config"
 import { DirectoryDetail } from "@/components/sections/DirectoryDetail/DirectoryDetail"
 import { TrackPageView } from "@/components/sections/Analytics/TrackPageView"
 import { buildSocialMetadata } from "@/lib/helpers/seo"
 
 type Props = {
   params: Promise<{ id: string; locale: string }>
+}
+
+// Public claim status (claim-flow rebuild 7/7): whether a claim is already in
+// progress on an unclaimed listing. Sent with auth headers so `mine` is
+// populated for the claimant themselves (their own pending claim isn't a
+// block — they get a resume link instead). Lives here, not lib/data/directory:
+// getAuthHeaders is server-only, and directory.ts is transitively pulled into
+// pages/-router client bundles via the sections barrel (build breaker).
+const getDirectoryClaimStatus = async (id: string) => {
+  const authHeaders = await getAuthHeaders()
+  return sdk.client
+    .fetch<{
+      claimable: boolean
+      claim_pending: boolean
+      claimed: boolean
+      mine?: boolean
+    }>(`/store/directory/listings/${id}/claim`, {
+      cache: "no-cache",
+      headers: { ...(authHeaders as Record<string, string>) },
+    })
+    .catch(() => null)
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

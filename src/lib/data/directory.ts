@@ -1,6 +1,5 @@
 import { DirectoryCategory, DirectoryListing, Parish } from "@/types/directory"
 import { sdk } from "../config"
-import { getAuthHeaders } from "./cookies"
 
 export const listFeaturedListings = async () => {
   return sdk.client
@@ -38,25 +37,6 @@ export const listDirectoryListings = async (params?: {
       cache: "no-cache",
     })
     .catch(() => ({ listings: [], count: 0, limit: 20, offset: 0 }))
-}
-
-// Public claim status (claim-flow rebuild 7/7): whether a claim is already
-// in progress on an unclaimed listing. Sent with auth headers so `mine` is
-// populated for the claimant themselves (their own pending claim isn't a
-// block — they get a resume link instead).
-export const getDirectoryClaimStatus = async (id: string) => {
-  const authHeaders = await getAuthHeaders()
-  return sdk.client
-    .fetch<{
-      claimable: boolean
-      claim_pending: boolean
-      claimed: boolean
-      mine?: boolean
-    }>(`/store/directory/listings/${id}/claim`, {
-      cache: "no-cache",
-      headers: { ...(authHeaders as Record<string, string>) },
-    })
-    .catch(() => null)
 }
 
 export const getDirectoryListing = async (id: string) => {
