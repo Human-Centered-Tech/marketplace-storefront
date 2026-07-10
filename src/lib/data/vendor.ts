@@ -529,6 +529,119 @@ export async function becomeMerchant(formData: FormData) {
 }
 
 /**
+ * Password-less logged-in convert (7/10). Replaces the become-vendor form:
+ * a signed-in customer shouldn't have to re-type their password (they're
+ * already authenticated) or their business name (they name the business on
+ * the dashboard's "Create your directory listing" step — and go-live already
+ * 400s with no_directory_listing until that exists, so the name is still
+ * required before anything publishes).
+ *
+ * Deliberately does NOT auto-create a draft directory listing: with no form
+ * there's no business name to seed it with, and leaving the checklist step
+ * open is what routes the vendor to enter one.
+ *
+ * Steps: POST /store/account/become-merchant (idempotent, mints the seller
+ * off the caller's auth identity and returns a ready vendor token) → store
+ * the token (fallback: password-less mintVendorSession) → attach the claimed
+ * listing if any → persist funnel metadata.
+ */
+export async function convertToMerchant(input: {
+  claimListingId?: string
+  claimIntentId?: string
+  recommendedTier?: string
+  pillarsAffirmed?: boolean
+}) {
+  const customerHeaders = await getAuthHeaders()
+  if (!customerHeaders || !("authorization" in customerHeaders)) {
+    return { success: false, error: "Please sign in first." }
+  }
+
+  const baseHeaders = {
+    "Content-Type": "application/json",
+    "x-publishable-api-key":
+      process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "",
+    ...customerHeaders,
+  }
+
+  try {
+    const res = await fetch(
+      `${process.env.MEDUSA_BACKEND_URL}/store/account/become-merchant`,
+      {
+        method: "POST",
+        headers: baseHeaders,
+        // No name: the backend derives the seller display name from the
+        // customer (they rename it when creating the listing / in settings).
+        body: JSON.stringify({}),
+      }
+    )
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      return {
+        success: false,
+        error:
+          err?.message ||
+          "Could not set up your business account. Please try again.",
+      }
+    }
+    const data = await res.json()
+    const directToken = typeof data?.token === "string" ? data.token : null
+
+    if (directToken && !(await isVendorTokenStale(directToken))) {
+      await setVendorToken(directToken)
+      await setVendorFlag(true)
+    } else {
+      // Password-less fallback: GET /store/account/seller-token off the
+      // customer session (stores the token itself on success).
+      await mintVendorSession()
+    }
+
+    // Claim flow: adopt the listing they came to claim. Non-fatal — the
+    // listing page's "Finish Your Claim" resume link covers a rare failure.
+    if (input.claimListingId) {
+      await fetch(
+        `${process.env.MEDUSA_BACKEND_URL}/store/directory/listings/${input.claimListingId}/attach`,
+        {
+          method: "POST",
+          headers: baseHeaders,
+          body: JSON.stringify(
+            input.claimIntentId ? { claim_intent_id: input.claimIntentId } : {}
+          ),
+        }
+      ).catch(() => {})
+    }
+
+    // Persist funnel context on customer.metadata for logged-in converts
+    // (new registrations get this from signup()). Best-effort.
+    if (input.recommendedTier || input.pillarsAffirmed) {
+      await fetch(`${process.env.MEDUSA_BACKEND_URL}/store/customers/me`, {
+        method: "POST",
+        headers: baseHeaders,
+        body: JSON.stringify({
+          metadata: {
+            ...(input.recommendedTier
+              ? { recommended_tier: input.recommendedTier }
+              : {}),
+            ...(input.pillarsAffirmed
+              ? {
+                  founding_pillars_affirmed: true,
+                  founding_pillars_affirmed_at: new Date().toISOString(),
+                }
+              : {}),
+          },
+        }),
+      }).catch(() => {})
+    }
+
+    const customerCacheTag = await getCacheTag("customers")
+    revalidateTag(customerCacheTag)
+
+    return { success: true, error: null }
+  } catch (error: any) {
+    return { success: false, error: error.toString() }
+  }
+}
+
+/**
  * Mint a fresh seller token for an existing merchant account whose
  * stored token has a stale empty actor_id. Used by the /api/vendor-
  * handoff route when it detects a bad token in the cookie — instead of
