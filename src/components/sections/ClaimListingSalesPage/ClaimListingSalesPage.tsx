@@ -100,13 +100,15 @@ export const ClaimListingSalesPage = ({
               Catholic Owned Local
             </p>
             <div className="flex items-baseline justify-center gap-2 mb-2">
+              <span className="text-secondary text-lg">starting at</span>
               <span className="font-serif text-6xl font-bold text-navy-dark">
                 $99
               </span>
               <span className="text-secondary text-lg">/ year</span>
             </div>
             <p className="text-secondary text-sm">
-              Membership renews annually. Cancel any time.
+              A few quick questions will recommend the right plan for your
+              business. Membership renews annually. Cancel any time.
             </p>
           </div>
 
@@ -138,7 +140,7 @@ export const ClaimListingSalesPage = ({
             href={claimStartHref}
             className="block w-full text-center bg-navy-dark text-white py-4 rounded-xl label-sm text-[12px] font-bold tracking-[0.15em] hover:bg-navy transition-colors"
           >
-            Claim Your Listing &mdash; $99/yr
+            Claim Your Listing
           </LocalizedClientLink>
           <p className="text-center text-xs text-secondary mt-4">
             You&apos;ll create an account, fill in your listing, and then enter
