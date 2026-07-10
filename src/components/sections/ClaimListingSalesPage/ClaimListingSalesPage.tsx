@@ -158,31 +158,6 @@ export const ClaimListingSalesPage = ({
             listing at no charge.
           </p>
         </div>
-
-        {/* Local Boost upsell teaser */}
-        <div className="bg-navy-dark/5 border border-navy-dark/10 rounded-2xl p-8">
-          <div className="flex items-start gap-4">
-            <span
-              className="material-symbols-outlined text-navy-dark text-3xl shrink-0"
-              style={{ fontVariationSettings: "'FILL' 1" }}
-            >
-              rocket_launch
-            </span>
-            <div>
-              <p className="text-[#F2CD69] text-[11px] font-semibold uppercase tracking-[0.2em] mb-2">
-                Optional Add-on
-              </p>
-              <h3 className="font-serif text-xl font-bold text-navy-dark mb-2">
-                Local Boost &mdash; $150 / month
-              </h3>
-              <p className="text-secondary leading-relaxed">
-                Get 30,000 local Catholic impressions per month on your listing.
-                We handle the ad setup; you focus on running your business.
-                You&apos;ll see this offer right after you finish claiming.
-              </p>
-            </div>
-          </div>
-        </div>
       </section>
     </main>
   )

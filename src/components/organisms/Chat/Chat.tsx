@@ -20,14 +20,22 @@ export const Chat = ({
   buttonClassNames,
   icon,
   product,
+  label = "Message seller",
 }: {
   user: HttpTypes.StoreCustomer | null
-  seller: SellerProps
+  // Only `id` is required so directory listings can pass their slim
+  // `listing.seller` messaging identity; marketplace surfaces keep
+  // passing the full SellerProps.
+  seller: Pick<SellerProps, "id"> & Partial<SellerProps>
   buttonClassNames?: string
   icon?: boolean
   product?: HttpTypes.StoreProduct
   subject?: string
   order_id?: string
+  // Button text. Directory listing pages pass "Message business" (Business
+  // Owners aren't sellers in the taxonomy); marketplace surfaces keep the
+  // seller-scoped default.
+  label?: string
 }) => {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
@@ -86,7 +94,7 @@ export const Chat = ({
         ) : loading ? (
           "Starting…"
         ) : (
-          "Message seller"
+          label
         )}
       </Button>
       {error && (

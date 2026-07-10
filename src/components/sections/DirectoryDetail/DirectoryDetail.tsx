@@ -1,7 +1,9 @@
 "use client"
 
 import { useState } from "react"
+import { HttpTypes } from "@medusajs/types"
 import { DirectoryListing } from "@/types/directory"
+import { Chat } from "@/components/organisms/Chat/Chat"
 import {
   ImageLightbox,
   LightboxImage,
@@ -47,8 +49,13 @@ export const DirectoryDetail = ({
   listing,
   claimPending = false,
   claimMine = false,
+  user = null,
 }: {
   listing: DirectoryListing
+  // Viewer, for the "Message business" CTA (Chat redirects logged-out
+  // viewers to /user). Fetched by the page — this component must stay free
+  // of server-only imports (sections barrel).
+  user?: HttpTypes.StoreCustomer | null
   // A claim by SOMEONE ELSE is in progress (attested <7 days ago): swap the
   // Claim CTA for a "claim pending" notice so two people don't race to the
   // 409. When the pending claim is the viewer's own, show a resume link.
@@ -202,7 +209,21 @@ export const DirectoryDetail = ({
           </div>
 
           {/* Quick action buttons */}
-          <div className="flex gap-3 shrink-0">
+          <div className="flex items-center gap-3 shrink-0">
+            {/* Message business — only when the backend attached the seller
+                messaging identity (claimed listing with an ACTIVE store;
+                Business Owners included, Brooke 7/10). Chat starts/reuses the
+                storefront-context conversation keyed on seller.id — the SAME
+                thread the marketplace seller page opens, so a merchant's
+                directory and sales messages land in one conversation. */}
+            {listing.seller?.id && (
+              <Chat
+                user={user}
+                seller={listing.seller}
+                label="Message business"
+                buttonClassNames="bg-navy-dark text-white px-6 py-3 rounded-xl label-sm text-[10px] font-bold tracking-widest hover:bg-navy transition-colors whitespace-nowrap"
+              />
+            )}
             {listing.contact_phone && (
               <a
                 href={`tel:${listing.contact_phone}`}

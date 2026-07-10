@@ -162,6 +162,13 @@ const Form = ({
         convertFormData.append("name", data.businessName)
         convertFormData.append("email", data.email)
         convertFormData.append("password", data.password)
+        // Funnel context: without the tier, become-merchant can't persist
+        // recommended_tier, and resolveRecommendedTier defaults this convert
+        // to the product/merchant dashboard even for service outcomes.
+        if (recommendedTier)
+          convertFormData.append("recommended_tier", recommendedTier)
+        if (pillarsAffirmed)
+          convertFormData.append("founding_pillars_affirmed", "true")
         if (claimListingId) {
           convertFormData.append("claim_listing", claimListingId)
           const intentId = sessionStorage.getItem(

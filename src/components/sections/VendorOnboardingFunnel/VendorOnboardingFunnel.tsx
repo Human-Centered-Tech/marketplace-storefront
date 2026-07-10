@@ -285,7 +285,6 @@ export const VendorOnboardingFunnel = ({
             tierKey={state.recommendedTier}
             claimSuffix={claimSuffix}
             isLoggedIn={isLoggedIn}
-            isClaim={Boolean(claimListing)}
           />
         )}
 
@@ -867,8 +866,7 @@ const RecommendedTierStep: React.FC<{
   tierKey: import("./types").RecommendedTierKey
   claimSuffix?: string
   isLoggedIn?: boolean
-  isClaim?: boolean
-}> = ({ tierKey, claimSuffix = "", isLoggedIn = false, isClaim = false }) => {
+}> = ({ tierKey, claimSuffix = "", isLoggedIn = false }) => {
   const tier = getTierInfo(tierKey)
   const upsell = tier.upsellTier ? getTierInfo(tier.upsellTier) : undefined
 
@@ -896,14 +894,6 @@ const RecommendedTierStep: React.FC<{
           You won't be charged until you publish your listing and go live —
           take your time setting things up first.
         </p>
-        {isClaim && (
-          <p className="text-[13px] text-[#001435] leading-relaxed mb-2 font-medium">
-            Already a paying member from our previous site? Your existing
-            fixed-rate membership is secured — this recommendation just shows
-            how new members are priced. Continue through setup and we&rsquo;ll
-            connect your membership at the end.
-          </p>
-        )}
         {tier.localBoostUpsell && (
           <p className="text-[13px] text-[#44474e] leading-relaxed mb-2">
             <span className="font-semibold text-[#001435]">Local Boost</span>{" "}

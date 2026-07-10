@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { getDirectoryListing } from "@/lib/data/directory"
+import { retrieveCustomer } from "@/lib/data/customer"
 import { getAuthHeaders } from "@/lib/data/cookies"
 import { sdk } from "@/lib/config"
 import { DirectoryDetail } from "@/components/sections/DirectoryDetail/DirectoryDetail"
@@ -69,6 +70,10 @@ export default async function DirectoryDetailPage({ params }: Props) {
     ? await getDirectoryClaimStatus(listing.id)
     : null
 
+  // Viewer, for the "Message business" CTA. Fetched here (not in the client
+  // component) because retrieveCustomer is server-only.
+  const user = listing.seller?.id ? await retrieveCustomer() : null
+
   return (
     <main className="bg-[#FAF9F5]">
       <link
@@ -80,6 +85,7 @@ export default async function DirectoryDetailPage({ params }: Props) {
         listing={listing}
         claimPending={!!claimStatus?.claim_pending}
         claimMine={!!claimStatus?.mine}
+        user={user}
       />
     </main>
   )

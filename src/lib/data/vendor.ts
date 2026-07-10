@@ -277,6 +277,29 @@ export async function becomeVendor(formData: FormData) {
             process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "",
           ...customerHeaders,
         }
+        // Persist funnel context BEFORE the listing create/attach below: the
+        // listing events drive the CRM contact sync, which reads
+        // customer.metadata.recommended_tier — written after, the first sync
+        // would classify the contact without a tier.
+        if (recommendedTier || pillarsAffirmed) {
+          await fetch(`${process.env.MEDUSA_BACKEND_URL}/store/customers/me`, {
+            method: "POST",
+            headers: baseHeaders,
+            body: JSON.stringify({
+              metadata: {
+                ...(recommendedTier
+                  ? { recommended_tier: recommendedTier }
+                  : {}),
+                ...(pillarsAffirmed
+                  ? {
+                      founding_pillars_affirmed: true,
+                      founding_pillars_affirmed_at: new Date().toISOString(),
+                    }
+                  : {}),
+              },
+            }),
+          }).catch(() => {})
+        }
         if (claimListingId) {
           await fetch(
             `${process.env.MEDUSA_BACKEND_URL}/store/directory/listings/${claimListingId}/attach`,
@@ -303,28 +326,6 @@ export async function becomeVendor(formData: FormData) {
           )
         }
 
-        // Persist funnel context on customer.metadata for logged-in converts
-        // (new registrations get this from signup()). Medusa merges metadata
-        // keys on update, so this can't clobber unrelated keys. Best-effort.
-        if (recommendedTier || pillarsAffirmed) {
-          await fetch(`${process.env.MEDUSA_BACKEND_URL}/store/customers/me`, {
-            method: "POST",
-            headers: baseHeaders,
-            body: JSON.stringify({
-              metadata: {
-                ...(recommendedTier
-                  ? { recommended_tier: recommendedTier }
-                  : {}),
-                ...(pillarsAffirmed
-                  ? {
-                      founding_pillars_affirmed: true,
-                      founding_pillars_affirmed_at: new Date().toISOString(),
-                    }
-                  : {}),
-              },
-            }),
-          }).catch(() => {})
-        }
       }
     } catch {
       // Non-fatal — vendor can create/claim the listing from the dashboard.
@@ -383,6 +384,9 @@ export async function becomeMerchant(formData: FormData) {
   const password = formData.get("password") as string
   const claimListingId = formData.get("claim_listing") as string | null
   const claimIntentId = formData.get("claim_intent_id") as string | null
+  const recommendedTier = formData.get("recommended_tier") as string | null
+  const pillarsAffirmed =
+    (formData.get("founding_pillars_affirmed") as string | null) === "true"
 
   const customerHeaders = await getAuthHeaders()
   if (!customerHeaders || !("authorization" in customerHeaders)) {
@@ -406,7 +410,15 @@ export async function becomeMerchant(formData: FormData) {
       {
         method: "POST",
         headers: baseHeaders,
-        body: JSON.stringify({ name, business_name: name }),
+        body: JSON.stringify({
+          name,
+          business_name: name,
+          // Funnel context — become-merchant persists these on
+          // customer.metadata so resolveRecommendedTier picks the right
+          // dashboard mode before any payment exists.
+          ...(recommendedTier ? { recommended_tier: recommendedTier } : {}),
+          ...(pillarsAffirmed ? { founding_pillars_affirmed: true } : {}),
+        }),
       }
     )
     if (!res.ok) {
@@ -571,7 +583,17 @@ export async function convertToMerchant(input: {
         headers: baseHeaders,
         // No name: the backend derives the seller display name from the
         // customer (they rename it when creating the listing / in settings).
-        body: JSON.stringify({}),
+        // Funnel context rides the same call — become-merchant persists it on
+        // customer.metadata, which resolveRecommendedTier needs to pick the
+        // service-vs-product dashboard mode BEFORE any payment exists.
+        body: JSON.stringify({
+          ...(input.recommendedTier
+            ? { recommended_tier: input.recommendedTier }
+            : {}),
+          ...(input.pillarsAffirmed
+            ? { founding_pillars_affirmed: true }
+            : {}),
+        }),
       }
     )
     if (!res.ok) {

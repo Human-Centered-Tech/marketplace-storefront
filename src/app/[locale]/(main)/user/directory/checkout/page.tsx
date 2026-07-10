@@ -44,7 +44,6 @@ const TIER_DETAILS: Record<
     annual: "$349/year",
     features: [
       "Tier 2 benefits at early-stage pricing",
-      "Local Boost upsell available ($150/mo)",
       "Catholic Owned-funded ad placement",
     ],
   },
@@ -54,7 +53,6 @@ const TIER_DETAILS: Record<
     annual: "$349/year",
     features: [
       "Tier 2 benefits at non-profit pricing",
-      "Local Boost upsell available ($150/mo)",
       "Catholic Owned-funded ad placement",
     ],
   },
@@ -65,7 +63,6 @@ const TIER_DETAILS: Record<
     features: [
       "Featured directory placement",
       "Catholic Owned-funded ad placement on your listing",
-      "Local Boost upsell available ($150/mo)",
     ],
   },
   tier3: {
@@ -75,7 +72,6 @@ const TIER_DETAILS: Record<
     features: [
       "Premium directory placement",
       "Catholic Owned-funded ad placement on your listing",
-      "Local Boost upsell available ($150/mo)",
       "Sales-team consultation included",
     ],
   },
@@ -105,8 +101,8 @@ const TIER_DETAILS: Record<
   },
   featured: {
     name: "Featured",
-    price: "$400",
-    annual: "$400/year",
+    price: "$699",
+    annual: "$699/year",
     features: [
       "Everything in Essential",
       "Featured placement in directory",
@@ -117,8 +113,8 @@ const TIER_DETAILS: Record<
   },
   enterprise: {
     name: "Enterprise",
-    price: "$2,000",
-    annual: "$2,000/year",
+    price: "$2,999",
+    annual: "$2,999/year",
     features: [
       "Everything in Featured",
       "Top placement across the platform",
@@ -248,24 +244,16 @@ export default function DirectoryCheckoutPage() {
 
         {/* Order Summary Card */}
         <div className="bg-[#FAF9F5] rounded-xl p-8 mb-8">
-          <div className="flex items-start justify-between mb-6">
-            <div>
-              <p className="text-[10px] font-bold text-gold-dark tracking-[0.2em] uppercase mb-1">
-                {tierInfo.name} Plan
-              </p>
-              <p className="font-serif text-4xl font-bold text-navy-dark">
-                {tierInfo.price}
-                <span className="text-base font-normal text-secondary">
-                  /year
-                </span>
-              </p>
-            </div>
-            <LocalizedClientLink
-              href={`/user/directory/subscription`}
-              className="text-xs text-action underline"
-            >
-              Change plan
-            </LocalizedClientLink>
+          <div className="mb-6">
+            <p className="text-[10px] font-bold text-gold-dark tracking-[0.2em] uppercase mb-1">
+              {tierInfo.name} Plan
+            </p>
+            <p className="font-serif text-4xl font-bold text-navy-dark">
+              {tierInfo.price}
+              <span className="text-base font-normal text-secondary">
+                /year
+              </span>
+            </p>
           </div>
 
           <div className="border-t border-gray-200 pt-6">

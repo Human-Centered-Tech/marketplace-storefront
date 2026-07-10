@@ -42,6 +42,9 @@ const TIER_INFO: Record<RecommendedTierKey, TierInfo> = {
     price: "$99",
     period: "/ yr",
     bookCallOption: false,
+    // Local Boost is a local-tier-only add-on (Brooke 7/10) — every other
+    // tier must keep this false so the upsell never renders off the local
+    // flow.
     localBoostUpsell: true,
   },
   merchant: {
@@ -50,7 +53,7 @@ const TIER_INFO: Record<RecommendedTierKey, TierInfo> = {
     price: "$99",
     period: "/ yr + 11% per sale",
     bookCallOption: false,
-    localBoostUpsell: true,
+    localBoostUpsell: false,
   },
   tier2_startup: {
     key: "tier2_startup",
@@ -58,7 +61,7 @@ const TIER_INFO: Record<RecommendedTierKey, TierInfo> = {
     price: "$349",
     period: "onboarding",
     bookCallOption: true,
-    localBoostUpsell: true,
+    localBoostUpsell: false,
   },
   tier2_nonprofit: {
     key: "tier2_nonprofit",
@@ -66,7 +69,7 @@ const TIER_INFO: Record<RecommendedTierKey, TierInfo> = {
     price: "$349",
     period: "onboarding",
     bookCallOption: true,
-    localBoostUpsell: true,
+    localBoostUpsell: false,
   },
   tier2_business: {
     key: "tier2_business",
@@ -77,7 +80,7 @@ const TIER_INFO: Record<RecommendedTierKey, TierInfo> = {
     // Show "Tier 3 ($2,999) also available" on the $699 card — one price up
     // front, next tier noted, never the full list (Brooke 6/26).
     upsellTier: "tier3",
-    localBoostUpsell: true,
+    localBoostUpsell: false,
   },
   tier3: {
     key: "tier3",
@@ -86,7 +89,7 @@ const TIER_INFO: Record<RecommendedTierKey, TierInfo> = {
     period: "onboarding",
     bookCallOption: true,
     upsellTier: "tier4",
-    localBoostUpsell: true,
+    localBoostUpsell: false,
   },
   tier4: {
     key: "tier4",
@@ -94,7 +97,7 @@ const TIER_INFO: Record<RecommendedTierKey, TierInfo> = {
     price: "$10,000",
     period: "onboarding",
     bookCallOption: true,
-    localBoostUpsell: true,
+    localBoostUpsell: false,
   },
 }
 
