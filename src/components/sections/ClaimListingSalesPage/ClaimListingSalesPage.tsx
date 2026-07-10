@@ -142,6 +142,17 @@ export const ClaimListingSalesPage = ({
             You&apos;ll create an account, fill in your listing, and then enter
             payment details right before publishing.
           </p>
+          {/* Grandfathered members (bubble_paid) claim free — but that only
+              reveals itself AFTER attestation, so without this line an
+              already-paid member stops at the $99 price and emails support
+              (Brooke, 7/10). Kept generic on purpose: naming WHICH listings
+              are free would advertise them for fraudulent free claims. */}
+          <p className="text-center text-xs text-secondary mt-2">
+            <strong className="text-navy-dark">Already a paying member from
+            our previous site?</strong>{" "}
+            Your membership carries over &mdash; sign in and claim your
+            listing at no charge.
+          </p>
         </div>
 
         {/* Local Boost upsell teaser */}
