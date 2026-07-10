@@ -45,6 +45,10 @@ export const GalleryUploadField = ({
     const remaining = max - value.length
     const toUpload = Array.from(files).slice(0, remaining)
     const added: string[] = []
+    // Tracks whether the loop already surfaced a specific per-file error
+    // (oversize / bad type / upload failure) so the generic "extra files
+    // were skipped" note below doesn't overwrite it.
+    let hadFileError = false
     try {
       for (const file of toUpload) {
         // Validate client-side BEFORE uploading, so an oversized/unsupported
@@ -54,12 +58,14 @@ export const GalleryUploadField = ({
           setError(
             `"${file.name}" is ${mb} MB, over the ${MAX_UPLOAD_MB} MB limit. Please upload a smaller image (JPG, PNG, or WebP).`
           )
+          hadFileError = true
           break
         }
         if (file.type && !ACCEPTED_TYPES.includes(file.type)) {
           setError(
             "That file type isn't supported. Please upload a JPG, PNG, or WebP image."
           )
+          hadFileError = true
           break
         }
         const res = await uploadDirectoryImage(file)
@@ -67,11 +73,12 @@ export const GalleryUploadField = ({
           added.push(res.url)
         } else {
           setError(res.error)
+          hadFileError = true
           break
         }
       }
       if (added.length) onChange([...value, ...added])
-      if (files.length > remaining) {
+      if (!hadFileError && files.length > remaining) {
         setError(`Only ${max} photos allowed — extra files were skipped.`)
       }
     } catch (e: any) {

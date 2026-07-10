@@ -7,6 +7,7 @@ import {
   getMyDirectoryListing,
   updateDirectoryListing,
 } from "@/lib/data/directory-actions"
+import { retrieveVendorStatus } from "@/lib/data/vendor"
 import { socialLinksToArray } from "@/lib/social"
 import { US_STATE_CODES } from "@/lib/us-states"
 
@@ -80,13 +81,21 @@ export default function EditDirectoryListingPage() {
       throw new Error(res.error || "Failed to update listing")
     }
 
-    // Vendors arrive here via the setup-checklist storefront handoff from
-    // the vendor dashboard. After saving, send them straight back to the
-    // dashboard so the catholic_owned checklist rows reflect the edit.
-    // Cross-origin nav, so use window.location instead of next/navigation.
-    const vendorUrl =
-      process.env.NEXT_PUBLIC_VENDOR_URL || "http://localhost:5173"
-    window.location.assign(`${vendorUrl}/dashboard`)
+    // Where next depends on WHO saved (7/9 fix — this used to bounce
+    // everyone to the vendor dashboard): merchants return to the dashboard
+    // checklist; a plain Business Owner goes back to their directory hub.
+    const { isVendor } = await retrieveVendorStatus().catch(() => ({
+      isVendor: false,
+    }))
+    if (isVendor) {
+      const vendorUrl =
+        process.env.NEXT_PUBLIC_VENDOR_URL || "http://localhost:5173"
+      window.location.assign(`${vendorUrl}/dashboard`)
+    } else {
+      const seg = window.location.pathname.split("/").filter(Boolean)
+      const locale = seg[0] || "us"
+      window.location.assign(`/${locale}/user/directory`)
+    }
   }
 
   if (loading || signingIn) {

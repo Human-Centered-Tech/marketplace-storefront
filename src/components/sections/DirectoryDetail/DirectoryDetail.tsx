@@ -484,7 +484,13 @@ export const DirectoryDetail = ({
 
             {/* Social Links — free-form URLs, brand logo detected per URL. */}
             {(() => {
+              // Same protocol fix as websiteHref above: merchants paste
+              // "www.tiktok.com/@handle", which rendered raw resolves relative
+              // to the current page → /us/directory/www.tiktok.com/… 404s
+              // (Sentry). Normalize each link; junk values drop out.
               const socials = socialLinksToArray(listing.social_links)
+                .map((url) => normalizeExternalUrl(url))
+                .filter((url): url is string => Boolean(url))
               if (socials.length === 0) return null
               return (
                 <div>

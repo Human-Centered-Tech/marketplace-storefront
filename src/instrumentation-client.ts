@@ -31,6 +31,11 @@ if (dsn) {
       // Crypto-wallet browser extensions probing pages we don't integrate with
       /Failed to connect to MetaMask/i,
     ],
+    // Third-party scripts injected into our origin whose crashes we can't fix.
+    // Google Translate's proxy (…translate.goog) injects translate_http/…
+    // element scripts that throw null.setAttribute on its own popup widget
+    // (Sentry JAVASCRIPT-NEXTJS-19, /sell/onboarding via a Polish reader).
+    denyUrls: [/\/translate_http\//, /translate\.googleapis\.com/],
   })
 }
 

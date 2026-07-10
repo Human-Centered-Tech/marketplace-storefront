@@ -27,6 +27,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "not-authenticated" }, { status: 401 })
   }
 
+  // req.formData() buffers the entire body before we can check file.size, so
+  // reject obviously-oversized requests up front from the content-length
+  // header (1MB of slack over MAX_BYTES covers multipart framing overhead).
+  const contentLength = Number(req.headers.get("content-length"))
+  if (Number.isFinite(contentLength) && contentLength > MAX_BYTES + 1024 * 1024) {
+    return NextResponse.json(
+      { error: `Image too large (max ${MAX_BYTES / 1024 / 1024}MB)` },
+      { status: 413 }
+    )
+  }
+
   let form: FormData
   try {
     form = await req.formData()

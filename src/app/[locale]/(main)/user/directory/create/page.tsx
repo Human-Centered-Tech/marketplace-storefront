@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { DirectoryListingForm } from "@/components/sections/DirectoryManagement/DirectoryListingForm"
 import { DirectoryCategory } from "@/types/directory"
 import { createDirectoryListing } from "@/lib/data/directory-actions"
+import { retrieveVendorStatus } from "@/lib/data/vendor"
 
 export default function CreateDirectoryListingPage() {
   const [categories, setCategories] = useState<DirectoryCategory[]>([])
@@ -28,13 +29,25 @@ export default function CreateDirectoryListingPage() {
       throw new Error(res.error || "Failed to create listing")
     }
 
-    // Vendors arrive here via the setup-checklist storefront handoff from
-    // the vendor dashboard. After creating, send them back to the dashboard
-    // so the catholic_owned checklist rows reflect the new listing.
-    // Cross-origin nav, so use window.location instead of next/navigation.
-    const vendorUrl =
-      process.env.NEXT_PUBLIC_VENDOR_URL || "http://localhost:5173"
-    window.location.assign(`${vendorUrl}/dashboard`)
+    // Where next depends on WHO created (7/9 fix — this used to bounce
+    // everyone to the vendor dashboard):
+    //  - Merchants arrive via the setup-checklist handoff; send them back to
+    //    the dashboard so the checklist reflects the new listing.
+    //  - A plain Business Owner has no vendor login — send them to the
+    //    membership picker, the natural next step for a pending listing.
+    // Cross-origin nav for the vendor app, so window.location either way.
+    const { isVendor } = await retrieveVendorStatus().catch(() => ({
+      isVendor: false,
+    }))
+    if (isVendor) {
+      const vendorUrl =
+        process.env.NEXT_PUBLIC_VENDOR_URL || "http://localhost:5173"
+      window.location.assign(`${vendorUrl}/dashboard`)
+    } else {
+      const seg = window.location.pathname.split("/").filter(Boolean)
+      const locale = seg[0] || "us"
+      window.location.assign(`/${locale}/user/directory/subscription`)
+    }
   }
 
   return (
