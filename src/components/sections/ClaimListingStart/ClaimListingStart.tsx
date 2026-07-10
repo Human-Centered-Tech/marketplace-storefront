@@ -239,13 +239,16 @@ export const ClaimListingStart = ({
             </div>
           ))}
         </div>
+        {/* "instead" was wrong (Liam 7/10): a merchant gets the directory
+            listing AND a storefront — the claim carries through the funnel. */}
         <p className="text-xs text-secondary text-center mt-6">
           Planning to sell products on the marketplace?{" "}
           <LocalizedClientLink
             href={`/sell/onboarding?claim_listing=${listing.id}&return_to=${encodeURIComponent(`/directory/${listing.id}/claim/checkout`)}`}
             className="underline decoration-[#BE9B32] underline-offset-4"
           >
-            Set up a merchant storefront instead.
+            Add a merchant storefront — you&rsquo;ll claim this listing and
+            get a shop together.
           </LocalizedClientLink>
         </p>
       </div>
