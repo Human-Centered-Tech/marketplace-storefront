@@ -395,8 +395,17 @@ const Form = ({
 
           <p className="text-center text-[14px] text-secondary mt-6">
             Already have an account?{" "}
+            {/* Carry the full funnel context through sign-in (7/10): a bare
+                /user link dropped claim_listing + tier + pillars — a
+                logged-out claimant with an existing account lost their claim
+                by signing in. return_to brings them back here, where the
+                logged-in redirect forwards everything to the continue step. */}
             <Link
-              href="/user"
+              href={`/user?return_to=${encodeURIComponent(
+                typeof window !== "undefined"
+                  ? `/user/register${window.location.search}`
+                  : "/user/register"
+              )}`}
               className="font-semibold text-primary hover:underline"
             >
               Sign In
