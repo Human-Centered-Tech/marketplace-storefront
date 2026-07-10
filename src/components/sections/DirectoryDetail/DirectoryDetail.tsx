@@ -532,19 +532,23 @@ export const DirectoryDetail = ({ listing }: { listing: DirectoryListing }) => {
                   .toLowerCase()
                   .replace(/\s+/g, "_")
                 // A storefront link is only valid when the backend resolved a
-                // REAL shop for this listing. The GET route populates
-                // `listing.seller` (id + handle) only when the linked store's
-                // store_status === "ACTIVE" AND it has a published product, so
-                // its presence is our "live storefront exists" signal. Link
+                // REAL shop for this listing. `listing.seller` now attaches
+                // for ANY claimed listing with an ACTIVE store (it's also the
+                // messaging identity — Brooke 7/10), so the live-shop signal
+                // is its `has_live_shop` flag (store ACTIVE + at least one
+                // published product). Absent-flag payloads (older backend)
+                // only attached live shops, so fall back to presence. Link
                 // via seller.handle — NOT listing.slug, which is the directory
                 // listing's own slug and can diverge from the storefront
-                // handle (e.g. an imported trailing-hyphen slug, or a seller
-                // whose store isn't live), producing a 404. vendor_id alone is
-                // too loose: it can be set while the store is draft/paused,
-                // and store_status ACTIVE alone is too loose too (the
-                // directory-payment syncs flip product-less members ACTIVE).
+                // handle (e.g. an imported trailing-hyphen slug), producing a
+                // 404. vendor_id alone is too loose: it can be set while the
+                // store is draft/paused, and store_status ACTIVE alone is too
+                // loose too (the directory-payment syncs flip product-less
+                // members ACTIVE).
                 const shopHandle = listing.seller?.handle ?? null
-                const hasShop = Boolean(shopHandle)
+                const hasShop =
+                  Boolean(shopHandle) &&
+                  (listing.seller?.has_live_shop ?? true)
                 const customHref = normalizeExternalUrl(listing.cta_url)
                 let href: string | null = null
                 let label = ""
