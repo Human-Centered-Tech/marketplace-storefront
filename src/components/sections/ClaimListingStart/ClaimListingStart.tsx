@@ -144,6 +144,22 @@ export const ClaimListingStart = ({
           {grandfatheredMsg ||
             "Your existing membership carried over — no payment needed. You can edit your listing from your dashboard."}
         </p>
+        {/* Brooke (7/10): grandfathered members should still SEE new-site
+            pricing — some choose to upgrade, others appreciate their
+            grandfathered deal. Without this, the instant-free path skipped
+            the upgrade moment her email conversations used to provide. */}
+        <p className="text-xs text-secondary mt-4">
+          You keep your original grandfathered price. Want more visibility?
+          Upgrade anytime — Featured $699/yr, Startup or Non-profit $349/yr,
+          Enterprise $2,999/yr —{" "}
+          <LocalizedClientLink
+            href="/user/directory/subscription"
+            className="underline decoration-[#BE9B32] underline-offset-4 text-[#001435]"
+          >
+            see membership options
+          </LocalizedClientLink>
+          .
+        </p>
         <div className="flex gap-3 justify-center mt-6">
           <LocalizedClientLink
             href="/user/directory"
