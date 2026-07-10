@@ -521,32 +521,60 @@ export const DirectoryDetail = ({ listing }: { listing: DirectoryListing }) => {
                 rendered when claimed and a usable href resolves. */}
             {!isUnclaimed &&
               (() => {
-                const ctaType = listing.cta_type || "visit_shop"
-                // A storefront link is only valid when the backend resolved an
-                // ACTIVE seller for this listing. The GET route populates
+                const ctaTypeRaw = listing.cta_type || "visit_shop"
+                // Legacy Bubble-imported rows store the CTA as display text
+                // ("Shop Now", "Book a Call", "Check Availability") rather
+                // than an enum key. Normalize for lookups, but keep the raw
+                // text as the label fallback so imported CTAs render their
+                // own wording instead of all reading "Learn More".
+                const ctaKey = ctaTypeRaw
+                  .trim()
+                  .toLowerCase()
+                  .replace(/\s+/g, "_")
+                // A storefront link is only valid when the backend resolved a
+                // REAL shop for this listing. The GET route populates
                 // `listing.seller` (id + handle) only when the linked store's
-                // store_status === "ACTIVE", so its presence is our "live
-                // storefront exists" signal. Link via seller.handle — NOT
-                // listing.slug, which is the directory listing's own slug and
-                // can diverge from the storefront handle (e.g. an imported
-                // trailing-hyphen slug, or a seller whose store isn't live),
-                // producing a 404. vendor_id alone is too loose: it can be set
-                // while the store is draft/paused.
+                // store_status === "ACTIVE" AND it has a published product, so
+                // its presence is our "live storefront exists" signal. Link
+                // via seller.handle — NOT listing.slug, which is the directory
+                // listing's own slug and can diverge from the storefront
+                // handle (e.g. an imported trailing-hyphen slug, or a seller
+                // whose store isn't live), producing a 404. vendor_id alone is
+                // too loose: it can be set while the store is draft/paused,
+                // and store_status ACTIVE alone is too loose too (the
+                // directory-payment syncs flip product-less members ACTIVE).
                 const shopHandle = listing.seller?.handle ?? null
                 const hasShop = Boolean(shopHandle)
+                const customHref = normalizeExternalUrl(listing.cta_url)
                 let href: string | null = null
-                let label = ctaLabels[ctaType] || "Learn More"
+                let label = ""
+                let icon = "language"
 
-                if (ctaType === "visit_shop") {
-                  if (hasShop) {
-                    href = `/sellers/${shopHandle}`
-                    label = "Visit Our Shop"
-                  } else if (websiteHref) {
-                    href = websiteHref
-                    label = "Visit Website"
-                  }
-                } else {
-                  href = normalizeExternalUrl(listing.cta_url)
+                if (hasShop) {
+                  // A live shop always routes directory discovery to the
+                  // on-platform products — the same rule the backend enforces
+                  // on save — even if a stale custom CTA is still stored.
+                  href = `/sellers/${shopHandle}`
+                  label = "Visit Our Shop"
+                  icon = "storefront"
+                } else if (ctaKey !== "visit_shop" && customHref) {
+                  // No live shop: the saved custom CTA wins.
+                  href = customHref
+                  label = ctaLabels[ctaKey] || ctaTypeRaw
+                  icon =
+                    ctaKey === "book_now" || ctaKey === "book_a_call"
+                      ? "event"
+                      : ctaKey === "shop_now"
+                        ? "storefront"
+                        : "language"
+                } else if (customHref) {
+                  // visit_shop-typed rows can still carry an imported link
+                  // (CSV rows with a CTA Link but no CTA text).
+                  href = customHref
+                  label = "Learn More"
+                } else if (websiteHref) {
+                  href = websiteHref
+                  label = "Visit Website"
                 }
 
                 if (!href) return null
@@ -562,18 +590,12 @@ export const DirectoryDetail = ({ listing }: { listing: DirectoryListing }) => {
                         trackButtonClick(
                           "directory_listing",
                           listing.id,
-                          `cta_${ctaType}`
+                          `cta_${hasShop ? "visit_shop" : ctaKey}`
                         )
                       }
                       className="w-full bg-gradient-to-br from-[#F2CD69] to-[#BE9B32] text-navy-dark py-4 rounded-xl label-sm text-[10px] font-bold tracking-widest flex items-center justify-center gap-3 hover:brightness-105 transition-all active:scale-95 mb-4"
                     >
-                      <span className="material-symbols-outlined">
-                        {ctaType === "book_now" || ctaType === "book_a_call"
-                          ? "event"
-                          : ctaType === "shop_now" || ctaType === "visit_shop"
-                            ? "storefront"
-                            : "language"}
-                      </span>
+                      <span className="material-symbols-outlined">{icon}</span>
                       {label}
                     </a>
                     {locationStr && (

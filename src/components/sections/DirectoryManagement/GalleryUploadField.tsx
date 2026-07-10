@@ -1,7 +1,12 @@
 "use client"
 
 import { useRef, useState } from "react"
-import { uploadDirectoryImage } from "@/lib/data/directory-actions"
+import {
+  ACCEPTED_TYPES,
+  MAX_UPLOAD_MB,
+  friendlyUploadError,
+  uploadDirectoryImage,
+} from "@/lib/helpers/directory-upload"
 
 const normalize = (u?: string | null) =>
   u && u.startsWith("//") ? `https:${u}` : u || ""
@@ -16,7 +21,8 @@ type GalleryUploadFieldProps = {
 
 /**
  * Multi-image picker for the directory listing gallery (up to `max` photos).
- * Reuses the same uploadDirectoryImage server action as ImageUploadField;
+ * Reuses the same uploadDirectoryImage helper as ImageUploadField (multipart
+ * to /api/directory/upload — files must NEVER go through a server action);
  * uploads each selected file and appends the returned URL. Shows thumbnails
  * with per-image remove controls.
  */
@@ -41,9 +47,22 @@ export const GalleryUploadField = ({
     const added: string[] = []
     try {
       for (const file of toUpload) {
-        const fd = new FormData()
-        fd.append("file", file)
-        const res = await uploadDirectoryImage(fd)
+        // Validate client-side BEFORE uploading, so an oversized/unsupported
+        // file gets an immediate, specific message instead of a round-trip.
+        if (file.size > MAX_UPLOAD_MB * 1024 * 1024) {
+          const mb = (file.size / (1024 * 1024)).toFixed(1)
+          setError(
+            `"${file.name}" is ${mb} MB, over the ${MAX_UPLOAD_MB} MB limit. Please upload a smaller image (JPG, PNG, or WebP).`
+          )
+          break
+        }
+        if (file.type && !ACCEPTED_TYPES.includes(file.type)) {
+          setError(
+            "That file type isn't supported. Please upload a JPG, PNG, or WebP image."
+          )
+          break
+        }
+        const res = await uploadDirectoryImage(file)
         if (res.ok) {
           added.push(res.url)
         } else {
@@ -56,7 +75,7 @@ export const GalleryUploadField = ({
         setError(`Only ${max} photos allowed — extra files were skipped.`)
       }
     } catch (e: any) {
-      setError(e?.message || "Upload failed")
+      setError(friendlyUploadError(e?.message))
     } finally {
       setUploading(false)
       if (inputRef.current) inputRef.current.value = ""

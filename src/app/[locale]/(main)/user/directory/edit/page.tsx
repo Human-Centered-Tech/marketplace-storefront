@@ -65,7 +65,18 @@ export default function EditDirectoryListingPage() {
   const handleSubmit = async (data: Record<string, unknown>) => {
     if (!listing) return
 
-    const res = await updateDirectoryListing(listing.id, data)
+    let res: Awaited<ReturnType<typeof updateDirectoryListing>>
+    try {
+      res = await updateDirectoryListing(listing.id, data)
+    } catch {
+      // Transport/framework failure — the action never completed and in
+      // production Next redacts the real error to a useless digest message.
+      // Re-throw something the form's error banner can show honestly, so the
+      // save failure is never silent.
+      throw new Error(
+        "Your changes couldn't be saved — please check your connection and try again. Your edits are still in the form below."
+      )
+    }
     if (!res.ok) {
       throw new Error(res.error || "Failed to update listing")
     }
@@ -118,7 +129,8 @@ export default function EditDirectoryListingPage() {
           subscriptionTier={listing.subscription_tier}
           initialAffiliations={listing.affiliations ?? []}
           // listing.seller is populated only when this business is a marketplace
-          // merchant with an ACTIVE shop — lock the CTA to "Visit Our Shop".
+          // merchant with an ACTIVE shop that has published products — lock the
+          // CTA to "Visit Our Shop".
           hasShop={Boolean((listing as any).seller)}
           initialData={{
             business_name: listing.business_name,
