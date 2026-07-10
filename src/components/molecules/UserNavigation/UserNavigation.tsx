@@ -113,7 +113,7 @@ export const UserNavigation = () => {
           href="/sell"
           active={path === "/sell"}
         >
-          Become a Merchant
+          Add Your Business
         </NavigationItem>
       )}
       <LogoutButton className="w-full text-left" />

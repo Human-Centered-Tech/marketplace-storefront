@@ -51,7 +51,9 @@ export const ClaimListingSalesPage = ({
   // transfers at payment (the listing stays visible as-is until then).
   // Product merchants who want a storefront get that path offered separately
   // on the claim step.
-  const claimStartHref = `/directory/${listing.id}/claim/start`
+  // Unified flow (Brooke's claim email, 7/10): claiming goes through the
+  // funnel — pillars → attestation → quiz → tier → account → dashboard.
+  const claimStartHref = `/sell/onboarding?claim_listing=${listing.id}`
 
   return (
     <main className="bg-[#FAF9F5] min-h-screen">

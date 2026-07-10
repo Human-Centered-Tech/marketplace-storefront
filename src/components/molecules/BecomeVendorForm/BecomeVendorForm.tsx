@@ -125,7 +125,7 @@ export const BecomeVendorForm = ({
           className="w-full bg-navy text-white hover:bg-navy-dark py-3 uppercase tracking-[0.1em] text-[13px] font-semibold"
           disabled={isSubmitting}
         >
-          {isSubmitting ? "Submitting..." : "Become a Merchant"}
+          {isSubmitting ? "Submitting..." : "Continue"}
         </Button>
       </form>
     </div>

@@ -55,6 +55,9 @@ export type TierInfo = {
 
 export type FunnelStep =
   | "founding_pillars"
+  // Claim entries only (7/10, Brooke's claim email): attest to business
+  // ownership right after the pillars, before the sizing quiz.
+  | "claim_attestation"
   | "service_area"
   | "product_or_service"
   | "service_is_financial"

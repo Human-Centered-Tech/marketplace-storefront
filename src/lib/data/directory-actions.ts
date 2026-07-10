@@ -234,7 +234,14 @@ export async function claimListing(listingId: string): Promise<
  */
 export async function recordClaimProgress(
   listingId: string,
-  payload: { intent_id?: string | null; step?: string; email?: string }
+  payload: {
+    intent_id?: string | null
+    step?: string
+    email?: string
+    // Funnel attestation (7/10): stamps the rightful-owner affirmation onto
+    // the breadcrumb; attach ties it to the customer at completion.
+    attested?: boolean
+  }
 ): Promise<{ intent_id: string | null } | null> {
   const BACKEND_URL = process.env.MEDUSA_BACKEND_URL || "http://localhost:9000"
   try {
@@ -253,6 +260,7 @@ export async function recordClaimProgress(
           intent_id: payload.intent_id || undefined,
           step: payload.step,
           email: payload.email,
+          attested: payload.attested,
         }),
         cache: "no-store",
       }
