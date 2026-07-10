@@ -263,7 +263,7 @@ export const DirectoryDetail = ({
                 href={
                   claimMine
                     ? `/directory/${listing.id}/claim/start`
-                    : `/directory/${listing.id}/claim`
+                    : `/sell/onboarding?claim_listing=${listing.id}`
                 }
                 className="bg-navy-dark text-white px-6 py-3 rounded-xl label-sm text-[10px] font-bold tracking-widest hover:bg-navy transition-colors whitespace-nowrap"
               >
@@ -540,7 +540,7 @@ export const DirectoryDetail = ({
                   href={
                     claimMine
                       ? `/directory/${listing.id}/claim/start`
-                      : `/directory/${listing.id}/claim`
+                      : `/sell/onboarding?claim_listing=${listing.id}`
                   }
                   className="block w-full bg-navy-dark text-white py-4 rounded-xl label-sm text-[10px] font-bold tracking-widest hover:bg-navy transition-colors"
                 >
