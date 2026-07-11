@@ -51,7 +51,9 @@ export const ClaimListingSalesPage = ({
   // transfers at payment (the listing stays visible as-is until then).
   // Product merchants who want a storefront get that path offered separately
   // on the claim step.
-  const claimStartHref = `/directory/${listing.id}/claim/start`
+  // Unified flow (Brooke's claim email, 7/10): claiming goes through the
+  // funnel — pillars → attestation → quiz → tier → account → dashboard.
+  const claimStartHref = `/sell/onboarding?claim_listing=${listing.id}`
 
   return (
     <main className="bg-[#FAF9F5] min-h-screen">
@@ -98,13 +100,15 @@ export const ClaimListingSalesPage = ({
               Catholic Owned Local
             </p>
             <div className="flex items-baseline justify-center gap-2 mb-2">
+              <span className="text-secondary text-lg">starting at</span>
               <span className="font-serif text-6xl font-bold text-navy-dark">
                 $99
               </span>
               <span className="text-secondary text-lg">/ year</span>
             </div>
             <p className="text-secondary text-sm">
-              Membership renews annually. Cancel any time.
+              A few quick questions will recommend the right plan for your
+              business. Membership renews annually. Cancel any time.
             </p>
           </div>
 
@@ -136,37 +140,23 @@ export const ClaimListingSalesPage = ({
             href={claimStartHref}
             className="block w-full text-center bg-navy-dark text-white py-4 rounded-xl label-sm text-[12px] font-bold tracking-[0.15em] hover:bg-navy transition-colors"
           >
-            Claim Your Listing &mdash; $99/yr
+            Claim Your Listing
           </LocalizedClientLink>
           <p className="text-center text-xs text-secondary mt-4">
             You&apos;ll create an account, fill in your listing, and then enter
             payment details right before publishing.
           </p>
-        </div>
-
-        {/* Local Boost upsell teaser */}
-        <div className="bg-navy-dark/5 border border-navy-dark/10 rounded-2xl p-8">
-          <div className="flex items-start gap-4">
-            <span
-              className="material-symbols-outlined text-navy-dark text-3xl shrink-0"
-              style={{ fontVariationSettings: "'FILL' 1" }}
-            >
-              rocket_launch
-            </span>
-            <div>
-              <p className="text-[#F2CD69] text-[11px] font-semibold uppercase tracking-[0.2em] mb-2">
-                Optional Add-on
-              </p>
-              <h3 className="font-serif text-xl font-bold text-navy-dark mb-2">
-                Local Boost &mdash; $150 / month
-              </h3>
-              <p className="text-secondary leading-relaxed">
-                Get 30,000 local Catholic impressions per month on your listing.
-                We handle the ad setup; you focus on running your business.
-                You&apos;ll see this offer right after you finish claiming.
-              </p>
-            </div>
-          </div>
+          {/* Grandfathered members (bubble_paid) claim free — but that only
+              reveals itself AFTER attestation, so without this line an
+              already-paid member stops at the $99 price and emails support
+              (Brooke, 7/10). Kept generic on purpose: naming WHICH listings
+              are free would advertise them for fraudulent free claims. */}
+          <p className="text-center text-xs text-secondary mt-2">
+            <strong className="text-navy-dark">Already a paying member from
+            our previous site?</strong>{" "}
+            Your membership carries over &mdash; sign in and claim your
+            listing at no charge.
+          </p>
         </div>
       </section>
     </main>

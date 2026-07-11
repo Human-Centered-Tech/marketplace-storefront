@@ -70,22 +70,23 @@ export function VerifyEmailGate({ email }: { email?: string | null }) {
           Already verified? Refresh this page.
         </p>
 
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+        <p className="text-[13px] text-secondary">
+          Didn&apos;t get the email?{" "}
           <button
             type="button"
             onClick={onResend}
             disabled={status === "sending" || status === "sent"}
-            className="bg-navy text-white px-6 py-3 text-[12px] font-semibold uppercase tracking-[0.1em] rounded-sm disabled:opacity-50 hover:bg-navy-dark transition-colors"
+            className="underline underline-offset-2 text-primary hover:text-navy disabled:opacity-60 disabled:no-underline transition-colors"
           >
             {status === "sending"
               ? "Sending..."
               : status === "sent"
-                ? "Email sent ✓"
+                ? "Sent — check your inbox"
                 : status === "error"
                   ? "Try again"
-                  : "Resend verification email"}
+                  : "Resend verification"}
           </button>
-        </div>
+        </p>
 
         {status === "error" && (
           <p className="text-[13px] text-red-600 mt-4">

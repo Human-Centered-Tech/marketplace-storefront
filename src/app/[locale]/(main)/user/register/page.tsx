@@ -20,7 +20,16 @@ export default async function Page({
 
   if (user) {
     if (vendor === "true") {
-      redirect("/user/become-vendor")
+      // Forward the funnel context to become-vendor. Dropping these (the
+      // pre-7/9 behavior) silently lost the claim: the logged-in claimant
+      // became a merchant with a fresh auto-created draft listing while the
+      // listing they came to claim stayed unclaimed.
+      const forwarded = new URLSearchParams()
+      if (claim_listing) forwarded.set("claim_listing", claim_listing)
+      if (recommended_tier) forwarded.set("recommended_tier", recommended_tier)
+      if (pillars_affirmed) forwarded.set("pillars_affirmed", pillars_affirmed)
+      const qs = forwarded.toString()
+      redirect(`/user/become-vendor${qs ? `?${qs}` : ""}`)
     }
     redirect(return_to && return_to.startsWith("/") ? return_to : "/user")
   }

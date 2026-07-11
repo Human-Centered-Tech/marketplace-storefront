@@ -109,6 +109,16 @@ export async function becomeVendor(formData: FormData) {
   // auto-create would either collide on the slug or leave them with a
   // duplicate listing. Presence of this id means "claim flow — skip Step 4".
   const claimListingId = formData.get("claim_listing") as string | null
+  // Breadcrumb intent recorded by the funnel's progress hooks (7/9) —
+  // forwarded to attach, which marks it completed.
+  const claimIntentId = formData.get("claim_intent_id") as string | null
+  // Funnel context. For a brand-new registration signup() persists these on
+  // customer.metadata; for a logged-in convert (become-vendor page) nothing
+  // else does, so persist them here — go-live's tier preselection reads
+  // metadata.recommended_tier.
+  const recommendedTier = formData.get("recommended_tier") as string | null
+  const pillarsAffirmed =
+    (formData.get("founding_pillars_affirmed") as string | null) === "true"
 
   // Guard against the email coming through as undefined or as the
   // literal string "undefined" (which is what FormData.set() does when
@@ -267,10 +277,39 @@ export async function becomeVendor(formData: FormData) {
             process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "",
           ...customerHeaders,
         }
+        // Persist funnel context BEFORE the listing create/attach below: the
+        // listing events drive the CRM contact sync, which reads
+        // customer.metadata.recommended_tier — written after, the first sync
+        // would classify the contact without a tier.
+        if (recommendedTier || pillarsAffirmed) {
+          await fetch(`${process.env.MEDUSA_BACKEND_URL}/store/customers/me`, {
+            method: "POST",
+            headers: baseHeaders,
+            body: JSON.stringify({
+              metadata: {
+                ...(recommendedTier
+                  ? { recommended_tier: recommendedTier }
+                  : {}),
+                ...(pillarsAffirmed
+                  ? {
+                      founding_pillars_affirmed: true,
+                      founding_pillars_affirmed_at: new Date().toISOString(),
+                    }
+                  : {}),
+              },
+            }),
+          }).catch(() => {})
+        }
         if (claimListingId) {
           await fetch(
             `${process.env.MEDUSA_BACKEND_URL}/store/directory/listings/${claimListingId}/attach`,
-            { method: "POST", headers: baseHeaders }
+            {
+              method: "POST",
+              headers: baseHeaders,
+              body: JSON.stringify(
+                claimIntentId ? { claim_intent_id: claimIntentId } : {}
+              ),
+            }
           )
         } else {
           await fetch(
@@ -286,6 +325,7 @@ export async function becomeVendor(formData: FormData) {
             }
           )
         }
+
       }
     } catch {
       // Non-fatal — vendor can create/claim the listing from the dashboard.
@@ -343,6 +383,10 @@ export async function becomeMerchant(formData: FormData) {
   const email = ((formData.get("email") as string) || "").trim().toLowerCase()
   const password = formData.get("password") as string
   const claimListingId = formData.get("claim_listing") as string | null
+  const claimIntentId = formData.get("claim_intent_id") as string | null
+  const recommendedTier = formData.get("recommended_tier") as string | null
+  const pillarsAffirmed =
+    (formData.get("founding_pillars_affirmed") as string | null) === "true"
 
   const customerHeaders = await getAuthHeaders()
   if (!customerHeaders || !("authorization" in customerHeaders)) {
@@ -366,7 +410,15 @@ export async function becomeMerchant(formData: FormData) {
       {
         method: "POST",
         headers: baseHeaders,
-        body: JSON.stringify({ name, business_name: name }),
+        body: JSON.stringify({
+          name,
+          business_name: name,
+          // Funnel context — become-merchant persists these on
+          // customer.metadata so resolveRecommendedTier picks the right
+          // dashboard mode before any payment exists.
+          ...(recommendedTier ? { recommended_tier: recommendedTier } : {}),
+          ...(pillarsAffirmed ? { founding_pillars_affirmed: true } : {}),
+        }),
       }
     )
     if (!res.ok) {
@@ -459,7 +511,13 @@ export async function becomeMerchant(formData: FormData) {
     if (claimListingId) {
       await fetch(
         `${process.env.MEDUSA_BACKEND_URL}/store/directory/listings/${claimListingId}/attach`,
-        { method: "POST", headers: baseHeaders }
+        {
+          method: "POST",
+          headers: baseHeaders,
+          body: JSON.stringify(
+            claimIntentId ? { claim_intent_id: claimIntentId } : {}
+          ),
+        }
       )
     } else {
       await fetch(`${process.env.MEDUSA_BACKEND_URL}/store/directory/listings`, {
@@ -480,6 +538,129 @@ export async function becomeMerchant(formData: FormData) {
   revalidateTag(customerCacheTag)
 
   return { success: true, error: null }
+}
+
+/**
+ * Password-less logged-in convert (7/10). Replaces the become-vendor form:
+ * a signed-in customer shouldn't have to re-type their password (they're
+ * already authenticated) or their business name (they name the business on
+ * the dashboard's "Create your directory listing" step — and go-live already
+ * 400s with no_directory_listing until that exists, so the name is still
+ * required before anything publishes).
+ *
+ * Deliberately does NOT auto-create a draft directory listing: with no form
+ * there's no business name to seed it with, and leaving the checklist step
+ * open is what routes the vendor to enter one.
+ *
+ * Steps: POST /store/account/become-merchant (idempotent, mints the seller
+ * off the caller's auth identity and returns a ready vendor token) → store
+ * the token (fallback: password-less mintVendorSession) → attach the claimed
+ * listing if any → persist funnel metadata.
+ */
+export async function convertToMerchant(input: {
+  claimListingId?: string
+  claimIntentId?: string
+  recommendedTier?: string
+  pillarsAffirmed?: boolean
+}) {
+  const customerHeaders = await getAuthHeaders()
+  if (!customerHeaders || !("authorization" in customerHeaders)) {
+    return { success: false, error: "Please sign in first." }
+  }
+
+  const baseHeaders = {
+    "Content-Type": "application/json",
+    "x-publishable-api-key":
+      process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "",
+    ...customerHeaders,
+  }
+
+  try {
+    const res = await fetch(
+      `${process.env.MEDUSA_BACKEND_URL}/store/account/become-merchant`,
+      {
+        method: "POST",
+        headers: baseHeaders,
+        // No name: the backend derives the seller display name from the
+        // customer (they rename it when creating the listing / in settings).
+        // Funnel context rides the same call — become-merchant persists it on
+        // customer.metadata, which resolveRecommendedTier needs to pick the
+        // service-vs-product dashboard mode BEFORE any payment exists.
+        body: JSON.stringify({
+          ...(input.recommendedTier
+            ? { recommended_tier: input.recommendedTier }
+            : {}),
+          ...(input.pillarsAffirmed
+            ? { founding_pillars_affirmed: true }
+            : {}),
+        }),
+      }
+    )
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      return {
+        success: false,
+        error:
+          err?.message ||
+          "Could not set up your business account. Please try again.",
+      }
+    }
+    const data = await res.json()
+    const directToken = typeof data?.token === "string" ? data.token : null
+
+    if (directToken && !(await isVendorTokenStale(directToken))) {
+      await setVendorToken(directToken)
+      await setVendorFlag(true)
+    } else {
+      // Password-less fallback: GET /store/account/seller-token off the
+      // customer session (stores the token itself on success).
+      await mintVendorSession()
+    }
+
+    // Claim flow: adopt the listing they came to claim. Non-fatal — the
+    // listing page's "Finish Your Claim" resume link covers a rare failure.
+    if (input.claimListingId) {
+      await fetch(
+        `${process.env.MEDUSA_BACKEND_URL}/store/directory/listings/${input.claimListingId}/attach`,
+        {
+          method: "POST",
+          headers: baseHeaders,
+          body: JSON.stringify(
+            input.claimIntentId ? { claim_intent_id: input.claimIntentId } : {}
+          ),
+        }
+      ).catch(() => {})
+    }
+
+    // Persist funnel context on customer.metadata for logged-in converts
+    // (new registrations get this from signup()). Best-effort.
+    if (input.recommendedTier || input.pillarsAffirmed) {
+      await fetch(`${process.env.MEDUSA_BACKEND_URL}/store/customers/me`, {
+        method: "POST",
+        headers: baseHeaders,
+        body: JSON.stringify({
+          metadata: {
+            ...(input.recommendedTier
+              ? { recommended_tier: input.recommendedTier }
+              : {}),
+            ...(input.pillarsAffirmed
+              ? {
+                  founding_pillars_affirmed: true,
+                  founding_pillars_affirmed_at: new Date().toISOString(),
+                }
+              : {}),
+          },
+        }),
+      }).catch(() => {})
+    }
+
+    const customerCacheTag = await getCacheTag("customers")
+    revalidateTag(customerCacheTag)
+
+    return { success: true, error: null }
+  } catch (error: any) {
+    return { success: false, error: error.toString() }
+  }
 }
 
 /**

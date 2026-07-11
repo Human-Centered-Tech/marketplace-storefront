@@ -116,6 +116,19 @@ export default function EditDirectoryListingPage() {
     )
   }
 
+  // Draft-until-paid: a claimed-but-unpaid listing is unpublished (hidden
+  // from the public directory) but stays fully editable — paying the
+  // membership is what publishes it. Grandfathered claims
+  // (metadata.bubble_paid === "yes") stay live throughout, so they get no
+  // banner. Editing is never blocked here.
+  // Scoped to claim_payment_due (the claim-draft marker) rather than any
+  // non-active status: a fresh merchant-path listing is also "pending"
+  // pre-go-live, but their payment path is the vendor dashboard's Go Live
+  // ($99+11%), and this banner's subscription CTA would route them into
+  // buying a parallel directory-tier membership.
+  const meta = (listing as any).metadata || {}
+  const unpaidDraft = meta.bubble_paid !== "yes" && !!meta.claim_payment_due
+
   const addr = listing.address as any
   const interview = listing.owner_interview as any
   const devotional = listing.devotional as any
@@ -124,6 +137,21 @@ export default function EditDirectoryListingPage() {
     <main className="container py-8">
       <h1 className="heading-xl uppercase mb-6">Edit Directory Listing</h1>
       <div className="max-w-3xl">
+        {unpaidDraft && (
+          <div className="flex flex-wrap items-center justify-between gap-4 border border-[#BE9B32]/40 bg-[#BE9B32]/10 rounded-sm p-4 mb-6">
+            <p className="text-sm text-secondary">
+              Your listing is unpublished until you choose your membership —
+              you can keep editing in the meantime, and it goes live as soon as
+              payment is complete.
+            </p>
+            <a
+              href="/user/directory/subscription"
+              className="bg-navy text-white px-4 py-2 rounded-sm text-sm uppercase font-medium whitespace-nowrap"
+            >
+              Choose your membership
+            </a>
+          </div>
+        )}
         <DirectoryListingForm
           listingId={listing.id}
           subscriptionTier={listing.subscription_tier}

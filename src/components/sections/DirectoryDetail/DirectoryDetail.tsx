@@ -1,7 +1,9 @@
 "use client"
 
 import { useState } from "react"
+import { HttpTypes } from "@medusajs/types"
 import { DirectoryListing } from "@/types/directory"
+import { Chat } from "@/components/organisms/Chat/Chat"
 import {
   ImageLightbox,
   LightboxImage,
@@ -43,7 +45,23 @@ const ctaLabels: Record<string, string> = {
   book_a_call: "Book a Call",
 }
 
-export const DirectoryDetail = ({ listing }: { listing: DirectoryListing }) => {
+export const DirectoryDetail = ({
+  listing,
+  claimPending = false,
+  claimMine = false,
+  user = null,
+}: {
+  listing: DirectoryListing
+  // Viewer, for the "Message business" CTA (Chat redirects logged-out
+  // viewers to /user). Fetched by the page — this component must stay free
+  // of server-only imports (sections barrel).
+  user?: HttpTypes.StoreCustomer | null
+  // A claim by SOMEONE ELSE is in progress (attested <7 days ago): swap the
+  // Claim CTA for a "claim pending" notice so two people don't race to the
+  // 409. When the pending claim is the viewer's own, show a resume link.
+  claimPending?: boolean
+  claimMine?: boolean
+}) => {
   // Fullscreen viewer state — set to a list of images + start index when the
   // user clicks any photo (gallery thumbnail, owner photo, devotional image);
   // null = closed. Gallery clicks pass the whole gallery so arrows/keys page
@@ -191,7 +209,21 @@ export const DirectoryDetail = ({ listing }: { listing: DirectoryListing }) => {
           </div>
 
           {/* Quick action buttons */}
-          <div className="flex gap-3 shrink-0">
+          <div className="flex items-center gap-3 shrink-0">
+            {/* Message business — only when the backend attached the seller
+                messaging identity (claimed listing with an ACTIVE store;
+                Business Owners included, Brooke 7/10). Chat starts/reuses the
+                storefront-context conversation keyed on seller.id — the SAME
+                thread the marketplace seller page opens, so a merchant's
+                directory and sales messages land in one conversation. */}
+            {listing.seller?.id && (
+              <Chat
+                user={user}
+                seller={listing.seller}
+                label="Message business"
+                buttonClassNames="bg-navy-dark text-white px-6 py-3 rounded-xl label-sm text-[10px] font-bold tracking-widest hover:bg-navy transition-colors whitespace-nowrap"
+              />
+            )}
             {listing.contact_phone && (
               <a
                 href={`tel:${listing.contact_phone}`}
@@ -237,20 +269,28 @@ export const DirectoryDetail = ({ listing }: { listing: DirectoryListing }) => {
           <div className="bg-[#F2CD69]/15 border border-[#F2CD69] rounded-xl p-6 flex flex-col md:flex-row items-start md:items-center gap-4">
             <div className="flex-1">
               <p className="font-serif text-lg text-navy-dark font-bold mb-1">
-                This is an unclaimed listing.
+                {claimPending && !claimMine
+                  ? "A claim on this listing is in progress."
+                  : "This is an unclaimed listing."}
               </p>
               <p className="text-secondary text-sm">
-                Are you the owner? Claim this listing to make edits, earn your
-                member badge, and move up in search results. Reaching out as a
-                customer? Tell them you found them on Catholic Owned!
+                {claimPending && !claimMine
+                  ? "The business owner is completing their claim. If you believe this claim is not legitimate, contact support@catholicowned.com."
+                  : "Are you the owner? Claim this listing to make edits, earn your member badge, and move up in search results. Reaching out as a customer? Tell them you found them on Catholic Owned!"}
               </p>
             </div>
-            <LocalizedClientLink
-              href={`/directory/${listing.id}/claim`}
-              className="bg-navy-dark text-white px-6 py-3 rounded-xl label-sm text-[10px] font-bold tracking-widest hover:bg-navy transition-colors whitespace-nowrap"
-            >
-              Claim This Listing
-            </LocalizedClientLink>
+            {(!claimPending || claimMine) && (
+              <LocalizedClientLink
+                href={
+                  claimMine
+                    ? `/directory/${listing.id}/claim/start`
+                    : `/sell/onboarding?claim_listing=${listing.id}`
+                }
+                className="bg-navy-dark text-white px-6 py-3 rounded-xl label-sm text-[10px] font-bold tracking-widest hover:bg-navy transition-colors whitespace-nowrap"
+              >
+                {claimMine ? "Finish Your Claim" : "Claim This Listing"}
+              </LocalizedClientLink>
+            )}
           </div>
         </section>
       )}
@@ -465,7 +505,13 @@ export const DirectoryDetail = ({ listing }: { listing: DirectoryListing }) => {
 
             {/* Social Links — free-form URLs, brand logo detected per URL. */}
             {(() => {
+              // Same protocol fix as websiteHref above: merchants paste
+              // "www.tiktok.com/@handle", which rendered raw resolves relative
+              // to the current page → /us/directory/www.tiktok.com/… 404s
+              // (Sentry). Normalize each link; junk values drop out.
               const socials = socialLinksToArray(listing.social_links)
+                .map((url) => normalizeExternalUrl(url))
+                .filter((url): url is string => Boolean(url))
               if (socials.length === 0) return null
               return (
                 <div>
@@ -493,8 +539,9 @@ export const DirectoryDetail = ({ listing }: { listing: DirectoryListing }) => {
 
           {/* Right Column / Sidebar */}
           <div className="lg:col-span-4 space-y-8">
-            {/* Claim CTA — only when unclaimed */}
-            {isUnclaimed && (
+            {/* Claim CTA — only when unclaimed and no one else's claim is
+                already pending */}
+            {isUnclaimed && (!claimPending || claimMine) && (
               <div className="bg-[#F2CD69] p-8 rounded-xl text-center shadow-2xl">
                 <span
                   className="material-symbols-outlined text-navy-dark text-3xl mb-2 block"
@@ -503,16 +550,22 @@ export const DirectoryDetail = ({ listing }: { listing: DirectoryListing }) => {
                   flag
                 </span>
                 <h3 className="font-serif text-xl font-bold text-navy-dark mb-2">
-                  Is this your business?
+                  {claimMine ? "Your claim is in progress" : "Is this your business?"}
                 </h3>
                 <p className="text-navy-dark/70 text-sm mb-4">
-                  Claim it to manage your profile and reach Catholic shoppers.
+                  {claimMine
+                    ? "Pick your membership to finish transferring this listing to your account."
+                    : "Claim it to manage your profile and reach Catholic shoppers."}
                 </p>
                 <LocalizedClientLink
-                  href={`/directory/${listing.id}/claim`}
+                  href={
+                    claimMine
+                      ? `/directory/${listing.id}/claim/start`
+                      : `/sell/onboarding?claim_listing=${listing.id}`
+                  }
                   className="block w-full bg-navy-dark text-white py-4 rounded-xl label-sm text-[10px] font-bold tracking-widest hover:bg-navy transition-colors"
                 >
-                  Claim This Listing
+                  {claimMine ? "Finish Your Claim" : "Claim This Listing"}
                 </LocalizedClientLink>
               </div>
             )}

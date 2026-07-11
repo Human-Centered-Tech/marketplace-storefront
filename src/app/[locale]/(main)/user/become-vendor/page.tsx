@@ -1,19 +1,36 @@
 import { retrieveCustomer } from "@/lib/data/customer"
 import { LoginForm, UserNavigation } from "@/components/molecules"
-import { BecomeVendorForm } from "@/components/molecules/BecomeVendorForm/BecomeVendorForm"
+import { AutoConvertToMerchant } from "@/components/molecules/AutoConvertToMerchant/AutoConvertToMerchant"
 import { RefreshMerchantSessionForm } from "@/components/molecules/RefreshMerchantSessionForm/RefreshMerchantSessionForm"
 import { retrieveVendorStatus } from "@/lib/data/vendor"
 import { requiresEmailVerification } from "@/lib/util/email-verification"
+import { redirect } from "next/navigation"
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Become a Merchant",
+  title: "Add Your Business",
 }
 
+/**
+ * 7/10 simplification (Liam): no more form here. A signed-in customer arriving
+ * from the funnel is converted to a merchant automatically (no password
+ * re-entry, no business-name field — that's collected by the dashboard's
+ * "Create your directory listing" step, which go-live requires). Existing
+ * merchants skip straight to their dashboard instead of the old "You're
+ * Already a Merchant" interstitial.
+ */
 export default async function BecomeVendorPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ session_refresh?: string }>
+  searchParams?: Promise<{
+    session_refresh?: string
+    // Funnel context forwarded by /user/register for logged-in customers —
+    // claim_listing especially must survive to the convert, or the claim
+    // is silently lost (the 7/9 walk-through bug).
+    claim_listing?: string
+    recommended_tier?: string
+    pillars_affirmed?: string
+  }>
 }) {
   const user = await retrieveCustomer()
 
@@ -21,6 +38,8 @@ export default async function BecomeVendorPage({
 
   const params = (await searchParams) || {}
   const sessionRefresh = params.session_refresh === "1"
+  const claimListingId = params.claim_listing
+  const pillarsAffirmed = params.pillars_affirmed === "1"
 
   const vendorStatus = await retrieveVendorStatus()
   const isAlreadyVendor = vendorStatus.isVendor
@@ -30,12 +49,27 @@ export default async function BecomeVendorPage({
   // accounts get wrongly bounced to the "Verify Your Email First" screen.
   const needsEmailVerification = requiresEmailVerification(user)
 
+  // Existing merchant with nothing to claim: straight to the dashboard —
+  // the old "You're Already a Merchant" screen was just a click in the way.
+  // (With a claim we fall through to the auto-convert, which is idempotent
+  // and still runs the attach.)
+  if (isAlreadyVendor && !claimListingId && !sessionRefresh) {
+    redirect("/api/vendor-handoff")
+  }
+
+  // Everyone reaches merchant setup through the funnel (Brooke's model). A
+  // bare visit with no funnel context shouldn't silently mint a merchant
+  // account — send them to the front door instead.
+  if (!sessionRefresh && !claimListingId && !pillarsAffirmed && !isAlreadyVendor) {
+    redirect("/sell/onboarding")
+  }
+
   return (
     <main className="container">
       <div className="grid grid-cols-1 md:grid-cols-4 mt-6 gap-5 md:gap-8">
         <UserNavigation />
         <div className="md:col-span-3">
-          <h1 className="heading-xl uppercase mb-6">Become a Merchant</h1>
+          <h1 className="heading-xl uppercase mb-6">Add Your Business</h1>
 
           {sessionRefresh ? (
             // Bounced here by /api/vendor-handoff because the stored
@@ -43,29 +77,13 @@ export default async function BecomeVendorPage({
             // stale-token bug). Show a focused password prompt that
             // re-mints a good token via refreshVendorSession.
             <RefreshMerchantSessionForm />
-          ) : isAlreadyVendor ? (
-            <div className="border rounded-sm p-8 text-center">
-              <h2 className="heading-md text-primary mb-2">
-                You&apos;re Already a Merchant
-              </h2>
-              <p className="text-secondary mb-4">
-                You already have a merchant account. Visit your merchant
-                dashboard to manage your store.
-              </p>
-              <a
-                href="/api/vendor-handoff"
-                className="bg-navy text-white px-6 py-2 rounded-sm text-sm uppercase font-medium inline-block"
-              >
-                Go to Merchant Dashboard
-              </a>
-            </div>
           ) : needsEmailVerification ? (
             <div className="border rounded-sm p-8 text-center bg-[rgba(190,155,50,0.06)]">
               <h2 className="heading-md text-primary mb-2">
                 Verify Your Email First
               </h2>
               <p className="text-secondary mb-4">
-                Merchant applications require a verified email address. Please
+                Merchant accounts require a verified email address. Please
                 check your inbox for a verification link or request a new one
                 from your account dashboard.
               </p>
@@ -77,13 +95,11 @@ export default async function BecomeVendorPage({
               </a>
             </div>
           ) : (
-            <>
-              <p className="text-secondary mb-6">
-                Start selling on Catholic Owned. Fill out the form below to
-                apply for a merchant account.
-              </p>
-              <BecomeVendorForm email={user.email} />
-            </>
+            <AutoConvertToMerchant
+              claimListingId={claimListingId}
+              recommendedTier={params.recommended_tier}
+              pillarsAffirmed={pillarsAffirmed}
+            />
           )}
         </div>
       </div>

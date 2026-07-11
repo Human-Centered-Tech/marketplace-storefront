@@ -1,7 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
+import { recordClaimProgress } from "@/lib/data/directory-actions"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 import {
   EmployeeRange,
@@ -67,7 +68,16 @@ const INVOICE_OPTIONS: InvoiceRange[] = [
 
 const initialState: FunnelState = { step: "founding_pillars" }
 
-export const VendorOnboardingFunnel = () => {
+export const VendorOnboardingFunnel = ({
+  isLoggedIn = false,
+  claimBusinessName,
+}: {
+  // Session-aware CTAs (Brooke 7/10): a signed-in customer continues in
+  // place — no "create an account" language.
+  isLoggedIn?: boolean
+  // Business name of the listing being claimed, for the attestation step.
+  claimBusinessName?: string
+} = {}) => {
   const [state, setState] = useState<FunnelState>(initialState)
 
   // Claim flow: when the questionnaire is entered from "claim your listing"
@@ -82,6 +92,23 @@ export const VendorOnboardingFunnel = () => {
     ? `&claim_listing=${encodeURIComponent(claimListing)}` +
       (returnTo ? `&return_to=${encodeURIComponent(returnTo)}` : "")
     : ""
+
+  // Claim-intent breadcrumbs (7/9): record each funnel step for a claim so a
+  // drop-off leaves a "started" intent in admin Claim Attempts. The intent id
+  // rides in sessionStorage and is finally passed through register → attach,
+  // which completes it. Fire-and-forget; never blocks the funnel.
+  useEffect(() => {
+    if (!claimListing) return
+    const key = `claim_intent_${claimListing}`
+    recordClaimProgress(claimListing, {
+      intent_id: sessionStorage.getItem(key),
+      step: `funnel_${state.step}`,
+    })
+      .then((r) => {
+        if (r?.intent_id) sessionStorage.setItem(key, r.intent_id)
+      })
+      .catch(() => {})
+  }, [claimListing, state.step])
 
   const reset = () => setState(initialState)
 
@@ -107,9 +134,33 @@ export const VendorOnboardingFunnel = () => {
           <FoundingPillarsStep
             onAgree={() =>
               setState({
-                step: "service_area",
+                // Claim entries attest to ownership before the quiz
+                // (Brooke's claim email, 7/10). Non-claim entries go straight
+                // to the sizing questions.
+                step: claimListing ? "claim_attestation" : "service_area",
               })
             }
+          />
+        )}
+
+        {state.step === "claim_attestation" && claimListing && (
+          <ClaimAttestationStep
+            businessName={claimBusinessName}
+            onAttest={() => {
+              // Stamp the attestation onto the claim-intent breadcrumb —
+              // anonymous is fine; attach ties it to the customer at the end.
+              const key = `claim_intent_${claimListing}`
+              recordClaimProgress(claimListing, {
+                intent_id: sessionStorage.getItem(key),
+                step: "attested_in_funnel",
+                attested: true,
+              })
+                .then((r) => {
+                  if (r?.intent_id) sessionStorage.setItem(key, r.intent_id)
+                })
+                .catch(() => {})
+              setState({ step: "service_area" })
+            }}
           />
         )}
 
@@ -136,16 +187,16 @@ export const VendorOnboardingFunnel = () => {
           <ProductOrServiceStep
             onSelect={(choice) => {
               if (choice === "product") {
-                setState({ step: "product_or_service", productOrService: "product" })
-                // Product sellers skip the sizing quiz and go straight to
-                // signup. The chart maps them to the Marketplace Merchant
-                // Membership tier ($99/yr + 11%) — pass it through so the
-                // recommended_tier persistence pipeline catches it the
-                // same way service-provider tiers are captured.
-                window.location.href =
-                  "/user/register?vendor=true&recommended_tier=merchant" +
-                  PILLARS_AFFIRMED_PARAM +
-                  claimSuffix
+                // Product sellers skip the sizing quiz, but they must SEE
+                // the Merchant Membership pricing BEFORE registering
+                // (Brooke 7/10 — this used to jump straight to the register
+                // form with no price shown). Route through the tier screen
+                // like every other outcome.
+                setState({
+                  step: "recommended_tier",
+                  productOrService: "product",
+                  recommendedTier: "merchant",
+                })
                 return
               }
               setState({
@@ -233,10 +284,66 @@ export const VendorOnboardingFunnel = () => {
           <RecommendedTierStep
             tierKey={state.recommendedTier}
             claimSuffix={claimSuffix}
+            isLoggedIn={isLoggedIn}
           />
+        )}
+
+        {/* The sizing questions exist ONLY to recommend the right plan —
+            say so, so they don't read as data collection (Brooke 7/10). */}
+        {[
+          "service_area",
+          "product_or_service",
+          "service_is_financial",
+          "financial_screening",
+          "service_for_profit",
+          "sizing_quiz",
+        ].includes(state.step) && (
+          <p className="text-center text-xs text-[#44474e] mt-4">
+            These questions are only used to recommend the right plan for
+            your business — nothing more.
+          </p>
         )}
       </div>
     </main>
+  )
+}
+
+// Claim entries only (Brooke's claim email, 7/10): attest to ownership right
+// after the Founding Pillars, before the sizing quiz — mirrors the standalone
+// claim page's attestation, recorded on the claim-intent breadcrumb.
+const ClaimAttestationStep: React.FC<{
+  businessName?: string
+  onAttest: () => void
+}> = ({ businessName, onAttest }) => {
+  const [attested, setAttested] = useState(false)
+  return (
+    <Card>
+      <StepHeading
+        eyebrow="Claiming your listing"
+        title="Attest to your ownership"
+        subtitle="Claims made falsely are removed without refund under the claim terms."
+      />
+      <label className="flex items-start gap-3 p-4 rounded-xl border border-[#001435]/10 bg-[#faf9f5] cursor-pointer mb-6">
+        <input
+          type="checkbox"
+          checked={attested}
+          onChange={(e) => setAttested(e.target.checked)}
+          className="mt-0.5 w-5 h-5 accent-[#BE9B32]"
+        />
+        <span className="text-sm text-[#001435]">
+          I affirm that I am the rightful owner (or an authorized
+          representative) of{" "}
+          <strong>{businessName || "this business"}</strong>.
+        </span>
+      </label>
+      <button
+        onClick={onAttest}
+        disabled={!attested}
+        className="w-full px-8 py-4 text-[13px] font-semibold uppercase tracking-[0.1em] rounded-xl bg-[#BE9B32] text-[#001435] hover:bg-[#d4af4c] shadow-lg transition-colors disabled:opacity-40"
+      >
+        Continue
+      </button>
+    </Card>
   )
 }
 
@@ -758,7 +865,8 @@ const RadioRow: React.FC<{
 const RecommendedTierStep: React.FC<{
   tierKey: import("./types").RecommendedTierKey
   claimSuffix?: string
-}> = ({ tierKey, claimSuffix = "" }) => {
+  isLoggedIn?: boolean
+}> = ({ tierKey, claimSuffix = "", isLoggedIn = false }) => {
   const tier = getTierInfo(tierKey)
   const upsell = tier.upsellTier ? getTierInfo(tier.upsellTier) : undefined
 
@@ -804,7 +912,9 @@ const RecommendedTierStep: React.FC<{
           href={signupHref}
           className="flex-1 inline-flex items-center justify-center px-8 py-4 text-[13px] font-semibold uppercase tracking-[0.1em] rounded-xl bg-[#BE9B32] text-[#001435] hover:bg-[#d4af4c] shadow-lg transition-colors"
         >
-          Create my merchant account
+          {/* Session-aware (Brooke 7/10): signed-in customers continue in
+              place — the register page hands them to the convert step. */}
+          {isLoggedIn ? "Continue" : "Get started"}
         </LocalizedClientLink>
         {tier.bookCallOption && (
           <a

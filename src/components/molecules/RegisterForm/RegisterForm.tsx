@@ -13,6 +13,7 @@ import { registerFormSchema, vendorRegisterFormSchema, RegisterFormData } from "
 import { MARKETING_SOURCES } from "./marketing-sources"
 import { signup, login, retrieveCustomer } from "@/lib/data/customer"
 import { becomeVendor, becomeMerchant } from "@/lib/data/vendor"
+import { recordClaimProgress } from "@/lib/data/directory-actions"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
@@ -161,8 +162,19 @@ const Form = ({
         convertFormData.append("name", data.businessName)
         convertFormData.append("email", data.email)
         convertFormData.append("password", data.password)
+        // Funnel context: without the tier, become-merchant can't persist
+        // recommended_tier, and resolveRecommendedTier defaults this convert
+        // to the product/merchant dashboard even for service outcomes.
+        if (recommendedTier)
+          convertFormData.append("recommended_tier", recommendedTier)
+        if (pillarsAffirmed)
+          convertFormData.append("founding_pillars_affirmed", "true")
         if (claimListingId) {
           convertFormData.append("claim_listing", claimListingId)
+          const intentId = sessionStorage.getItem(
+            `claim_intent_${claimListingId}`
+          )
+          if (intentId) convertFormData.append("claim_intent_id", intentId)
         }
 
         const convertRes = await becomeMerchant(convertFormData)
@@ -192,6 +204,10 @@ const Form = ({
       // (the claimed listing is attached to them on payment instead).
       if (claimListingId) {
         vendorFormData.append("claim_listing", claimListingId)
+        const intentId = sessionStorage.getItem(
+          `claim_intent_${claimListingId}`
+        )
+        if (intentId) vendorFormData.append("claim_intent_id", intentId)
       }
 
       const vendorRes = await becomeVendor(vendorFormData)
@@ -253,6 +269,26 @@ const Form = ({
               placeholder="john@example.com"
               error={errors.email as FieldError}
               {...register("email")}
+              // Claim-intent breadcrumb (7/9): capture the claimant's email as
+              // soon as it's typed, so a drop-off AFTER this point leaves a
+              // contactable "started" intent in admin (the Suzi failure mode
+              // was a claim lost with no trace at all). Fire-and-forget.
+              onBlur={(e) => {
+                register("email").onBlur(e)
+                if (!claimListingId) return
+                const email = (e.target as HTMLInputElement).value
+                if (!email || !email.includes("@")) return
+                const key = `claim_intent_${claimListingId}`
+                recordClaimProgress(claimListingId, {
+                  intent_id: sessionStorage.getItem(key),
+                  step: "register_email_entered",
+                  email,
+                })
+                  .then((r) => {
+                    if (r?.intent_id) sessionStorage.setItem(key, r.intent_id)
+                  })
+                  .catch(() => {})
+              }}
             />
             {vendorFlow && (
               <div>
@@ -366,8 +402,17 @@ const Form = ({
 
           <p className="text-center text-[14px] text-secondary mt-6">
             Already have an account?{" "}
+            {/* Carry the full funnel context through sign-in (7/10): a bare
+                /user link dropped claim_listing + tier + pillars — a
+                logged-out claimant with an existing account lost their claim
+                by signing in. return_to brings them back here, where the
+                logged-in redirect forwards everything to the continue step. */}
             <Link
-              href="/user"
+              href={`/user?return_to=${encodeURIComponent(
+                typeof window !== "undefined"
+                  ? `/user/register${window.location.search}`
+                  : "/user/register"
+              )}`}
               className="font-semibold text-primary hover:underline"
             >
               Sign In
