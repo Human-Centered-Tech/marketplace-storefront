@@ -11,69 +11,118 @@ import {
 
 const TIER_DETAILS: Record<
   string,
-  { name: string; price: string; annual: string; features: string[] }
+  {
+    name: string
+    price: string
+    annual: string
+    features: string[]
+    // Brooke's 7/10 copy: optional lead-in under the price (e.g. the
+    // startup/non-profit 50%-off explainer) and trailing note under the list.
+    priceSuffix?: string
+    subtitle?: string
+    footnote?: string
+  }
 > = {
   // Canva "Sales Page Logic" tier set (2026-05).
   local: {
-    name: "Catholic Owned Local",
+    name: "Catholic Owned® Local",
     price: "$99",
     annual: "$99/year",
     features: [
-      "Edit your listing",
-      "Member badge",
-      "Higher search ranking than unclaimed listings",
-      "Eligible for promotions and guides",
-      "Community networking access",
+      "An Essential directory listing shown to users in your state",
+      "The ability to edit and customize your listing",
+      "Higher directory placement than unclaimed listings",
+      "One parish affiliation",
+      "The ability to respond to reviews",
+      "A digital Catholic Owned® Local Member badge",
+      "A Catholic Owned® Local Member sticker mailed to you",
+      "Access to open Catholic Owned® networking opportunities",
+      "Eligibility for Local Boost",
     ],
   },
   merchant: {
-    name: "Marketplace Merchant Membership",
+    name: "Marketplace Merchant",
     price: "$99",
-    annual: "$99/year + 11% per sale",
+    priceSuffix: "/year + 11% fees per sale",
+    annual: "$99/year + 11% fees per sale",
     features: [
-      "Sell products through the Catholic Owned Marketplace",
-      "Vendor storefront with product catalog",
-      "Stripe Connect payouts",
-      "Directory listing included",
-      "11% commission per sale",
+      "A dedicated marketplace storefront",
+      "The ability to sell products through the Catholic Owned® platform",
+      "An Essential directory listing with one parish affiliation",
+      "A digital Catholic Owned® Marketplace Merchant badge",
+      "Analytics dashboard, direct messaging, and Stripe Connect for payouts",
+      "Monthly Merchant Office Hours for storefront support, questions, and practical guidance",
+      "Access to open Catholic Owned® networking opportunities",
+      "Eligibility for Catholic Owned® Guides",
     ],
   },
   tier2_startup: {
-    name: "Tier 2 — Startup",
+    name: "Featured — Startup & Non-profit",
     price: "$349",
     annual: "$349/year",
+    subtitle: "As a qualifying startup or nonprofit, you’re receiving our Featured membership at 50% off the standard annual rate to help your organization build visibility, relationships, and momentum within the Catholic Owned® network.",
     features: [
-      "Tier 2 benefits at early-stage pricing",
-      "Catholic Owned-funded ad placement",
+      "Priority directory placement in every state your business serves",
+      "Three parish affiliations",
+      "Access to monthly Featured Member Meet-Ups",
+      "Access to open Catholic Owned® networking opportunities",
+      "A dedicated member connection to help you get established in the network",
+      "Eligibility for Catholic Owned® Guides and other curated features",
+      "Priority support",
     ],
+    footnote: "Featured Member Meet-Ups are monthly opportunities to build relationships, expand your circle of influence, and connect with other committed Catholic business owners. Formats may include member introductions, featured speakers, guided conversations, and structured networking.",
   },
   tier2_nonprofit: {
-    name: "Tier 2 — Non-profit",
+    name: "Featured — Startup & Non-profit",
     price: "$349",
     annual: "$349/year",
+    subtitle: "As a qualifying startup or nonprofit, you’re receiving our Featured membership at 50% off the standard annual rate to help your organization build visibility, relationships, and momentum within the Catholic Owned® network.",
     features: [
-      "Tier 2 benefits at non-profit pricing",
-      "Catholic Owned-funded ad placement",
+      "Priority directory placement in every state your business serves",
+      "Three parish affiliations",
+      "Access to monthly Featured Member Meet-Ups",
+      "Access to open Catholic Owned® networking opportunities",
+      "A dedicated member connection to help you get established in the network",
+      "Eligibility for Catholic Owned® Guides and other curated features",
+      "Priority support",
     ],
+    footnote: "Featured Member Meet-Ups are monthly opportunities to build relationships, expand your circle of influence, and connect with other committed Catholic business owners. Formats may include member introductions, featured speakers, guided conversations, and structured networking.",
   },
+  // Same $699 Featured plan under its legacy key.
   tier2_business: {
-    name: "Tier 2",
+    name: "Featured",
     price: "$699",
     annual: "$699/year",
     features: [
-      "Featured directory placement",
-      "Catholic Owned-funded ad placement on your listing",
+      "Priority directory placement in every state your business serves",
+      "Three parish affiliations",
+      "Access to monthly Featured Member Meet-Ups",
+      "Access to open Catholic Owned® networking opportunities",
+      "A dedicated member connection to help you get established in the network",
+      "Eligibility for Catholic Owned® Guides and other curated features",
+      "Priority support",
     ],
+    footnote: "Featured Member Meet-Ups are monthly opportunities to build relationships, expand your circle of influence, and connect with other committed Catholic business owners. Formats may include member introductions, featured speakers, guided conversations, and structured networking.",
   },
+  // Same $2,999 Enterprise plan under its legacy key.
   tier3: {
-    name: "Tier 3",
+    name: "Enterprise",
     price: "$2,999",
     annual: "$2,999/year",
     features: [
-      "Premium directory placement",
-      "Catholic Owned-funded ad placement on your listing",
-      "Sales-team consultation included",
+      "Premium, top-of-page directory placement in three states of your choice",
+      "Priority directory placement in every other state your business serves",
+      "25 parish affiliations",
+      "Access to monthly Featured Member Meet-Ups",
+      "Four email placements during your membership year",
+      "Audience targeting for each email placement",
+      "High-visibility positioning across the platform",
+      "A dedicated member connection to help you get established in the network",
+      "A digital Catholic Owned® Enterprise Member badge",
+      "24/7 support",
     ],
+    footnote:
+      "Enterprise membership gives your business a consistent presence within the Catholic Owned® network while helping you reach the audiences most relevant to your work.",
   },
   tier4: {
     name: "Tier 4",
@@ -104,25 +153,34 @@ const TIER_DETAILS: Record<
     price: "$699",
     annual: "$699/year",
     features: [
-      "Everything in Essential",
-      "Featured placement in directory",
-      "3 parish affiliations",
-      "Priority search ranking",
-      "Analytics dashboard",
+      "Priority directory placement in every state your business serves",
+      "Three parish affiliations",
+      "Access to monthly Featured Member Meet-Ups",
+      "Access to open Catholic Owned® networking opportunities",
+      "A dedicated member connection to help you get established in the network",
+      "Eligibility for Catholic Owned® Guides and other curated features",
+      "Priority support",
     ],
+    footnote: "Featured Member Meet-Ups are monthly opportunities to build relationships, expand your circle of influence, and connect with other committed Catholic business owners. Formats may include member introductions, featured speakers, guided conversations, and structured networking.",
   },
   enterprise: {
     name: "Enterprise",
     price: "$2,999",
     annual: "$2,999/year",
     features: [
-      "Everything in Featured",
-      "Top placement across the platform",
-      "10 parish affiliations",
-      "Full analytics suite",
-      "Dedicated support",
-      "Custom partnership badge",
+      "Premium, top-of-page directory placement in three states of your choice",
+      "Priority directory placement in every other state your business serves",
+      "25 parish affiliations",
+      "Access to monthly Featured Member Meet-Ups",
+      "Four email placements during your membership year",
+      "Audience targeting for each email placement",
+      "High-visibility positioning across the platform",
+      "A dedicated member connection to help you get established in the network",
+      "A digital Catholic Owned® Enterprise Member badge",
+      "24/7 support",
     ],
+    footnote:
+      "Enterprise membership gives your business a consistent presence within the Catholic Owned® network while helping you reach the audiences most relevant to your work.",
   },
 }
 
@@ -246,19 +304,22 @@ export default function DirectoryCheckoutPage() {
         <div className="bg-[#FAF9F5] rounded-xl p-8 mb-8">
           <div className="mb-6">
             <p className="text-[10px] font-bold text-gold-dark tracking-[0.2em] uppercase mb-1">
-              {tierInfo.name} Plan
+              {tierInfo.name}
             </p>
             <p className="font-serif text-4xl font-bold text-navy-dark">
               {tierInfo.price}
               <span className="text-base font-normal text-secondary">
-                /year
+                {tierInfo.priceSuffix ?? "/year"}
               </span>
             </p>
+            {tierInfo.subtitle && (
+              <p className="text-sm text-secondary mt-3">{tierInfo.subtitle}</p>
+            )}
           </div>
 
           <div className="border-t border-gray-200 pt-6">
             <p className="text-[10px] font-bold text-secondary tracking-[0.15em] uppercase mb-3">
-              What&apos;s included
+              Your membership includes
             </p>
             <ul className="space-y-2">
               {tierInfo.features.map((f) => (
@@ -273,6 +334,11 @@ export default function DirectoryCheckoutPage() {
                 </li>
               ))}
             </ul>
+            {tierInfo.footnote && (
+              <p className="text-xs text-secondary mt-4 leading-relaxed">
+                {tierInfo.footnote}
+              </p>
+            )}
           </div>
         </div>
 
