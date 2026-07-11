@@ -56,6 +56,16 @@ const nextConfig: NextConfig = {
       // 404ing (Sentry JAVASCRIPT-NEXTJS-M).
       { source: "/landing", destination: "/sell", permanent: true },
       { source: "/:locale/landing", destination: "/:locale/sell", permanent: true },
+      // Google Play's Data-Safety form pointed at /support_page for years —
+      // Google's compliance crawler 404'd on it 7/10 ("Invalid account
+      // deletion link", fix-by 7/24). The real fix is updating the form to
+      // /account-deletion; these keep any stale references working forever.
+      { source: "/support_page", destination: "/account-deletion", permanent: true },
+      {
+        source: "/:locale/support_page",
+        destination: "/:locale/account-deletion",
+        permanent: true,
+      },
     ]
   },
   experimental: {
