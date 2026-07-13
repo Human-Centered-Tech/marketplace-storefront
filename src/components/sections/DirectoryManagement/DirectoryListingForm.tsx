@@ -169,18 +169,6 @@ export const DirectoryListingForm = ({
   const [error, setError] = useState("")
   const errorRef = useRef<HTMLDivElement | null>(null)
 
-  // Images and text are saved INDEPENDENTLY: each image is uploaded on its own
-  // (multipart -> /api/directory/upload) and only its returned URL ends up in
-  // form state, while the text fields are persisted by the Save PUT. So a
-  // failed image upload can never take the owner's typed answers with it — the
-  // upload error is per-field and everything else stays exactly as typed.
-  // The one coupling left is a RACE: saving while an upload is still running
-  // would persist the listing without the image that's about to land. Count
-  // in-flight uploads and hold Save until they settle.
-  const [uploadsInFlight, setUploadsInFlight] = useState(0)
-  const trackUpload = (uploading: boolean) =>
-    setUploadsInFlight((n) => Math.max(0, n + (uploading ? 1 : -1)))
-
   // The form is long enough that submitting from the bottom and getting
   // a top-of-form error banner is easy to miss. Scroll it into view.
   useEffect(() => {
@@ -245,32 +233,8 @@ export const DirectoryListingForm = ({
     })
   }
 
-  // Build one key of a jsonb blob (owner_interview / devotional).
-  //
-  // The key is only SENT when it has a value now, or had one when the form
-  // loaded (= the owner deliberately cleared it). Keys we omit are PRESERVED
-  // by the backend, which merges these blobs on key presence instead of
-  // replacing them (see merge-json-blobs.ts). Net effect: a form that never
-  // received an answer — hydration failed, the section is hidden behind the
-  // tier gate, whatever — cannot blank it, while a real "clear this field"
-  // edit still goes through as an explicit "".
-  const blobKey = (
-    key: string,
-    value: string,
-    initial?: string
-  ): Record<string, string> => (value || initial ? { [key]: value } : {})
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-
-    // Don't race an in-flight image upload — the save would land without it.
-    if (uploadsInFlight > 0) {
-      setError(
-        "Please wait for your image upload to finish, then save. Your text is safe — nothing has been lost."
-      )
-      return
-    }
-
     setSubmitting(true)
     setError("")
 
@@ -285,35 +249,6 @@ export const DirectoryListingForm = ({
         : !listingId && US_STATE_CODES.includes(homeState)
           ? [homeState]
           : []
-
-    // Owner interview: send only the keys that carry a real edit. Prompts are
-    // deliberately NOT sent — they're hardcoded platform-wide and the backend
-    // stamps the canonical set on every write (enforceCanonicalInterviewPrompts).
-    const ownerInterview = {
-      ...blobKey("photo_url", form.owner_photo_url, initialData?.owner_photo_url),
-      ...blobKey("q1_answer", form.owner_q1_answer, initialData?.owner_q1_answer),
-      ...blobKey("q2_answer", form.owner_q2_answer, initialData?.owner_q2_answer),
-      ...blobKey("q3_answer", form.owner_q3_answer, initialData?.owner_q3_answer),
-      ...blobKey("q4_answer", form.owner_q4_answer, initialData?.owner_q4_answer),
-    }
-
-    const devotional = {
-      ...blobKey(
-        "image_url",
-        form.devotional_image_url,
-        initialData?.devotional_image_url
-      ),
-      ...blobKey(
-        "question",
-        form.devotional_question,
-        initialData?.devotional_question
-      ),
-      ...blobKey(
-        "answer",
-        form.devotional_answer,
-        initialData?.devotional_answer
-      ),
-    }
 
     try {
       await onSubmit({
@@ -350,16 +285,40 @@ export const DirectoryListingForm = ({
         // Explicit boolean — whether the public map shows this listing's exact
         // street-level location. The backend stores it on the listing.
         show_precise_location: form.show_precise_location,
-        owner_interview: Object.keys(ownerInterview).length
-          ? ownerInterview
-          : undefined,
-        devotional: Object.keys(devotional).length ? devotional : undefined,
+        owner_interview:
+          form.owner_q1_answer ||
+          form.owner_q2_answer ||
+          form.owner_q3_answer ||
+          form.owner_q4_answer ||
+          form.owner_photo_url
+            ? {
+                photo_url: form.owner_photo_url || undefined,
+                // Questions are hardcoded — always submit the canonical prompts,
+                // never an editable form value. (Backend also enforces this.)
+                q1_prompt: OWNER_INTERVIEW_QUESTIONS[0],
+                q1_answer: form.owner_q1_answer,
+                q2_prompt: OWNER_INTERVIEW_QUESTIONS[1],
+                q2_answer: form.owner_q2_answer,
+                q3_prompt: OWNER_INTERVIEW_QUESTIONS[2],
+                q3_answer: form.owner_q3_answer,
+                q4_prompt: OWNER_INTERVIEW_QUESTIONS[3],
+                q4_answer: form.owner_q4_answer,
+              }
+            : undefined,
+        devotional:
+          form.devotional_question || form.devotional_image_url
+            ? {
+                image_url: form.devotional_image_url || undefined,
+                question: form.devotional_question || undefined,
+                answer: form.devotional_answer || undefined,
+              }
+            : undefined,
         gallery_urls: form.gallery_urls,
         cta_type: form.cta_type,
         cta_url:
           form.cta_type === "visit_shop"
             ? undefined
-            : normalizeExternalUrl(form.cta_url) || undefined,
+            : form.cta_url || undefined,
         logo_url: form.logo_url || undefined,
         cover_image_url: form.cover_image_url || undefined,
         hours_of_operation: form.always_open
@@ -494,24 +453,11 @@ export const DirectoryListingForm = ({
             <label className="label-sm text-secondary block mb-1">
               Website
             </label>
-            {/* NOT type="url": that fires native validation ("Please enter a
-                URL") on the protocol-less values we imported ourselves —
-                "braunbookkeeping.co" — which is most of the Bubble set. The
-                owner then can't save their own listing, and the browser's
-                tooltip doesn't say why. normalizeExternalUrl (on blur here,
-                and again on submit) adds the scheme instead. */}
             <input
               name="website_url"
-              type="text"
-              inputMode="url"
+              type="url"
               value={form.website_url}
               onChange={handleChange}
-              onBlur={(e) => {
-                const normalized = normalizeExternalUrl(e.target.value)
-                if (normalized && normalized !== e.target.value) {
-                  setForm((prev) => ({ ...prev, website_url: normalized }))
-                }
-              }}
               placeholder="https://"
               className="w-full border rounded-sm px-3 py-2 text-sm"
             />
@@ -636,14 +582,12 @@ export const DirectoryListingForm = ({
             label="Logo"
             value={form.logo_url}
             onChange={(url) => setField("logo_url", url)}
-            onUploadingChange={trackUpload}
             hint="Square works best (around 500×500px). JPG, PNG, or WebP, up to 10 MB."
           />
           <ImageUploadField
             label="Banner"
             value={form.cover_image_url}
             onChange={(url) => setField("cover_image_url", url)}
-            onUploadingChange={trackUpload}
             hint="Wide image (around 1600×500px) shown across the top of your listing."
           />
         </div>
@@ -766,16 +710,9 @@ export const DirectoryListingForm = ({
                   </label>
                   <input
                     name="cta_url"
-                    type="text"
-                    inputMode="url"
+                    type="url"
                     value={form.cta_url}
                     onChange={handleChange}
-                    onBlur={(e) => {
-                      const normalized = normalizeExternalUrl(e.target.value)
-                      if (normalized && normalized !== e.target.value) {
-                        setForm((prev) => ({ ...prev, cta_url: normalized }))
-                      }
-                    }}
                     placeholder="https://"
                     className="w-full border rounded-sm px-3 py-2 text-sm"
                   />
@@ -799,7 +736,6 @@ export const DirectoryListingForm = ({
           onChange={(urls) =>
             setForm((prev) => ({ ...prev, gallery_urls: urls }))
           }
-          onUploadingChange={trackUpload}
           max={8}
         />
       </div>
@@ -820,7 +756,6 @@ export const DirectoryListingForm = ({
               label="Owner Photo"
               value={form.owner_photo_url}
               onChange={(url) => setField("owner_photo_url", url)}
-              onUploadingChange={trackUpload}
               hint="Square photo works best (around 1000×1000px) — it's shown as a square. JPG, PNG, or WebP, up to 10 MB. Larger images are resized automatically."
             />
             {([1, 2, 3, 4] as const).map((n) => (
@@ -877,7 +812,6 @@ export const DirectoryListingForm = ({
             label="Devotional Image"
             value={form.devotional_image_url}
             onChange={(url) => setField("devotional_image_url", url)}
-            onUploadingChange={trackUpload}
             hint="Square image works best (around 1000×1000px) — it's shown as a square. JPG, PNG, or WebP, up to 10 MB. Larger images are resized automatically."
           />
           <div>
@@ -945,7 +879,7 @@ export const DirectoryListingForm = ({
 
       <button
         type="submit"
-        disabled={submitting || !form.business_name || uploadsInFlight > 0}
+        disabled={submitting || !form.business_name}
         // Inline styles instead of Tailwind theme classes. The previous
         // `bg-primary text-white` resolved to transparent-on-gray because
         // the storefront's `--bg-primary` CSS variable isn't reliably
@@ -956,20 +890,12 @@ export const DirectoryListingForm = ({
         style={{
           backgroundColor: "#17294A",
           color: "#ffffff",
-          opacity:
-            submitting || !form.business_name || uploadsInFlight > 0 ? 0.5 : 1,
-          cursor:
-            submitting || !form.business_name || uploadsInFlight > 0
-              ? "not-allowed"
-              : "pointer",
+          opacity: submitting || !form.business_name ? 0.5 : 1,
+          cursor: submitting || !form.business_name ? "not-allowed" : "pointer",
         }}
         className="px-6 py-2 rounded-sm text-sm uppercase font-medium"
       >
-        {uploadsInFlight > 0
-          ? "Uploading image…"
-          : submitting
-            ? "Saving..."
-            : submitLabel}
+        {submitting ? "Saving..." : submitLabel}
       </button>
     </form>
   )
