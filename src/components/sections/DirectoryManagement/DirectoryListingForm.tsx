@@ -318,7 +318,7 @@ export const DirectoryListingForm = ({
         cta_url:
           form.cta_type === "visit_shop"
             ? undefined
-            : form.cta_url || undefined,
+            : normalizeExternalUrl(form.cta_url) || undefined,
         logo_url: form.logo_url || undefined,
         cover_image_url: form.cover_image_url || undefined,
         hours_of_operation: form.always_open
@@ -453,11 +453,24 @@ export const DirectoryListingForm = ({
             <label className="label-sm text-secondary block mb-1">
               Website
             </label>
+            {/* NOT type="url": native validation ("Please enter a URL") fires
+                on the protocol-less values we imported ourselves —
+                "braunbookkeeping.co" — which is most of the Bubble set, so the
+                owner can't save their own listing and the browser won't say
+                why. normalizeExternalUrl adds the scheme on blur and on
+                submit. */}
             <input
               name="website_url"
-              type="url"
+              type="text"
+              inputMode="url"
               value={form.website_url}
               onChange={handleChange}
+              onBlur={(e) => {
+                const normalized = normalizeExternalUrl(e.target.value)
+                if (normalized && normalized !== e.target.value) {
+                  setForm((prev) => ({ ...prev, website_url: normalized }))
+                }
+              }}
               placeholder="https://"
               className="w-full border rounded-sm px-3 py-2 text-sm"
             />
@@ -710,9 +723,16 @@ export const DirectoryListingForm = ({
                   </label>
                   <input
                     name="cta_url"
-                    type="url"
+                    type="text"
+                    inputMode="url"
                     value={form.cta_url}
                     onChange={handleChange}
+                    onBlur={(e) => {
+                      const normalized = normalizeExternalUrl(e.target.value)
+                      if (normalized && normalized !== e.target.value) {
+                        setForm((prev) => ({ ...prev, cta_url: normalized }))
+                      }
+                    }}
                     placeholder="https://"
                     className="w-full border rounded-sm px-3 py-2 text-sm"
                   />
