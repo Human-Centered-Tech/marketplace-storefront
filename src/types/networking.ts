@@ -12,9 +12,20 @@ export type NetworkingEvent = {
   created_by: string | null
   metadata: Record<string, unknown> | null
   event_type?: "general" | "featured"
+  // Where the event actually happens. Optional so an older backend (or a cached
+  // payload) doesn't break the page — absent means treat it as virtual, which
+  // is what every event has been to date.
+  location_type?: "virtual" | "in_person" | "hybrid"
+  location?: string | null
   // Public confirmed-RSVP count derived server-side (the raw rsvps rows are
   // not returned to the storefront — they carry attendee PII).
   confirmed_rsvp_count?: number
+  // Whether the CURRENT viewer has already RSVP'd. Server-derived; only
+  // meaningful for an authenticated request.
+  has_rsvped?: boolean
+  // Whether we already have a phone number for the viewer — drives whether the
+  // RSVP form asks for one. The number itself is never sent to the browser.
+  has_phone_on_file?: boolean
   rsvps?: NetworkingRSVP[]
   created_at: string
   updated_at: string

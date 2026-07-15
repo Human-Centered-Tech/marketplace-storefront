@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react"
 import { useSearchParams, useRouter, usePathname } from "next/navigation"
 import { algoliasearch } from "algoliasearch"
+import { useWindowVirtualizer } from "@tanstack/react-virtual"
 import { DirectoryListing, DirectoryCategory } from "@/types/directory"
 import { DirectoryListingCard } from "./DirectoryListingCard"
 import { DirectoryMapView } from "./DirectoryMap"
@@ -21,6 +22,38 @@ const PAGE_SIZE = 20
 const ALGOLIA_INDEX = "directory_listings"
 const KM_PER_MI = 1.60934
 const M_PER_MI = 1609.344
+
+// --- Infinite scroll / windowing -------------------------------------------
+// The directory holds ~4,500 listings. Infinite scroll without windowing would
+// append every one of them into the DOM, so the list view is virtualized: only
+// the visible rows (plus overscan) are mounted. `allListings` still holds the
+// full loaded set, which is what the map view and the dedup filter read from —
+// virtualization is a rendering concern only and never touches the data.
+//
+// Rough height of one card row (image h-48 + padded body + the gap below it).
+// It only has to be close: react-virtual measures each row for real once it
+// mounts and corrects the offsets.
+const ROW_ESTIMATE_PX = 460
+// Start fetching the next page once the last mounted row is this close to the
+// end of the loaded set, so the next batch is usually in place before the user
+// reaches the bottom.
+const PREFETCH_ROWS = 2
+// Tailwind's `lg` breakpoint — the grid is 1 column below it, 3 at and above.
+const LG_BREAKPOINT = "(min-width: 1024px)"
+
+/** Column count of the results grid, mirroring `grid-cols-1 lg:grid-cols-3`. */
+function useGridColumns() {
+  // Starts at 1 so the server render and the first client render agree.
+  const [columns, setColumns] = useState(1)
+  useEffect(() => {
+    const mq = window.matchMedia(LG_BREAKPOINT)
+    const apply = () => setColumns(mq.matches ? 3 : 1)
+    apply()
+    mq.addEventListener("change", apply)
+    return () => mq.removeEventListener("change", apply)
+  }, [])
+  return columns
+}
 
 // Default proximity origin used purely for ranking (closer-first within
 // each tier) when the user hasn't shared their location or typed a zip.
@@ -211,6 +244,19 @@ export const DirectorySearch = ({
   )
   const [loading, setLoading] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
+  // Whether Algolia has another page for the current query. Seeded from the
+  // server-rendered first page; recomputed from nbPages on every search.
+  const [hasMore, setHasMore] = useState(
+    initialListings.length < initialCount
+  )
+  // Set when an append fails. Infinite scroll would otherwise re-fire the same
+  // failing request every time the sentinel row stays on screen, so auto-load
+  // parks itself and the user gets an explicit Retry instead.
+  const [loadMoreFailed, setLoadMoreFailed] = useState(false)
+  // Last page successfully loaded. Tracked explicitly rather than derived from
+  // allListings.length, which drifts once dedup drops a repeated hit and would
+  // then request the same page forever.
+  const pageRef = useRef(0)
   const [view, setView] = useState<ViewMode>("list")
   // Map-driven viewport search. When set, the Algolia query swaps
   // aroundLatLng/aroundRadius for insideBoundingBox so we scope to the
@@ -442,16 +488,34 @@ export const DirectorySearch = ({
         const result = results[0] as {
           hits: DirectoryHit[]
           nbHits: number
+          nbPages?: number
         }
         const listings = (result.hits || []).map(hitToListing)
         if (append) {
-          setAllListings((prev) => [...prev, ...listings])
+          // Dedup by id. Algolia can repeat a record across page boundaries
+          // when ranking scores tie, and a duplicate key would break both
+          // React reconciliation and the map pins.
+          setAllListings((prev) => {
+            const seen = new Set(prev.map((l) => l.id))
+            const fresh = listings.filter((l) => !seen.has(l.id))
+            return fresh.length ? [...prev, ...fresh] : prev
+          })
         } else {
           setAllListings(listings)
         }
         setCount(result.nbHits ?? 0)
+        pageRef.current = page
+        // Algolia caps pagination (paginationLimitedTo, 1000 hits by default),
+        // so nbPages — NOT nbHits — is the real end of the road. Trusting nbHits
+        // here would let infinite scroll spin forever on empty pages once the
+        // cap is hit. A short page is a second, belt-and-braces terminator.
+        const nbPages = result.nbPages ?? 0
+        setHasMore(page + 1 < nbPages && listings.length > 0)
+        setLoadMoreFailed(false)
       } catch {
-        // Keep current state on error — better than wiping the UI.
+        // Keep current state on error — better than wiping the UI. For an
+        // append, park auto-loading so the sentinel doesn't retry in a loop.
+        if (append) setLoadMoreFailed(true)
       } finally {
         setLoading(false)
         setLoadingMore(false)
@@ -478,10 +542,18 @@ export const DirectorySearch = ({
   }, [runSearch, algoliaEnabled])
 
   const loadMore = useCallback(() => {
-    if (loadingMore || allListings.length >= count) return
-    const nextPage = Math.floor(allListings.length / PAGE_SIZE)
-    runSearch(nextPage, true)
-  }, [runSearch, loadingMore, allListings.length, count])
+    // `loading` (a page-0 refetch from a filter change) also blocks: appending
+    // page N of the old query onto page 0 of the new one would interleave two
+    // different result sets.
+    if (loadingMore || loading || !hasMore || loadMoreFailed) return
+    if (!algoliaEnabled) return
+    runSearch(pageRef.current + 1, true)
+  }, [runSearch, loadingMore, loading, hasMore, loadMoreFailed, algoliaEnabled])
+
+  const retryLoadMore = useCallback(() => {
+    setLoadMoreFailed(false)
+    runSearch(pageRef.current + 1, true)
+  }, [runSearch])
 
   // Active state for premium-banner display: explicit dropdown wins,
   // else the user's geocoded state (from GPS or zip).
@@ -530,7 +602,102 @@ export const DirectorySearch = ({
     () => new Set(premiumBanners.map((l) => l.id)),
     [premiumBanners]
   )
-  const filteredListings = allListings.filter((l) => !bannerIds.has(l.id))
+  const filteredListings = useMemo(
+    () => allListings.filter((l) => !bannerIds.has(l.id)),
+    [allListings, bannerIds]
+  )
+
+  // --- Virtualized list view ------------------------------------------------
+  // Window-scrolled (the page has no inner scroll container), row-windowed:
+  // the grid is chunked into rows of `columns` and only the rows near the
+  // viewport are mounted. `filteredListings` — the full loaded set — still
+  // feeds the map view untouched.
+  //
+  // Before mount we render the plain grid, which is what the server emitted:
+  // it keeps the first page of listings in the SSR HTML (crawlable, no flash)
+  // and it means hydration matches. The swap to the windowed list happens on
+  // the mount effect, at the top of the page, so no scroll jump.
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
+  const columns = useGridColumns()
+
+  const rows = useMemo(() => {
+    const chunked: DirectoryListing[][] = []
+    for (let i = 0; i < filteredListings.length; i += columns) {
+      chunked.push(filteredListings.slice(i, i + columns))
+    }
+    return chunked
+  }, [filteredListings, columns])
+
+  const listRef = useRef<HTMLDivElement | null>(null)
+  // Distance from the top of the document to the top of the list. The
+  // virtualizer needs it to map window scroll onto row offsets; without it it
+  // would behave as though the list started at y=0 and skip the first rows as
+  // soon as you scrolled past the search bar. Re-measured whenever anything
+  // above the list can change height (premium banners load in async) or the
+  // window resizes.
+  const [listOffsetTop, setListOffsetTop] = useState(0)
+  useEffect(() => {
+    if (!mounted || view !== "list") return
+    const measure = () => {
+      const el = listRef.current
+      if (!el) return
+      // getBoundingClientRect + scrollY, NOT offsetTop: the directory page
+      // wraps this component in a `relative` <header>, which makes it the
+      // offsetParent — offsetTop would measure from there, not the document.
+      setListOffsetTop(
+        Math.round(el.getBoundingClientRect().top + window.scrollY)
+      )
+    }
+    measure()
+    window.addEventListener("resize", measure)
+    // Anything above the list can change height at any time — premium banners
+    // arriving, the zip-code hint appearing under the location field, the
+    // radius select showing up. Watch the body instead of trying to enumerate
+    // them. Re-measuring to the same value is a no-op (React bails on an equal
+    // state value), so the list's own growth doesn't loop this.
+    const ro = new ResizeObserver(measure)
+    ro.observe(document.body)
+    return () => {
+      window.removeEventListener("resize", measure)
+      ro.disconnect()
+    }
+  }, [mounted, view, premiumBanners.length, columns])
+
+  const virtualizer = useWindowVirtualizer({
+    count: rows.length,
+    estimateSize: () => ROW_ESTIMATE_PX,
+    overscan: 3,
+    scrollMargin: listOffsetTop,
+    getItemKey: (index) => rows[index]?.[0]?.id ?? index,
+  })
+  const virtualRows = virtualizer.getVirtualItems()
+
+  // Infinite scroll. The last mounted row coming within PREFETCH_ROWS of the
+  // end of the loaded set is the trigger — no button, and no bottom sentinel
+  // that a windowed list would keep permanently off-screen. loadMore is itself
+  // idempotent (it no-ops while a request is in flight, once Algolia's last
+  // page is in, or after a failure).
+  const lastVirtualRow = virtualRows[virtualRows.length - 1]
+  useEffect(() => {
+    if (!mounted || view !== "list") return
+    if (rows.length === 0) return
+    if (!lastVirtualRow) return
+    if (lastVirtualRow.index >= rows.length - 1 - PREFETCH_ROWS) {
+      loadMore()
+    }
+  }, [mounted, view, rows.length, lastVirtualRow, loadMore])
+
+  // Out of pages but not out of matches — see the copy note at the bottom.
+  const reachedPaginationCap = !hasMore && filteredListings.length < count
+
+  const renderCard = (listing: DirectoryListing) => (
+    <DirectoryListingCard
+      key={listing.id}
+      listing={listing}
+      showDistance={showDistance}
+    />
+  )
 
   return (
     <>
@@ -768,27 +935,73 @@ export const DirectorySearch = ({
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-7xl">
-                {filteredListings.map((listing) => (
-                  <DirectoryListingCard
-                    key={listing.id}
-                    listing={listing}
-                    showDistance={showDistance}
-                  />
-                ))}
-              </div>
-              {filteredListings.length < count && (
-                <div className="mt-16 flex flex-col items-center">
-                  <div className="w-24 h-px bg-gold mb-4" />
-                  <button
-                    onClick={loadMore}
-                    disabled={loadingMore}
-                    className="bg-gray-100 text-navy-dark px-8 py-3 rounded-xl label-sm text-[10px] font-bold tracking-[0.2em] hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              {!mounted ? (
+                // Server render / first paint: the plain grid, exactly as
+                // before. Swapped for the windowed list on mount.
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-7xl">
+                  {filteredListings.map(renderCard)}
+                </div>
+              ) : (
+                <div ref={listRef} className="max-w-7xl">
+                  <div
+                    className="relative w-full"
+                    style={{ height: `${virtualizer.getTotalSize()}px` }}
                   >
-                    {loadingMore ? "Loading…" : "Load More Partners"}
-                  </button>
+                    {virtualRows.map((virtualRow) => (
+                      <div
+                        key={virtualRow.key}
+                        data-index={virtualRow.index}
+                        ref={virtualizer.measureElement}
+                        className="absolute top-0 left-0 w-full grid grid-cols-1 lg:grid-cols-3 gap-6 pb-6"
+                        style={{
+                          transform: `translateY(${
+                            virtualRow.start - virtualizer.options.scrollMargin
+                          }px)`,
+                        }}
+                      >
+                        {rows[virtualRow.index]?.map(renderCard)}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Infinite-scroll status strip. Keeps the gold hairline the
+                  Load More block used, so the page bottom reads the same. */}
+              {(loadingMore || loadMoreFailed || !hasMore) && (
+                <div className="mt-10 flex flex-col items-center">
+                  <div className="w-24 h-px bg-gold mb-4" />
+                  {loadingMore ? (
+                    <p
+                      className="label-sm text-[10px] text-secondary font-bold tracking-[0.2em]"
+                      role="status"
+                      aria-live="polite"
+                    >
+                      Loading more partners…
+                    </p>
+                  ) : loadMoreFailed ? (
+                    <button
+                      onClick={retryLoadMore}
+                      className="bg-gray-100 text-navy-dark px-8 py-3 rounded-xl label-sm text-[10px] font-bold tracking-[0.2em] hover:bg-gray-200 transition-colors"
+                    >
+                      Couldn&apos;t load more — Retry
+                    </button>
+                  ) : reachedPaginationCap ? (
+                    // Algolia stops paginating at 1,000 hits, so on a broad
+                    // query we run out of pages long before we run out of
+                    // matches. Say so rather than claiming they've seen it all.
+                    <p className="label-sm text-[10px] text-secondary font-bold tracking-[0.2em] text-center">
+                      That&apos;s as far as this search goes — refine it to see
+                      more
+                    </p>
+                  ) : (
+                    <p className="label-sm text-[10px] text-secondary font-bold tracking-[0.2em]">
+                      You&apos;ve seen every partner
+                    </p>
+                  )}
                   <p className="mt-3 text-xs text-secondary">
-                    Showing {filteredListings.length} of {count}
+                    Showing {filteredListings.length.toLocaleString()} of{" "}
+                    {count.toLocaleString()}
                   </p>
                 </div>
               )}

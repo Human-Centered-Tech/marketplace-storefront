@@ -46,6 +46,7 @@
     "@stripe/react-stripe-js": "^3.7.0",
     "@stripe/stripe-js": "^7.1.0",
     "@talkjs/react": "^0.1.11",
+    "@tanstack/react-virtual": "^3.13.24",
     "@types/js-cookie": "^3.0.6",
     "@vis.gl/react-google-maps": "^1.8.3",
     "algoliasearch": "^5.20.3",

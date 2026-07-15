@@ -67,46 +67,12 @@ export type Message = {
   created_at: string
 }
 
-const ATTACHMENT_TYPES = [
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "image/gif",
-  "image/avif",
-  "application/pdf",
-]
-const ATTACHMENT_MAX_BYTES = 10 * 1024 * 1024
-
-// Upload a single message attachment (image/PDF). Reuses the customer-authed
-// /store/directory/uploads endpoint (base64). Returns the stored URL + meta.
-export async function uploadMessageAttachment(
-  formData: FormData
-): Promise<
-  { ok: true; attachment: MessageAttachment } | { ok: false; error: string }
-> {
-  const file = formData.get("file") as File | null
-  if (!file) return { ok: false, error: "No file selected" }
-  if (!ATTACHMENT_TYPES.includes(file.type)) {
-    return { ok: false, error: "Only images or PDFs are allowed" }
-  }
-  if (file.size > ATTACHMENT_MAX_BYTES) {
-    return { ok: false, error: "File too large (max 10MB)" }
-  }
-  const data_base64 = Buffer.from(await file.arrayBuffer()).toString("base64")
-  const res = await authedFetch<{ url: string }>("/store/directory/uploads", {
-    method: "POST",
-    body: JSON.stringify({
-      filename: file.name,
-      content_type: file.type,
-      data_base64,
-    }),
-  })
-  if (!res?.url) return { ok: false, error: "Upload failed" }
-  return {
-    ok: true,
-    attachment: { url: res.url, type: file.type, name: file.name, size: file.size },
-  }
-}
+// NOTE: message attachments deliberately do NOT go through a server action.
+// `uploadMessageAttachment` used to live here and took a FormData carrying the
+// raw File — the same pattern whose multipart parsing dies mid-stream with
+// "Unexpected end of form" (Sentry; fixed for barter 7/2 and directory 7/10).
+// Files now go through the /api/messaging/upload route handler; see
+// @/lib/helpers/messaging-upload for the client helper. Don't reintroduce it.
 
 export async function listConversations() {
   return authedFetch<{ conversations: Conversation[]; count: number }>(

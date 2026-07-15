@@ -39,8 +39,23 @@ export const NetworkingEventDetail = ({
   event: NetworkingEvent
 }) => {
   const [rsvpLoading, setRsvpLoading] = useState(false)
-  const [rsvpSuccess, setRsvpSuccess] = useState(false)
+  // RSVP made in THIS session. Separate from `event.has_rsvped` (the server's
+  // answer) because only a fresh RSVP should bump the attendee count — a
+  // pre-existing one is already inside the server-derived number.
+  const [justRsvped, setJustRsvped] = useState(false)
   const [rsvpError, setRsvpError] = useState("")
+  const [showPhoneStep, setShowPhoneStep] = useState(false)
+  const [phone, setPhone] = useState("")
+  const [smsOptIn, setSmsOptIn] = useState(false)
+
+  // The RSVP used to live in React state ALONE: reload the page and the button
+  // said "RSVP Now" again, and clicking it returned the backend's "Already
+  // RSVP'd to this event" 400 as a red error. The event payload now carries the
+  // viewer's own RSVP state.
+  const isGoing = (event.has_rsvped ?? false) || justRsvped
+
+  // Only ask for a phone number when the backend says it doesn't have one.
+  const needsPhone = event.has_phone_on_file === false
 
   // Prefer the server-derived confirmed count (the public payload no longer
   // ships raw rsvps). +1 optimistically once the viewer's own RSVP lands so
@@ -49,7 +64,7 @@ export const NetworkingEventDetail = ({
     event.confirmed_rsvp_count ??
     event.rsvps?.filter((r) => r.status === "confirmed").length ??
     0
-  const rsvpCount = baseRsvpCount + (rsvpSuccess ? 1 : 0)
+  const rsvpCount = baseRsvpCount + (justRsvped ? 1 : 0)
   const spotsLeft = event.max_participants - rsvpCount
   const isPast = new Date(event.event_date) < new Date()
   const isFull = spotsLeft <= 0
@@ -57,6 +72,23 @@ export const NetworkingEventDetail = ({
     100,
     Math.round((rsvpCount / event.max_participants) * 100)
   )
+
+  // Where the event happens. This page used to hardcode "Virtual (Zoom)" in
+  // three places, so a genuinely in-person event was mislabeled — the mirror
+  // image of the app's bug, which inferred "In Person" whenever a Zoom link
+  // hadn't been pasted in yet. Both now read one field. Missing (older backend)
+  // = virtual, which is what every event has been to date.
+  const locationType = event.location_type ?? "virtual"
+  const isVirtual = locationType === "virtual" || locationType === "hybrid"
+  const locationLabel =
+    locationType === "virtual"
+      ? "Virtual (Zoom)"
+      : locationType === "hybrid"
+        ? event.location
+          ? `${event.location} · or Zoom`
+          : "In person or Zoom"
+        : event.location || "In person"
+  const locationIcon = isVirtual ? "videocam" : "location_on"
 
   // Admin-editable agenda saved to event.metadata.format. When present, it
   // replaces the default 3-step agenda below. Preserve the author's line
@@ -66,16 +98,48 @@ export const NetworkingEventDetail = ({
       ? event.metadata.format.trim()
       : ""
 
-  const handleRsvp = async () => {
+  const submitRsvp = async (reminder?: {
+    phone?: string
+    sms_opt_in?: boolean
+  }) => {
     setRsvpLoading(true)
     setRsvpError("")
-    const result = await rsvpToEvent(event.id)
+    const result = await rsvpToEvent(event.id, reminder)
     if (result.ok) {
-      setRsvpSuccess(true)
+      setJustRsvped(true)
+      setShowPhoneStep(false)
+      setPhone("")
+    } else if (/already rsvp/i.test(result.error || "")) {
+      // Already going (e.g. RSVP'd on the app). Reflect it instead of showing
+      // a red error for something that isn't one.
+      setJustRsvped(true)
+      setShowPhoneStep(false)
     } else {
       setRsvpError(result.error || "Failed to RSVP")
     }
     setRsvpLoading(false)
+  }
+
+  // First click opens the reminder step when we have no number on file;
+  // otherwise it RSVPs straight away.
+  const handleRsvp = () => {
+    if (needsPhone && !showPhoneStep) {
+      setRsvpError("")
+      setShowPhoneStep(true)
+      return
+    }
+    void submitRsvp()
+  }
+
+  const handleRsvpWithPhone = () => {
+    if (smsOptIn && !phone.trim()) {
+      setRsvpError("Enter a mobile number, or untick the reminder box.")
+      return
+    }
+    void submitRsvp({
+      phone: phone.trim() || undefined,
+      sms_opt_in: smsOptIn && Boolean(phone.trim()),
+    })
   }
 
   return (
@@ -139,25 +203,25 @@ export const NetworkingEventDetail = ({
                   className="material-symbols-outlined text-gold-dark"
                   style={{ fontVariationSettings: "'FILL' 1" }}
                 >
-                  {rsvpSuccess ? "check_circle" : isPast ? "history" : "event"}
+                  {isGoing ? "check_circle" : isPast ? "history" : "event"}
                 </span>
               </div>
               <div>
                 <h3 className="font-serif text-lg text-navy-dark mb-1">
-                  {rsvpSuccess
-                    ? "You're confirmed!"
+                  {isGoing
+                    ? "You're going"
                     : isPast
                       ? "This event has concluded"
                       : `${spotsLeft} spots remaining`}
                 </h3>
                 <p className="text-sm text-secondary mb-4">
-                  {rsvpSuccess
-                    ? "Check your email for the calendar invite."
+                  {isGoing
+                    ? "We've emailed you a calendar invite with the details."
                     : isPast
                       ? "Thank you to all who attended."
                       : "Reserve your spot for this event."}
                 </p>
-                {!isPast && !rsvpSuccess && !isFull && (
+                {!isPast && !isGoing && !isFull && !showPhoneStep && (
                   <button
                     onClick={handleRsvp}
                     disabled={rsvpLoading}
@@ -203,7 +267,7 @@ export const NetworkingEventDetail = ({
                 <p className="font-serif text-navy-dark">
                   {event.duration_minutes} Minutes
                 </p>
-                <p className="text-sm text-secondary">Virtual (Zoom)</p>
+                <p className="text-sm text-secondary">{locationLabel}</p>
               </div>
             </div>
           </section>
@@ -269,8 +333,9 @@ export const NetworkingEventDetail = ({
             )}
           </section>
 
-          {/* Zoom Link (if available) */}
-          {event.zoom_join_url && !isPast && (
+          {/* Meeting link — registered attendees only. Someone who hasn't
+              RSVP'd gets told how to get it rather than a dead panel. */}
+          {isVirtual && !isPast && isGoing && (
             <>
               <hr className="border-gold/20" />
               <section className="bg-navy-dark p-10 rounded-xl relative overflow-hidden">
@@ -278,20 +343,32 @@ export const NetworkingEventDetail = ({
                   <h2 className="font-serif text-2xl text-[#F2CD69] mb-2">
                     Meeting Link
                   </h2>
-                  <p className="text-white/70 text-sm mb-6">
-                    Join via Zoom when the event begins.
-                  </p>
-                  <a
-                    href={event.zoom_join_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 bg-[#F2CD69] text-navy-dark px-6 py-3 rounded-lg label-sm text-[10px] font-bold tracking-widest hover:brightness-105 transition-all"
-                  >
-                    <span className="material-symbols-outlined text-lg">
-                      videocam
-                    </span>
-                    Join Zoom Meeting
-                  </a>
+                  {event.zoom_join_url ? (
+                    <>
+                      <p className="text-white/70 text-sm mb-6">
+                        Join via Zoom when the event begins.
+                      </p>
+                      <a
+                        href={event.zoom_join_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 bg-[#F2CD69] text-navy-dark px-6 py-3 rounded-lg label-sm text-[10px] font-bold tracking-widest hover:brightness-105 transition-all"
+                      >
+                        <span className="material-symbols-outlined text-lg">
+                          videocam
+                        </span>
+                        Join Zoom Meeting
+                      </a>
+                    </>
+                  ) : (
+                    // The Zoom link is pasted in by hand in the admin, often
+                    // after people have RSVP'd — say so instead of pretending
+                    // there's nothing here.
+                    <p className="text-white/70 text-sm">
+                      You&apos;re registered. We&apos;ll email you the Zoom link
+                      before the event begins.
+                    </p>
+                  )}
                 </div>
               </section>
             </>
@@ -323,7 +400,7 @@ export const NetworkingEventDetail = ({
             </div>
 
             {/* RSVP Button (sidebar) */}
-            {!isPast && !rsvpSuccess && (
+            {!isPast && !isGoing && !showPhoneStep && (
               <button
                 onClick={handleRsvp}
                 disabled={rsvpLoading || isFull}
@@ -340,10 +417,63 @@ export const NetworkingEventDetail = ({
                     : "RSVP Now"}
               </button>
             )}
-            {rsvpSuccess && (
+
+            {/* Reminder step. Only shown when we have NO number on file — a
+                returning member is never asked twice. Skipping still RSVPs. */}
+            {!isPast && !isGoing && showPhoneStep && (
+              <div className="space-y-3">
+                <label
+                  htmlFor="rsvp-phone"
+                  className="label-sm text-[10px] text-gold-dark tracking-widest block"
+                >
+                  Remind me about this event
+                </label>
+                <input
+                  id="rsvp-phone"
+                  type="tel"
+                  inputMode="tel"
+                  autoComplete="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="(555) 123-4567"
+                  className="w-full px-3 py-2 rounded-lg border border-gold/30 bg-white text-navy-dark focus:outline-none focus:border-gold"
+                />
+                <label className="flex items-start gap-2 text-xs text-secondary leading-relaxed">
+                  <input
+                    type="checkbox"
+                    checked={smsOptIn}
+                    onChange={(e) => setSmsOptIn(e.target.checked)}
+                    className="mt-0.5 shrink-0"
+                  />
+                  <span>
+                    Text me reminders about this event. Msg &amp; data rates may
+                    apply. Reply STOP to opt out.
+                  </span>
+                </label>
+                <button
+                  onClick={handleRsvpWithPhone}
+                  disabled={rsvpLoading}
+                  className="w-full py-3 rounded-xl label-sm text-[10px] font-bold tracking-widest bg-navy-dark text-white hover:bg-navy transition-all shadow-lg active:scale-95 disabled:opacity-50"
+                >
+                  {rsvpLoading ? "Submitting..." : "Confirm RSVP"}
+                </button>
+                <button
+                  onClick={() => void submitRsvp()}
+                  disabled={rsvpLoading}
+                  className="w-full text-secondary label-sm text-[10px] tracking-widest hover:text-navy-dark transition-colors disabled:opacity-50"
+                >
+                  No thanks &mdash; just RSVP
+                </button>
+              </div>
+            )}
+
+            {isGoing && (
               <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
                 <p className="text-sm text-green-800 font-medium">
-                  You&apos;re confirmed!
+                  You&apos;re going
+                </p>
+                <p className="text-xs text-green-700 mt-1">
+                  A calendar invite is on its way to your inbox.
                 </p>
               </div>
             )}
@@ -391,20 +521,26 @@ export const NetworkingEventDetail = ({
                     {event.duration_minutes} minutes
                   </p>
                   <p className="text-xs text-secondary">
-                    Live virtual session
+                    {isVirtual ? "Live virtual session" : "In-person session"}
                   </p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
                 <span className="material-symbols-outlined text-gold-dark text-lg mt-0.5">
-                  videocam
+                  {locationIcon}
                 </span>
                 <div>
                   <p className="text-sm font-medium text-navy-dark">
-                    Virtual (Zoom)
+                    {locationLabel}
                   </p>
                   <p className="text-xs text-secondary">
-                    Link provided after RSVP
+                    {!isVirtual
+                      ? "Join us in person"
+                      : isGoing
+                        ? event.zoom_join_url
+                          ? "Link is on this page and in your invite"
+                          : "Link emailed before the event"
+                        : "Link provided after RSVP"}
                   </p>
                 </div>
               </div>

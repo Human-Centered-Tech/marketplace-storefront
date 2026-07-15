@@ -34,8 +34,14 @@ export const NetworkingEventCard = ({
   now: number
 }) => {
   const date = formatEventDate(event.event_date)
+  // Server-derived count. The public payload DELETES the raw rsvps rows (they
+  // carry attendee PII), so the old `event.rsvps?.filter(...)` was always 0 —
+  // every card read "0/50 Joined" no matter how many people had signed up. The
+  // detail page was fixed for this and the card was missed.
   const rsvpCount =
-    event.rsvps?.filter((r) => r.status === "confirmed").length ?? 0
+    event.confirmed_rsvp_count ??
+    event.rsvps?.filter((r) => r.status === "confirmed").length ??
+    0
   // Compare against the server-provided timestamp so "Past" renders the same
   // server-side and on hydration.
   const isPast = new Date(event.event_date).getTime() < now
@@ -67,6 +73,11 @@ export const NetworkingEventCard = ({
           {isPast && (
             <div className="absolute top-4 right-4 bg-gray-600 px-3 py-1 rounded label-sm text-[10px] font-bold text-white tracking-widest">
               Past
+            </div>
+          )}
+          {!isPast && event.has_rsvped && (
+            <div className="absolute top-4 right-4 bg-green-700 px-3 py-1 rounded label-sm text-[10px] font-bold text-white tracking-widest">
+              Going
             </div>
           )}
         </div>
@@ -105,10 +116,16 @@ export const NetworkingEventCard = ({
             className={`block w-full md:w-40 py-3 text-center label-sm text-[10px] font-bold tracking-widest rounded-xl transition-colors shadow-lg active:scale-95 ${
               isPast
                 ? "bg-gray-200 text-secondary cursor-default"
-                : "bg-navy-dark text-white hover:bg-navy"
+                : event.has_rsvped
+                  ? "bg-green-50 text-green-800 border border-green-200 cursor-default"
+                  : "bg-navy-dark text-white hover:bg-navy"
             }`}
           >
-            {isPast ? "Completed" : "RSVP Now"}
+            {isPast
+              ? "Completed"
+              : event.has_rsvped
+                ? "You're Going"
+                : "RSVP Now"}
           </span>
         </div>
       </div>
