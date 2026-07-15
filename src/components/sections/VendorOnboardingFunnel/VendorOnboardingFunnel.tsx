@@ -116,8 +116,17 @@ export const VendorOnboardingFunnel = ({
     <main className="min-h-screen bg-[#faf9f5] py-16 px-6 lg:px-16">
       <div className="max-w-3xl mx-auto">
         <div className="mb-8 flex items-center justify-between">
+          {/* Only the product path is a Merchant. Everyone else here — service
+              businesses, and every directory claimant, who enters this funnel
+              from "Claim This Listing" — is a Business Owner with no store, so
+              the eyebrow can't call the whole funnel "Merchant Onboarding"
+              (Brooke 7/14). Before the product/service question is answered
+              `recommendedTier` is undefined, and "Business Onboarding" is the
+              honest superset. */}
           <p className="text-[#BE9B32] text-[12px] font-semibold uppercase tracking-[0.2em]">
-            Merchant Onboarding
+            {state.recommendedTier === "merchant"
+              ? "Merchant Onboarding"
+              : "Business Onboarding"}
           </p>
           {state.step !== "founding_pillars" &&
             state.step !== "service_area" && (
