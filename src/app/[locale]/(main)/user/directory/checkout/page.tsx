@@ -112,7 +112,7 @@ const TIER_DETAILS: Record<
     features: [
       "Premium, top-of-page directory placement in three states of your choice",
       "Priority directory placement in every other state your business serves",
-      "25 parish affiliations",
+      "10 parish affiliations",
       "Access to monthly Featured Member Meet-Ups",
       "Four email placements during your membership year",
       "Audience targeting for each email placement",
@@ -135,59 +135,30 @@ const TIER_DETAILS: Record<
     ],
   },
 
-  // Legacy tiers (kept for in-flight subscriptions until customer migration).
-  verified: {
-    name: "Essential",
-    price: "$50",
-    annual: "$50/year",
-    features: [
-      "Business Directory listing",
-      "1 parish affiliation",
-      "Search visibility",
-      "Marketplace product listings",
-      "Member business badge",
-    ],
-  },
-  featured: {
-    name: "Featured",
-    price: "$699",
-    annual: "$699/year",
-    features: [
-      "Priority directory placement in every state your business serves",
-      "Three parish affiliations",
-      "Access to monthly Featured Member Meet-Ups",
-      "Access to open Catholic Owned® networking opportunities",
-      "A dedicated member connection to help you get established in the network",
-      "Eligibility for Catholic Owned® Guides and other curated features",
-      "Priority support",
-    ],
-    footnote: "Featured Member Meet-Ups are monthly opportunities to build relationships, expand your circle of influence, and connect with other committed Catholic business owners. Formats may include member introductions, featured speakers, guided conversations, and structured networking.",
-  },
-  enterprise: {
-    name: "Enterprise",
-    price: "$2,999",
-    annual: "$2,999/year",
-    features: [
-      "Premium, top-of-page directory placement in three states of your choice",
-      "Priority directory placement in every other state your business serves",
-      "25 parish affiliations",
-      "Access to monthly Featured Member Meet-Ups",
-      "Four email placements during your membership year",
-      "Audience targeting for each email placement",
-      "High-visibility positioning across the platform",
-      "A dedicated member connection to help you get established in the network",
-      "A digital Catholic Owned® Enterprise Member badge",
-      "24/7 support",
-    ],
-    footnote:
-      "Enterprise membership gives your business a consistent presence within the Catholic Owned® network while helping you reach the audiences most relevant to your work.",
-  },
+  // The legacy tiers (verified / featured / enterprise) were REMOVED 2026-07-14.
+  //
+  // They were BILLING keys the backend had no Stripe price for, so it fell
+  // through to a hardcoded auto-created price: $50 / $400 / $2,000. This page,
+  // meanwhile, had been updated to advertise $699 / $2,999 — so a `featured`
+  // checkout quoted $699 and charged $400, silently. Nobody was ever billed
+  // through it (prod, 2026-07-14: zero legacy pricing_tier rows), but every
+  // "go live" and "upgrade" button routed here and 96 pending listings were
+  // queued behind it.
+  //
+  // `verified` / `featured` / `enterprise` are VISIBILITY tiers, not purchasable
+  // plans. The backend now throws if one reaches checkout. Do not re-add them.
 }
 
 export default function DirectoryCheckoutPage() {
   const searchParams = useSearchParams()
-  const tier = searchParams.get("tier") || "verified"
-  const tierInfo = TIER_DETAILS[tier] || TIER_DETAILS.verified
+
+  // Never default to a plan. This used to read `searchParams.get("tier") ||
+  // "verified"` and fall back to TIER_DETAILS.verified for anything unknown —
+  // so a bare /user/directory/checkout silently sold whatever that default
+  // happened to be. Picking a paid plan on the customer's behalf is not a sane
+  // fallback. An unrecognised or missing tier now sends them back to choose one.
+  const tier = searchParams.get("tier") ?? ""
+  const tierInfo = TIER_DETAILS[tier]
 
   const [listing, setListing] = useState<DirectoryListing | null>(null)
   const [loading, setLoading] = useState(true)
@@ -267,6 +238,30 @@ export default function DirectoryCheckoutPage() {
           </LocalizedClientLink>{" "}
           first.
         </p>
+      </main>
+    )
+  }
+
+  // Missing or unrecognised tier — including the retired legacy keys, which an
+  // old bookmark or email link may still carry. Send them back to pick a plan
+  // rather than quietly selecting one for them.
+  if (!tierInfo) {
+    return (
+      <main className="container py-8">
+        <div className="max-w-2xl mx-auto">
+          <h1 className="heading-md text-primary">Choose your membership</h1>
+          <p className="text-secondary mt-3">
+            We couldn&apos;t tell which membership you meant
+            {tier ? ` ("${tier}" is no longer available)` : ""}. Pick a plan and
+            we&apos;ll take you straight to checkout.
+          </p>
+          <LocalizedClientLink
+            href="/user/directory/subscription"
+            className="inline-block mt-5 bg-primary text-white px-4 py-2 rounded-sm text-sm uppercase font-medium"
+          >
+            See membership options
+          </LocalizedClientLink>
+        </div>
       </main>
     )
   }
@@ -364,9 +359,12 @@ export default function DirectoryCheckoutPage() {
             in Railway when payments reopen. */}
         {process.env.NEXT_PUBLIC_PAYMENTS_DISABLED === "true" && (
           <div className="bg-[rgba(190,155,50,0.1)] border border-[rgba(190,155,50,0.5)] text-primary px-4 py-3 rounded-sm mb-4 text-[14px]">
+            {/* "your listing", not "your store": this is the DIRECTORY
+                membership checkout, which Business Owners (service accounts,
+                no products, no store) go through too. */}
             Payments are temporarily disabled while we finalize our Terms of
-            Service. You can keep setting up your store — we&apos;ll notify you
-            when payment is available.
+            Service. You can keep setting up your listing — we&apos;ll notify
+            you when payment is available.
           </div>
         )}
 
