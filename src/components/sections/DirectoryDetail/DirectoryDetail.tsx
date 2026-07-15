@@ -90,9 +90,10 @@ export const DirectoryDetail = ({
 
   const isUnclaimed = !listing.owner_id
   const websiteHref = normalizeExternalUrl(listing.website_url)
-  // Featured (and Enterprise) tiers get the richer listing: owner-interview
-  // section, multiple parish affiliations, and the gold CTA button. Verified
-  // and lower tiers show none of those + a single parish affiliation.
+  // Featured (and Enterprise) tiers list multiple parish affiliations; lower
+  // tiers show a single one. NOTE: the owner-interview/devotional sections are
+  // NOT gated by this any more (client decision 2026-07-14 §1.1) — every tier
+  // fills them in and displays them.
   const isFeatured =
     listing.subscription_tier === "featured" ||
     listing.subscription_tier === "enterprise"
@@ -208,20 +209,31 @@ export const DirectoryDetail = ({
             )}
           </div>
 
-          {/* Quick action buttons */}
-          <div className="flex items-center gap-3 shrink-0">
-            {/* Message business — only when the backend attached the seller
-                messaging identity (claimed listing with an ACTIVE store;
+          {/* Quick action buttons. `flex-wrap` + a smaller tablet gap/padding:
+              at md the row is logo + business name + these four controls in
+              ~650px, and a non-wrapping `shrink-0` block used to squeeze the
+              name to nothing and push the buttons out of proportion. */}
+          <div className="flex flex-wrap items-center justify-center md:justify-end gap-2 lg:gap-3 shrink-0">
+            {/* Message this business — only when the backend attached the
+                seller messaging identity (claimed listing with an ACTIVE store;
                 Business Owners included, Brooke 7/10). Chat starts/reuses the
                 storefront-context conversation keyed on seller.id — the SAME
                 thread the marketplace seller page opens, so a merchant's
-                directory and sales messages land in one conversation. */}
+                directory and sales messages land in one conversation.
+
+                The wording is business-scoped for EVERY directory listing, not
+                just service accounts (Brooke 7/14): a Business Owner is not a
+                store, and a Merchant is still a business — so "business" is the
+                one noun that is true on both. `recipientNoun` carries it into
+                the error strings, which used to say "seller" underneath this
+                very button. */}
             {listing.seller?.id && (
               <Chat
                 user={user}
                 seller={listing.seller}
-                label="Message business"
-                buttonClassNames="bg-navy-dark text-white px-6 py-3 rounded-xl label-sm text-[10px] font-bold tracking-widest hover:bg-navy transition-colors whitespace-nowrap"
+                label="Message this business"
+                recipientNoun="business"
+                buttonClassNames="bg-navy-dark text-white px-4 lg:px-6 py-3 rounded-xl label-sm text-[10px] font-bold tracking-widest hover:bg-navy transition-colors whitespace-nowrap"
               />
             )}
             {listing.contact_phone && (
@@ -313,9 +325,12 @@ export const DirectoryDetail = ({
               </div>
             )}
 
-            {/* Owner Interview — Featured/Enterprise only */}
-            {isFeatured &&
-              listing.owner_interview &&
+            {/* Owner Interview — shown on EVERY tier (client decision
+                2026-07-14, decisions-and-followups-2026-07-14.md §1.1). The
+                featured/enterprise gate that used to wrap this is deliberately
+                gone: tiers differentiate by visibility/placement, not by hiding
+                profile content the owner already wrote. Do not re-gate. */}
+            {listing.owner_interview &&
               ([1, 2, 3, 4] as const).some(
                 (n) => (listing.owner_interview as any)?.[`q${n}_answer`]
               ) && (
@@ -324,9 +339,15 @@ export const DirectoryDetail = ({
                     MEET THE OWNER
                   </h2>
                   <div className="h-px w-full bg-gold/30 mb-8" />
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+                  {/* Layout (client decision 2026-07-14 §1.5, "Matteo's way"):
+                      stacked on phones, image beside the copy from tablet up.
+                      The photo is a FIXED, capped width — a fractional grid
+                      column used to blow it up to a full-bleed square on phones
+                      and to a third of the page on tablets. Left-aligned,
+                      square crop, same rules as the devotional below. */}
+                  <div className="flex flex-col md:flex-row gap-8 items-start">
                     {listing.owner_interview.photo_url && (
-                      <div className="md:col-span-1">
+                      <div className="w-40 sm:w-48 lg:w-56 shrink-0">
                         <button
                           type="button"
                           onClick={() =>
@@ -351,13 +372,7 @@ export const DirectoryDetail = ({
                         </button>
                       </div>
                     )}
-                    <div
-                      className={`space-y-5 ${
-                        listing.owner_interview.photo_url
-                          ? "md:col-span-2"
-                          : "md:col-span-3"
-                      }`}
-                    >
+                    <div className="space-y-5 flex-1 min-w-0">
                       {([1, 2, 3, 4] as const).map((n) => {
                         // Questions are hardcoded platform-wide — always render
                         // the canonical text, ignoring any stored/legacy prompt.
@@ -390,7 +405,12 @@ export const DirectoryDetail = ({
                     DEVOTIONAL
                   </h2>
                   <div className="h-px w-full bg-gold/30 mb-8" />
-                  <div className="bg-gray-50 p-6 rounded-xl grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                  {/* Same layout contract as MEET THE OWNER above: stacked on
+                      phones, side-by-side from tablet up, image left-aligned at
+                      a fixed cap with a square crop. The section STAYS (client
+                      decision 2026-07-14 §1.5) — it is not folded into the
+                      interview. */}
+                  <div className="bg-gray-50 p-6 rounded-xl flex flex-col md:flex-row gap-6 items-start">
                     {listing.devotional.image_url && (
                       <button
                         type="button"
@@ -406,7 +426,7 @@ export const DirectoryDetail = ({
                           })
                         }
                         aria-label="View devotional image fullscreen"
-                        className="block w-full rounded-xl overflow-hidden cursor-zoom-in group md:col-span-1"
+                        className="block w-40 sm:w-48 lg:w-56 shrink-0 rounded-xl overflow-hidden cursor-zoom-in group"
                       >
                         <img
                           src={listing.devotional.image_url}
@@ -415,13 +435,7 @@ export const DirectoryDetail = ({
                         />
                       </button>
                     )}
-                    <div
-                      className={
-                        listing.devotional.image_url
-                          ? "md:col-span-2"
-                          : "md:col-span-3"
-                      }
-                    >
+                    <div className="flex-1 min-w-0">
                       {listing.devotional.question && (
                         <p className="font-serif italic text-lg text-navy-dark mb-2">
                           {listing.devotional.question}
@@ -537,8 +551,14 @@ export const DirectoryDetail = ({
             })()}
           </div>
 
-          {/* Right Column / Sidebar */}
-          <div className="lg:col-span-4 space-y-8">
+          {/* Right Column / Sidebar.
+              The two-column split only kicks in at `lg`, so on a tablet this
+              column was a single full-bleed stack — which is why the CTA /
+              claim / directions buttons rendered ENORMOUS there (a 10px label
+              on a ~700px-wide button). From `md` to `lg` the cards sit two-up
+              instead, which caps every button inside them at half the width;
+              at `lg` it reverts to the real sidebar stack. */}
+          <div className="lg:col-span-4 space-y-8 md:grid md:grid-cols-2 md:gap-8 md:items-start md:space-y-0 lg:block lg:space-y-8">
             {/* Claim CTA — only when unclaimed and no one else's claim is
                 already pending */}
             {isUnclaimed && (!claimPending || claimMine) && (

@@ -16,7 +16,7 @@ import {
 const TIER_PARISH_LIMITS: Record<string, number> = {
   verified: 1,
   featured: 3,
-  enterprise: 25,
+  enterprise: 10,
 }
 
 // Typeahead page size for the infinite-scroll parish search.

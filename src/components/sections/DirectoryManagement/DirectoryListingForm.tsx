@@ -65,8 +65,16 @@ type DirectoryFormData = {
   hours_of_operation: Record<string, { open: string; close: string }>
 }
 
+// Shown only to owners WITHOUT a live shop (merchants are locked to
+// "Visit Our Shop" below). `visit_shop` stays in the list because it is the
+// stored default for every listing and removing it would blank the select —
+// but its label says outright that it is a merchant-only outcome, so a
+// Business Owner isn't told they have a shop they don't have (Brooke 7/14).
 const CTA_OPTIONS = [
-  { value: "visit_shop", label: "Visit Our Shop (auto if merchant has shop)" },
+  {
+    value: "visit_shop",
+    label: "Visit Our Shop (merchants only — applied automatically)",
+  },
   { value: "book_now", label: "Book Now" },
   { value: "shop_now", label: "Shop Now" },
   { value: "learn_more", label: "Learn More" },
@@ -693,10 +701,13 @@ export const DirectoryListingForm = ({
           </>
         ) : (
           <>
+            {/* Business Owners (service accounts) land here — don't talk to
+                them as if they had a store. The shop only comes up as a future
+                merchant state. */}
             <p className="text-xs text-secondary mb-3">
-              If you have a shop on Catholic Owned, the CTA defaults to
-              &ldquo;Visit Our Shop.&rdquo; Otherwise pick a button type and
-              provide a URL.
+              Choose the button visitors see on your listing and the link it
+              opens. If you later publish products in a Catholic Owned shop, the
+              button switches to &ldquo;Visit Our Shop&rdquo; automatically.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -760,53 +771,52 @@ export const DirectoryListingForm = ({
         />
       </div>
 
-      {/* Owner Interview — Featured/Enterprise only (matches the public-listing
-          gate at DirectoryDetail). Local/Verified vendors shouldn't be offered
-          fields/onboarding steps for content that will never display. */}
-      {(subscriptionTier === "featured" ||
-        subscriptionTier === "enterprise") && (
-        <div>
-          <h3 className="heading-sm text-primary mb-3">Owner Interview</h3>
-          <p className="text-xs text-secondary mb-3">
-            Optional — share who&apos;s behind the business. Shown on your
-            public listing.
-          </p>
-          <div className="grid grid-cols-1 gap-4">
-            <ImageUploadField
-              label="Owner Photo"
-              value={form.owner_photo_url}
-              onChange={(url) => setField("owner_photo_url", url)}
-              hint="Square photo works best (around 1000×1000px) — it's shown as a square. JPG, PNG, or WebP, up to 10 MB. Larger images are resized automatically."
-            />
-            {([1, 2, 3, 4] as const).map((n) => (
-              <div key={n} className="border rounded-sm p-3 space-y-2">
-                <div>
-                  <label className="label-sm text-secondary block mb-1">
-                    Question {n}
-                  </label>
-                  {/* Questions are fixed platform-wide — shown as static text.
+      {/* Owner Interview — available on EVERY tier (client decision 2026-07-14,
+          decisions-and-followups-2026-07-14.md §1.1). This was gated to
+          featured/enterprise; the gate is deliberately gone. Tiers differentiate
+          by visibility/placement, not by withholding profile content. Do not
+          re-gate. The matching public render in DirectoryDetail is ungated too. */}
+      <div>
+        <h3 className="heading-sm text-primary mb-3">Owner Interview</h3>
+        <p className="text-xs text-secondary mb-3">
+          Optional — share who&apos;s behind the business. Shown on your public
+          listing.
+        </p>
+        <div className="grid grid-cols-1 gap-4">
+          <ImageUploadField
+            label="Owner Photo"
+            value={form.owner_photo_url}
+            onChange={(url) => setField("owner_photo_url", url)}
+            hint="Square photo works best (around 1000×1000px) — it's shown as a square. JPG, PNG, or WebP, up to 10 MB. Larger images are resized automatically."
+          />
+          {([1, 2, 3, 4] as const).map((n) => (
+            <div key={n} className="border rounded-sm p-3 space-y-2">
+              <div>
+                <label className="label-sm text-secondary block mb-1">
+                  Question {n}
+                </label>
+                {/* Questions are fixed platform-wide — shown as static text.
                     Merchants edit only their answer below. */}
-                  <p className="text-sm text-primary font-medium">
-                    {OWNER_INTERVIEW_QUESTIONS[n - 1]}
-                  </p>
-                </div>
-                <div>
-                  <label className="label-sm text-secondary block mb-1">
-                    Your answer
-                  </label>
-                  <textarea
-                    name={`owner_q${n}_answer`}
-                    value={(form as any)[`owner_q${n}_answer`]}
-                    onChange={handleChange}
-                    rows={3}
-                    className="w-full border rounded-sm px-3 py-2 text-sm"
-                  />
-                </div>
+                <p className="text-sm text-primary font-medium">
+                  {OWNER_INTERVIEW_QUESTIONS[n - 1]}
+                </p>
               </div>
-            ))}
-          </div>
+              <div>
+                <label className="label-sm text-secondary block mb-1">
+                  Your answer
+                </label>
+                <textarea
+                  name={`owner_q${n}_answer`}
+                  value={(form as any)[`owner_q${n}_answer`]}
+                  onChange={handleChange}
+                  rows={3}
+                  className="w-full border rounded-sm px-3 py-2 text-sm"
+                />
+              </div>
+            </div>
+          ))}
         </div>
-      )}
+      </div>
 
       {/* Parish Affiliations — edit mode only (needs a saved listing id).
           Renders regardless of subscription_tier so the section is
