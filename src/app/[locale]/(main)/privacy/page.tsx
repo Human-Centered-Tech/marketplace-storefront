@@ -6,7 +6,7 @@ export const metadata: Metadata = {
     "How Catholic Owned collects, uses, and protects your personal information.",
 }
 
-const UPDATED_DATE = "April 17, 2026"
+const UPDATED_DATE = "July 15, 2026"
 
 export default function PrivacyPage() {
   return (
@@ -95,7 +95,32 @@ export default function PrivacyPage() {
           </p>
         </Section>
 
-        <Section title="5. Cookies and Tracking">
+        <Section title="5. Text Messages (SMS)">
+          <p>
+            If you opt in, we send text messages related to events you register
+            for on Catholic Owned — an RSVP confirmation and reminders before the
+            event. You opt in by checking a consent box when you RSVP; consent is
+            per event and is never required to use the platform.
+          </p>
+          <p>
+            <strong>
+              We do not sell or share your mobile phone number or SMS opt-in
+              information with third parties or affiliates for their marketing or
+              promotional purposes.
+            </strong>{" "}
+            Your number is used only to deliver the messages you asked for, and
+            is shared solely with the messaging provider that transmits them on
+            our behalf.
+          </p>
+          <p>
+            Message frequency varies with the events you register for. Message
+            and data rates may apply. Reply <strong>STOP</strong> at any time to
+            unsubscribe, or <strong>HELP</strong> for help. Opting out of texts
+            does not affect your account or any email notifications.
+          </p>
+        </Section>
+
+        <Section title="6. Cookies and Tracking">
           <p>
             We use cookies to keep you signed in, remember your cart, and
             understand how the platform is used. You can disable cookies in
@@ -104,7 +129,7 @@ export default function PrivacyPage() {
           </p>
         </Section>
 
-        <Section title="6. Your Rights">
+        <Section title="7. Your Rights">
           <p>Depending on where you live, you may have the right to:</p>
           <ul>
             <li>Access the personal information we hold about you</li>
@@ -122,7 +147,7 @@ export default function PrivacyPage() {
           </p>
         </Section>
 
-        <Section title="7. Data Retention">
+        <Section title="8. Data Retention">
           <p>
             We retain your account information for as long as your account is
             active and for a reasonable period afterward, or as required to
@@ -131,7 +156,7 @@ export default function PrivacyPage() {
           </p>
         </Section>
 
-        <Section title="8. Security">
+        <Section title="9. Security">
           <p>
             We use industry-standard measures to protect your data — TLS
             encryption in transit, secure databases, and limited internal
@@ -145,7 +170,7 @@ export default function PrivacyPage() {
           </p>
         </Section>
 
-        <Section title="9. Children&rsquo;s Privacy">
+        <Section title="10. Children&rsquo;s Privacy">
           <p>
             Catholic Owned is not directed at children under 13. We do not
             knowingly collect personal information from children. If you
@@ -154,7 +179,7 @@ export default function PrivacyPage() {
           </p>
         </Section>
 
-        <Section title="10. Changes to This Policy">
+        <Section title="11. Changes to This Policy">
           <p>
             We may update this policy from time to time. When we do,
             we&rsquo;ll update the &ldquo;last updated&rdquo; date at the top
@@ -163,7 +188,7 @@ export default function PrivacyPage() {
           </p>
         </Section>
 
-        <Section title="11. Contact Us">
+        <Section title="12. Contact Us">
           <p>
             Questions about this Privacy Policy? Email{" "}
             <a href="mailto:support@catholicowned.com" className="text-[#BE9B32] underline">
