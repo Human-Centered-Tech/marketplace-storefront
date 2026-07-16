@@ -7,10 +7,10 @@ import { getReviews } from "@/lib/data/reviews"
 export default async function Page() {
   const user = await retrieveCustomer()
 
+  if (!user) return <LoginForm />
+
   const reviewsRes = await getReviews()
   const orders = await listOrders()
-
-  if (!user) return <LoginForm />
 
   return (
     <main className="container">
