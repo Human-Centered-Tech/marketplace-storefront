@@ -97,10 +97,15 @@ export default function PrivacyPage() {
 
         <Section title="5. Text Messages (SMS)">
           <p>
-            If you opt in, we send text messages related to events you register
-            for on Catholic Owned — an RSVP confirmation and reminders before the
-            event. You opt in by checking a consent box when you RSVP; consent is
-            per event and is never required to use the platform.
+            If you opt in, we send two kinds of text messages — each with its own
+            separate consent. <strong>Event messages:</strong> an RSVP
+            confirmation and reminders before an event you register for; you opt
+            in by checking a consent box when you RSVP, and that consent is per
+            event. <strong>Marketing messages:</strong> occasional updates such
+            as a new curated guide; you opt in separately via a consent box in
+            your account settings. Neither box is ever pre-checked, opting in to
+            event reminders never enrolls you in marketing messages, and no
+            consent is required to use the platform.
           </p>
           <p>
             <strong>
