@@ -155,6 +155,7 @@ export default function EditDirectoryListingPage() {
         <DirectoryListingForm
           listingId={listing.id}
           subscriptionTier={listing.subscription_tier}
+          initialAffiliations={listing.affiliations ?? []}
           // listing.seller is populated only when this business is a marketplace
           // merchant with an ACTIVE shop that has published products — lock the
           // CTA to "Visit Our Shop".
