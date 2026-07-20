@@ -105,6 +105,10 @@ type DirectoryListingFormProps = {
   // Create mode only: receives the deferred parish selections so the create
   // page can attach them right after the listing is created.
   onParishSelectionsChange?: (parishes: Parish[]) => void
+  // Create mode only: the subscription tier derived from the owner's selected
+  // membership, so the parish picker offers the right number of slots before a
+  // listing exists. In edit mode the listing's own subscriptionTier is used.
+  createParishTier?: string
   // True when this business is a marketplace merchant with an ACTIVE shop on
   // Catholic Owned. Such listings are locked to the "Visit Our Shop" CTA so
   // directory discovery always routes buyers to their on-platform products.
@@ -127,6 +131,7 @@ export const DirectoryListingForm = ({
   subscriptionTier,
   initialAffiliations,
   onParishSelectionsChange,
+  createParishTier,
   hasShop = false,
 }: DirectoryListingFormProps) => {
   const [form, setForm] = useState<DirectoryFormData>({
@@ -828,7 +833,7 @@ export const DirectoryListingForm = ({
           once the listing exists. */}
       <ParishAffiliationsSection
         listingId={listingId}
-        tier={subscriptionTier}
+        tier={subscriptionTier ?? createParishTier}
         initialAffiliations={initialAffiliations ?? []}
         onDeferredChange={onParishSelectionsChange}
       />
