@@ -8,12 +8,18 @@ import {
   addParishAffiliation,
 } from "@/lib/data/directory-actions"
 import { retrieveVendorStatus } from "@/lib/data/vendor"
+import { retrieveCustomer } from "@/lib/data/customer"
+import { subscriptionTierForPricing } from "@/lib/directory-tier"
 
 export default function CreateDirectoryListingPage() {
   const [categories, setCategories] = useState<DirectoryCategory[]>([])
   // Parish picks made on the create form before the listing exists. Applied
   // right after the listing is created (see handleSubmit).
   const [selectedParishes, setSelectedParishes] = useState<Parish[]>([])
+  // Subscription tier derived from the owner's selected membership
+  // (customer.metadata.recommended_tier), so the parish picker offers the
+  // right number of slots before a listing exists.
+  const [createParishTier, setCreateParishTier] = useState<string | undefined>()
 
   useEffect(() => {
     const backendUrl =
@@ -26,6 +32,16 @@ export default function CreateDirectoryListingPage() {
     })
       .then((r) => r.json())
       .then((data) => setCategories(data.categories || []))
+      .catch(() => {})
+
+    // Derive the parish-slot tier from the owner's selected membership so the
+    // create-form picker isn't capped at the default 1 for Featured/Enterprise.
+    retrieveCustomer()
+      .then((customer) => {
+        const rec = (customer?.metadata as Record<string, unknown> | undefined)
+          ?.recommended_tier as string | undefined
+        setCreateParishTier(subscriptionTierForPricing(rec))
+      })
       .catch(() => {})
   }, [])
 
@@ -74,6 +90,7 @@ export default function CreateDirectoryListingPage() {
           onSubmit={handleSubmit}
           submitLabel="Create Listing"
           onParishSelectionsChange={setSelectedParishes}
+          createParishTier={createParishTier}
         />
       </div>
     </main>
