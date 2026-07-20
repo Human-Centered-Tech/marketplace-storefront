@@ -2,12 +2,18 @@
 
 import { useEffect, useState } from "react"
 import { DirectoryListingForm } from "@/components/sections/DirectoryManagement/DirectoryListingForm"
-import { DirectoryCategory } from "@/types/directory"
-import { createDirectoryListing } from "@/lib/data/directory-actions"
+import { DirectoryCategory, Parish } from "@/types/directory"
+import {
+  createDirectoryListing,
+  addParishAffiliation,
+} from "@/lib/data/directory-actions"
 import { retrieveVendorStatus } from "@/lib/data/vendor"
 
 export default function CreateDirectoryListingPage() {
   const [categories, setCategories] = useState<DirectoryCategory[]>([])
+  // Parish picks made on the create form before the listing exists. Applied
+  // right after the listing is created (see handleSubmit).
+  const [selectedParishes, setSelectedParishes] = useState<Parish[]>([])
 
   useEffect(() => {
     const backendUrl =
@@ -27,6 +33,15 @@ export default function CreateDirectoryListingPage() {
     const res = await createDirectoryListing(data)
     if (!res.ok) {
       throw new Error(res.error || "Failed to create listing")
+    }
+
+    // Apply any parish picks made on the create form now that the listing
+    // exists. Best-effort: the listing is already saved, so a failed
+    // affiliation shouldn't block navigation — the merchant can retry from the
+    // Edit form (where parish also lives). The create-form limit is 1, which
+    // is within every plan's cap, so this normally attaches cleanly.
+    for (const parish of selectedParishes) {
+      await addParishAffiliation(res.listing.id, parish.id).catch(() => {})
     }
 
     // Where next depends on WHO created (7/9 fix — this used to bounce
@@ -58,6 +73,7 @@ export default function CreateDirectoryListingPage() {
           categories={categories}
           onSubmit={handleSubmit}
           submitLabel="Create Listing"
+          onParishSelectionsChange={setSelectedParishes}
         />
       </div>
     </main>
