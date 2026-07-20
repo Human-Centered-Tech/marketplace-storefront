@@ -1,7 +1,12 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { DirectoryCategory } from "@/types/directory"
+import {
+  DirectoryCategory,
+  DirectoryParishAffiliation,
+  Parish,
+} from "@/types/directory"
+import { ParishAffiliationsSection } from "./ParishAffiliationsSection"
 import { OWNER_INTERVIEW_QUESTIONS } from "@/lib/owner-interview"
 import { ImageUploadField } from "./ImageUploadField"
 import { GalleryUploadField } from "./GalleryUploadField"
@@ -91,11 +96,12 @@ type DirectoryListingFormProps = {
   categories: DirectoryCategory[]
   onSubmit: (data: Record<string, unknown>) => Promise<void>
   submitLabel: string
-  // Present only in edit mode. Used to distinguish edit-vs-create for the
-  // serviced-states default logic (a fresh create can pre-seed the home
-  // state; an existing listing must not).
+  // Only present in edit mode — in create mode there's no listing to
+  // attach affiliations to yet, so the parish section is hidden until
+  // the listing is saved.
   listingId?: string
   subscriptionTier?: string
+  initialAffiliations?: DirectoryParishAffiliation[]
   // True when this business is a marketplace merchant with an ACTIVE shop on
   // Catholic Owned. Such listings are locked to the "Visit Our Shop" CTA so
   // directory discovery always routes buyers to their on-platform products.
@@ -116,6 +122,7 @@ export const DirectoryListingForm = ({
   submitLabel,
   listingId,
   subscriptionTier,
+  initialAffiliations,
   hasShop = false,
 }: DirectoryListingFormProps) => {
   const [form, setForm] = useState<DirectoryFormData>({
@@ -811,8 +818,18 @@ export const DirectoryListingForm = ({
         </div>
       </div>
 
-      {/* Parish affiliations live on their own page (/user/directory/parish),
-          not in this form — see ParishAffiliationsSection. */}
+      {/* Parish Affiliations — edit mode only (needs a saved listing id).
+          Renders regardless of subscription_tier so the section is
+          consistently visible no matter which checklist CTA the vendor
+          arrived from. ParishAffiliationsSection falls back to a
+          1-affiliation limit when tier is missing. */}
+      {listingId && (
+        <ParishAffiliationsSection
+          listingId={listingId}
+          tier={subscriptionTier}
+          initialAffiliations={initialAffiliations ?? []}
+        />
+      )}
 
       {/* Devotional */}
       <div>
