@@ -29,27 +29,45 @@ const formatParish = (p: Parish) => {
 }
 
 type Props = {
-  listingId: string
+  // Absent in "deferred" (create) mode — there's no saved listing to attach
+  // affiliations to yet. See onDeferredChange.
+  listingId?: string
   // Optional: a listing without a subscription_tier falls back to the
   // 1-affiliation default (matches the backend's `|| 1` and the verified
   // tier limit). Letting tier be optional lets us render the section
   // unconditionally in edit mode regardless of subscription state.
   tier?: string
-  initialAffiliations: DirectoryParishAffiliation[]
+  initialAffiliations?: DirectoryParishAffiliation[]
+  // Create mode: without a listingId, picks can't be persisted immediately, so
+  // they're held locally and reported here — the create flow applies them once
+  // the listing exists. Presence of this callback + absence of listingId = the
+  // section runs in deferred mode (no live add/remove server calls).
+  onDeferredChange?: (parishes: Parish[]) => void
+  initialDeferredParishes?: Parish[]
 }
 
 export const ParishAffiliationsSection = ({
   listingId,
   tier,
   initialAffiliations,
+  onDeferredChange,
+  initialDeferredParishes,
 }: Props) => {
+  // Deferred (create) mode: no saved listing to persist against yet.
+  const deferred = !listingId
   // Initial hint from the listing's stored tier; replaced on mount by the
   // backend's authoritative limit (which honors the selected membership before
   // payment, so setup isn't capped at 1 while subscription_tier is "verified").
   const tierLimit = (tier && TIER_PARISH_LIMITS[tier]) || 1
   const [limit, setLimit] = useState(tierLimit)
-  const [affiliations, setAffiliations] =
-    useState<DirectoryParishAffiliation[]>(initialAffiliations)
+  const [affiliations, setAffiliations] = useState<DirectoryParishAffiliation[]>(
+    deferred
+      ? (initialDeferredParishes ?? []).map(
+          (p) =>
+            ({ id: p.id, parish_id: p.id, parish: p }) as DirectoryParishAffiliation
+        )
+      : (initialAffiliations ?? [])
+  )
   const [query, setQuery] = useState("")
   const [results, setResults] = useState<Parish[]>([])
   const [searching, setSearching] = useState(false)
@@ -71,6 +89,8 @@ export const ParishAffiliationsSection = ({
   // setup — so a not-yet-paid listing (subscription_tier still "verified") shows
   // the full parish count they chose, not the default 1.
   useEffect(() => {
+    // Deferred mode has no listing to query — keep the tier-derived limit.
+    if (!listingId) return
     let cancelled = false
     getParishAffiliations(listingId)
       .then((res) => {
@@ -164,12 +184,29 @@ export const ParishAffiliationsSection = ({
 
   const handleAdd = async (parish: Parish) => {
     setError(null)
-    setBusyParishId(parish.id)
     // Invalidate any in-flight typeahead fetch so a stale response can't
     // repopulate `results` after we clear it below.
     reqIdRef.current++
+
+    // Deferred (create) mode: hold the pick locally and report it up; the
+    // create flow persists it once the listing exists.
+    if (deferred) {
+      const next = [
+        ...affiliations,
+        { id: parish.id, parish_id: parish.id, parish } as DirectoryParishAffiliation,
+      ]
+      setAffiliations(next)
+      setQuery("")
+      setResults([])
+      setCount(0)
+      nextOffsetRef.current = 0
+      onDeferredChange?.(next.map((a) => a.parish as Parish))
+      return
+    }
+
+    setBusyParishId(parish.id)
     try {
-      const res = await addParishAffiliation(listingId, parish.id)
+      const res = await addParishAffiliation(listingId!, parish.id)
       if (!res.ok) {
         setError(
           /not signed in/i.test(res.error)
@@ -195,8 +232,17 @@ export const ParishAffiliationsSection = ({
 
   const handleRemove = async (affiliationId: string) => {
     setError(null)
+
+    // Deferred (create) mode: drop it from the local selection and report up.
+    if (deferred) {
+      const next = affiliations.filter((a) => a.id !== affiliationId)
+      setAffiliations(next)
+      onDeferredChange?.(next.map((a) => a.parish as Parish))
+      return
+    }
+
     try {
-      const res = await removeParishAffiliation(listingId, affiliationId)
+      const res = await removeParishAffiliation(listingId!, affiliationId)
       if (!res.ok) {
         setError(
           /not signed in/i.test(res.error)

@@ -1,7 +1,12 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { DirectoryCategory } from "@/types/directory"
+import {
+  DirectoryCategory,
+  DirectoryParishAffiliation,
+  Parish,
+} from "@/types/directory"
+import { ParishAffiliationsSection } from "./ParishAffiliationsSection"
 import { OWNER_INTERVIEW_QUESTIONS } from "@/lib/owner-interview"
 import { ImageUploadField } from "./ImageUploadField"
 import { GalleryUploadField } from "./GalleryUploadField"
@@ -83,11 +88,19 @@ type DirectoryListingFormProps = {
   categories: DirectoryCategory[]
   onSubmit: (data: Record<string, unknown>) => Promise<void>
   submitLabel: string
-  // Present only in edit mode. Used to distinguish edit-vs-create for the
-  // serviced-states default logic (a fresh create can pre-seed the home
-  // state; an existing listing must not).
+  // Present only in edit mode. In edit, the parish section persists picks
+  // live (it has a listing id); in create mode it runs "deferred" and reports
+  // picks via onParishSelectionsChange for the create flow to apply post-save.
   listingId?: string
   subscriptionTier?: string
+  initialAffiliations?: DirectoryParishAffiliation[]
+  // Create mode only: receives the deferred parish selections so the create
+  // page can attach them right after the listing is created.
+  onParishSelectionsChange?: (parishes: Parish[]) => void
+  // Create mode only: the subscription tier derived from the owner's selected
+  // membership, so the parish picker offers the right number of slots before a
+  // listing exists. In edit mode the listing's own subscriptionTier is used.
+  createParishTier?: string
   // True when this business is a marketplace merchant with an ACTIVE shop on
   // Catholic Owned. Such listings are locked to the "Visit Our Shop" CTA so
   // directory discovery always routes buyers to their on-platform products.
@@ -108,6 +121,9 @@ export const DirectoryListingForm = ({
   submitLabel,
   listingId,
   subscriptionTier,
+  initialAffiliations,
+  onParishSelectionsChange,
+  createParishTier,
   hasShop = false,
 }: DirectoryListingFormProps) => {
   const [form, setForm] = useState<DirectoryFormData>({
@@ -801,8 +817,16 @@ export const DirectoryListingForm = ({
         </div>
       )}
 
-      {/* Parish affiliations live on their own page (/user/directory/parish),
-          not in this form — see ParishAffiliationsSection. */}
+      {/* Parish Affiliations — shown in both create and edit. In edit
+          (listingId present) picks persist live; in create the section runs
+          deferred and reports selections up so the create page applies them
+          once the listing exists. */}
+      <ParishAffiliationsSection
+        listingId={listingId}
+        tier={subscriptionTier ?? createParishTier}
+        initialAffiliations={initialAffiliations ?? []}
+        onDeferredChange={onParishSelectionsChange}
+      />
 
       {/* Devotional */}
       <div>
