@@ -191,7 +191,7 @@ export const HomeFeaturedProducts = async ({
     <section className="py-12 lg:py-16 w-full bg-[#faf9f5] px-4 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-8">
-          <h2 className="font-serif text-3xl md:text-4xl font-semibold text-[#001435] sm:whitespace-nowrap">
+          <h2 className="font-serif text-2xl md:text-3xl font-semibold text-[#001435] sm:whitespace-nowrap">
             From the Marketplace
           </h2>
           <div className="h-[1px] flex-grow mx-8 bg-[#BE9B32]/30 hidden sm:block" />

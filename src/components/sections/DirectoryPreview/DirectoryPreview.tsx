@@ -209,7 +209,7 @@ export async function DirectoryPreview({
     <section className="py-16 lg:py-24 w-full bg-[#f4f4f0] px-4 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between gap-4 mb-12">
-          <h2 className="font-serif text-3xl md:text-4xl font-semibold text-[#001435] sm:whitespace-nowrap">
+          <h2 className="font-serif text-2xl md:text-3xl font-semibold text-[#001435] sm:whitespace-nowrap">
             {isNearby ? "Near You in the Directory" : "From the Directory"}
           </h2>
           <div className="h-[1px] flex-grow mx-8 bg-[#BE9B32]/30 hidden sm:block" />
