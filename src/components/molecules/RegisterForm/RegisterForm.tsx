@@ -123,8 +123,22 @@ const Form = ({
     if (pillarsAffirmed) {
       formData.append("founding_pillars_affirmed", "true")
     }
+    // Tell signup() which flow this is. Only the shopper flow gets the new
+    // "email already has an account -> add-a-password email" handling; the
+    // vendor flow keeps its own "convert existing customer to merchant" path.
+    formData.append("__vendor_flow", vendorFlow ? "1" : "")
 
     const res = passwordError.isValid && (await signup(formData))
+
+    // Shopper flow: the email already belongs to an account that signs in
+    // another way (e.g. Google). signup() has already sent the secure
+    // "add a password" email — just tell the user.
+    if (res?.email_exists) {
+      setError(
+        "You already have an account with this email. We've emailed you a link to add an email & password sign-in — or just continue with Google as usual." as any
+      )
+      return
+    }
 
     if (res && !res?.id) {
       // Bug #2: an EXISTING customer trying to register as a merchant gets

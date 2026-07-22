@@ -14,13 +14,22 @@ import {
 } from "react-hook-form"
 import { ProfilePasswordFormData, profilePasswordSchema } from "./schema"
 import { useEffect, useState } from "react"
-import { updateCustomerPassword } from "@/lib/data/customer"
+import { updateCustomerPassword, completePasswordSetup } from "@/lib/data/customer"
 import { Heading, toast } from "@medusajs/ui"
 import LocalizedClientLink from "../LocalizedLink/LocalizedLink"
 import { PasswordValidator } from "@/components/cells/PasswordValidator/PasswordValidator"
 import { PasswordInput } from "@/components/cells/PasswordInput/PasswordInput"
 
-export const ProfilePasswordForm = ({ token }: { token?: string }) => {
+export const ProfilePasswordForm = ({
+  token,
+  setup = false,
+}: {
+  token?: string
+  // setup=true: this is the "add a password to an OAuth-only account" flow —
+  // link a NEW email+password login to the existing account (via the custom
+  // one-time token), rather than resetting an existing emailpass password.
+  setup?: boolean
+}) => {
   const form = useForm<ProfilePasswordFormData>({
     resolver: zodResolver(profilePasswordSchema),
     defaultValues: {
@@ -31,7 +40,7 @@ export const ProfilePasswordForm = ({ token }: { token?: string }) => {
 
   return (
     <FormProvider {...form}>
-      <Form form={form} token={token} />
+      <Form form={form} token={token} setup={setup} />
     </FormProvider>
   )
 }
@@ -39,9 +48,11 @@ export const ProfilePasswordForm = ({ token }: { token?: string }) => {
 const Form = ({
   form,
   token,
+  setup = false,
 }: {
   form: UseFormReturn<ProfilePasswordFormData>
   token?: string
+  setup?: boolean
 }) => {
   const [success, setSuccess] = useState(false)
   const [confirmPasswordError, setConfirmPasswordError] = useState<
@@ -74,9 +85,13 @@ const Form = ({
 
     if (newPasswordError.isValid) {
       try {
-        const res = await updateCustomerPassword(data.newPassword, token!)
+        // setup flow uses the custom link-a-password token; the normal flow uses
+        // Medusa's reset-password token.
+        const res = setup
+          ? await completePasswordSetup(token!, data.newPassword)
+          : await updateCustomerPassword(data.newPassword, token!)
         if (res.success) {
-          toast.success("Password updated")
+          toast.success(setup ? "Password added" : "Password updated")
           setSuccess(true)
         } else {
           toast.error(res.error || "Something went wrong")
@@ -94,11 +109,12 @@ const Form = ({
         level="h1"
         className="uppercase heading-md text-primary text-center"
       >
-        Password updated
+        {setup ? "Password added" : "Password updated"}
       </Heading>
       <p className="text-center my-8">
-        Your password has been updated. You can now login with your new
-        password.
+        {setup
+          ? "Your password is set. You can now sign in with your email and password — or keep using Google. Either works."
+          : "Your password has been updated. You can now login with your new password."}
       </p>
       <LocalizedClientLink href="/user">
         <Button
@@ -118,7 +134,7 @@ const Form = ({
         level="h1"
         className="uppercase heading-md text-primary text-center"
       >
-        Set a new password
+        {setup ? "Add a password" : "Set a new password"}
       </Heading>
       <PasswordInput
         label="New password"
