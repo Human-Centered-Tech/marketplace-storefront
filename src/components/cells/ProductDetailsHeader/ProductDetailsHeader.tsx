@@ -17,6 +17,46 @@ import { toast } from "@/lib/helpers/toast"
 import { useCartContext } from "@/components/providers"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 
+// Option titles we treat as a color option (→ render swatches, not text pills).
+const COLOR_OPTION_TITLES = new Set(["color", "colour", "colors", "colours"])
+
+const isColorOption = (title?: string | null) =>
+  COLOR_OPTION_TITLES.has((title || "").trim().toLowerCase())
+
+// CSS named colors we accept as a swatch fill when no explicit hex is set.
+const CSS_COLOR_NAMES = new Set([
+  "black", "white", "gray", "grey", "silver", "red", "maroon", "crimson",
+  "pink", "hotpink", "orange", "coral", "salmon", "gold", "yellow", "khaki",
+  "brown", "tan", "beige", "ivory", "green", "olive", "lime", "seagreen",
+  "teal", "cyan", "aqua", "turquoise", "blue", "navy", "royalblue", "skyblue",
+  "indigo", "purple", "violet", "magenta", "fuchsia", "lavender", "plum",
+  "orchid", "chocolate", "charcoal",
+])
+
+const HEX_RE = /^#([0-9a-f]{3}|[0-9a-f]{4}|[0-9a-f]{6}|[0-9a-f]{8})$/i
+
+/**
+ * Swatch fill for a color value: the merchant's explicit hex (from
+ * product.metadata.color_hex) first, then the value itself if it's a hex or a
+ * known CSS color name, else a neutral grey. Deterministic (SSR-safe).
+ */
+const resolveSwatchColor = (
+  value: string,
+  hexMap?: Record<string, string> | null
+): string => {
+  const explicit = hexMap?.[value]?.trim()
+  if (
+    explicit &&
+    (HEX_RE.test(explicit) || CSS_COLOR_NAMES.has(explicit.toLowerCase()))
+  ) {
+    return explicit
+  }
+  const v = (value || "").trim()
+  if (HEX_RE.test(v)) return v
+  if (CSS_COLOR_NAMES.has(v.toLowerCase())) return v.toLowerCase()
+  return "#ccc"
+}
+
 const optionsAsKeymap = (
   variantOptions: HttpTypes.StoreProductVariant["options"]
 ) => {
@@ -289,9 +329,14 @@ export const ProductDetailsHeader = ({
                   {sortSizeValues(values).map(({ id: valId, value }) => {
                     const isSelected =
                       selectedVariant[title.toLowerCase()] === value
-                    const isColor = title.toLowerCase() === "color"
+                    const isColor = isColorOption(title)
 
                     if (isColor) {
+                      const fill = resolveSwatchColor(
+                        value || "",
+                        (product.metadata as Record<string, any> | null)
+                          ?.color_hex
+                      )
                       return (
                         <button
                           key={valId}
@@ -303,7 +348,7 @@ export const ProductDetailsHeader = ({
                               ? "border-[#755b00] ring-2 ring-[#755b00]/20"
                               : "border-[#75777f]/30 hover:border-[#75777f]"
                           }`}
-                          style={{ backgroundColor: value || "#ccc" }}
+                          style={{ backgroundColor: fill }}
                           aria-label={`Select color ${value}`}
                           title={value || "Color option"}
                         />
