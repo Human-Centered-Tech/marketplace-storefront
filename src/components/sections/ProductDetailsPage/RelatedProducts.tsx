@@ -18,9 +18,11 @@ export const RelatedProducts = async ({
   const safeProducts = (products ?? []).filter(
     (p): p is Product => p != null && p.id != null
   )
+  // Consider more than 4 candidates so that priceless ones (filtered below)
+  // don't empty the section when the seller has other priced products.
   const relatedHandles = safeProducts
     .filter((p) => String(p.id) !== currentProductId)
-    .slice(0, 4)
+    .slice(0, 12)
     .map((p) => p.handle)
 
   let apiProducts: HttpTypes.StoreProduct[] = []
@@ -30,18 +32,31 @@ export const RelatedProducts = async ({
         countryCode: locale,
         queryParams: {
           handle: relatedHandles,
-          limit: 4,
+          limit: 12,
         },
         forceCache: false,
       })
       apiProducts = result.response.products
     } catch {
-      // Fall back to seller products without prices
+      // Enrichment failed — apiProducts stays empty and the priced-only
+      // filter below hides the section rather than showing price-less cards.
     }
   }
 
+  // Only show related products with a resolvable price. A priceless product
+  // (Shopify import published before the vendor set prices — Brooke 7/23)
+  // can't be bought, so a "View Price" card here is a dead end. The
+  // enrichment fetch above is top-level /store/products, so it also
+  // re-confirms published status.
+  const pricedHandles = new Set(
+    apiProducts
+      .filter((ap) => getProductPrice({ product: ap }).cheapestPrice)
+      .map((ap) => ap.handle)
+  )
+
   const displayProducts = safeProducts
     .filter((p) => String(p.id) !== currentProductId)
+    .filter((p) => pricedHandles.has(p.handle))
     .slice(0, 4)
 
   if (displayProducts.length === 0) return null

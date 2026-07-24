@@ -55,6 +55,22 @@ export const ProductListing = async ({
 
   let { products, count } = response
 
+  // Hide PRICELESS products (published but no variant has a price — the
+  // Shopify-import case: prices are deliberately not imported, and some
+  // vendors published before pricing). A product with no price can't be
+  // bought; rendering it as a "View Price" ghost card just confuses shoppers
+  // and inflates the "N listings" count (Brooke 7/23, Holy Face Cross).
+  // Per-page approximation like the maxPrice filter below: we subtract this
+  // page's removals from the displayed total, which is exact for single-page
+  // stores (the common case) and close enough for paginated browse.
+  const beforePriceless = products.length
+  products = products.filter((p) =>
+    p.variants?.some(
+      (v: any) => v.calculated_price?.calculated_amount != null
+    )
+  )
+  count = Math.max(0, count - (beforePriceless - products.length))
+
   // Client-side price filter is per-page only — when this filter is
   // active the total count is no longer trustworthy for pagination,
   // but for now we trust the listProductsWithSort total since maxPrice
