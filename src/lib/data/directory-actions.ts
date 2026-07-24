@@ -241,6 +241,9 @@ export async function recordClaimProgress(
     // Funnel attestation (7/10): stamps the rightful-owner affirmation onto
     // the breadcrumb; attach ties it to the customer at completion.
     attested?: boolean
+    // Financial screening answer (7/16): lives only in funnel client state,
+    // so it must ride the breadcrumb or it's unknowable after a drop-off.
+    screening_method?: string
   }
 ): Promise<{ intent_id: string | null } | null> {
   const BACKEND_URL = process.env.MEDUSA_BACKEND_URL || "http://localhost:9000"
@@ -261,6 +264,7 @@ export async function recordClaimProgress(
           step: payload.step,
           email: payload.email,
           attested: payload.attested,
+          screening_method: payload.screening_method,
         }),
         cache: "no-store",
       }

@@ -8,6 +8,13 @@ import { DirectoryListing } from "@/types/directory"
 const VALID_TIERS = new Set([
   "local",
   "local_boost",
+  // HIDDEN tier — deliberately NOT on the picker card or the onboarding
+  // questionnaire. Essentials ($99, beyond-local, directory-only) is for the
+  // edge case of product businesses that can't/won't sell on the marketplace
+  // (e.g. authors selling via Amazon). It's reachable only via an explicit
+  // ?tier=essential link, which the dashboard go-live flow mints when an admin
+  // manually sets the customer's recommended_tier to "essential".
+  "essential",
   "merchant",
   "tier2_startup",
   "tier2_nonprofit",

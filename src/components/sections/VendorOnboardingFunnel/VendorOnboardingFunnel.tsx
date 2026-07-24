@@ -103,6 +103,10 @@ export const VendorOnboardingFunnel = ({
     recordClaimProgress(claimListing, {
       intent_id: sessionStorage.getItem(key),
       step: `funnel_${state.step}`,
+      // The screening answer decides Arimathea-vs-register routing but lives
+      // only in this component's state — without this it's unknowable which
+      // option a parked financial claim picked (Pioneer Wealth, 7/16).
+      screening_method: state.screeningMethod,
     })
       .then((r) => {
         if (r?.intent_id) sessionStorage.setItem(key, r.intent_id)
@@ -116,8 +120,17 @@ export const VendorOnboardingFunnel = ({
     <main className="min-h-screen bg-[#faf9f5] py-16 px-6 lg:px-16">
       <div className="max-w-3xl mx-auto">
         <div className="mb-8 flex items-center justify-between">
+          {/* Only the product path is a Merchant. Everyone else here — service
+              businesses, and every directory claimant, who enters this funnel
+              from "Claim This Listing" — is a Business Owner with no store, so
+              the eyebrow can't call the whole funnel "Merchant Onboarding"
+              (Brooke 7/14). Before the product/service question is answered
+              `recommendedTier` is undefined, and "Business Onboarding" is the
+              honest superset. */}
           <p className="text-[#BE9B32] text-[12px] font-semibold uppercase tracking-[0.2em]">
-            Merchant Onboarding
+            {state.recommendedTier === "merchant"
+              ? "Merchant Onboarding"
+              : "Business Onboarding"}
           </p>
           {state.step !== "founding_pillars" &&
             state.step !== "service_area" && (
@@ -250,7 +263,9 @@ export const VendorOnboardingFunnel = ({
           <PreApprovedStep claimSuffix={claimSuffix} />
         )}
 
-        {state.step === "financial_book_call" && <BookCallStep />}
+        {state.step === "financial_book_call" && (
+          <BookCallStep claimListingId={claimListing} />
+        )}
 
         {state.step === "service_for_profit" && (
           <ForProfitStep
@@ -727,26 +742,90 @@ const PreApprovedStep: React.FC<{ claimSuffix?: string }> = ({
   </Card>
 )
 
-const BookCallStep: React.FC = () => (
-  <Card>
-    <StepHeading
-      eyebrow="One more step"
-      title="Schedule a quick intro call"
-      subtitle="Your next step is a simple introductory call with our partners at Arimathea to ensure a good fit. After your call, we'll reach out directly with next steps."
-    />
-    <a
-      href={ARIMATHEA_CALENDLY_URL}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="inline-flex items-center px-10 py-4 text-[13px] font-semibold uppercase tracking-[0.1em] rounded-xl bg-[#BE9B32] text-[#001435] hover:bg-[#d4af4c] shadow-lg transition-colors"
-    >
-      Book a call with Arimathea
-    </a>
-    <p className="mt-6 text-[13px] text-[#44474e] italic">
-      Thank you so much for your interest and for being part of Catholic Owned.
-    </p>
-  </Card>
-)
+// The Arimathea dead-end (7/16, Pioneer Wealth): this step ends the funnel
+// with no account and no claim attached, so (a) the copy must say plainly
+// that the claim/registration is NOT done — the old "One more step… we'll
+// reach out" read as success, and claimants told Brooke they'd "claimed"
+// their listing while admin showed unclaimed; (b) in a claim context we
+// capture an email onto the breadcrumb, because otherwise these visitors
+// are unreachable unless they happen to book the Calendly.
+const BookCallStep: React.FC<{ claimListingId?: string | null }> = ({
+  claimListingId,
+}) => {
+  const [email, setEmail] = useState("")
+  const [saved, setSaved] = useState(false)
+  const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
+
+  const saveEmail = () => {
+    if (!claimListingId || !validEmail) return
+    const key = `claim_intent_${claimListingId}`
+    recordClaimProgress(claimListingId, {
+      intent_id: sessionStorage.getItem(key),
+      step: "funnel_financial_book_call",
+      email: email.trim(),
+    }).catch(() => {})
+    // Fire-and-forget like every other breadcrumb — never block the funnel.
+    setSaved(true)
+  }
+
+  return (
+    <Card>
+      <StepHeading
+        eyebrow="Almost there — one required step left"
+        title="Schedule a quick intro call"
+        subtitle={
+          claimListingId
+            ? "Financial services businesses complete their claim through a short introductory call with our partners at Arimathea. Your listing is not claimed yet — the claim is finished after your call, when we reach out with next steps."
+            : "Financial services businesses complete their registration through a short introductory call with our partners at Arimathea. Your registration is not finished yet — after your call, we'll reach out with next steps."
+        }
+      />
+      <a
+        href={ARIMATHEA_CALENDLY_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center px-10 py-4 text-[13px] font-semibold uppercase tracking-[0.1em] rounded-xl bg-[#BE9B32] text-[#001435] hover:bg-[#d4af4c] shadow-lg transition-colors"
+      >
+        Book a call with Arimathea
+      </a>
+      {claimListingId && !saved && (
+        <div className="mt-8 pt-6 border-t border-[#d6d0c4]/60">
+          <p className="text-[14px] font-medium text-[#001435]">
+            Can&apos;t book right now? Leave your email and we&apos;ll follow
+            up about your listing.
+          </p>
+          <div className="mt-3 flex flex-col sm:flex-row gap-3">
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") saveEmail()
+              }}
+              placeholder="you@yourbusiness.com"
+              className="flex-1 px-4 py-3 text-[14px] border border-[#d6d0c4] rounded-xl bg-white focus:outline-none focus:border-[#BE9B32]"
+            />
+            <button
+              onClick={saveEmail}
+              disabled={!validEmail}
+              className="px-6 py-3 text-[13px] font-semibold uppercase tracking-[0.1em] rounded-xl border border-[#001435] text-[#001435] hover:bg-[#001435] hover:text-white disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-[#001435] transition-colors"
+            >
+              Save my email
+            </button>
+          </div>
+        </div>
+      )}
+      {claimListingId && saved && (
+        <p className="mt-8 pt-6 border-t border-[#d6d0c4]/60 text-[14px] text-[#2f6f4e] font-medium">
+          ✓ Got it — we have your email and will follow up about your listing.
+        </p>
+      )}
+      <p className="mt-6 text-[13px] text-[#44474e] italic">
+        Thank you so much for your interest and for being part of Catholic
+        Owned.
+      </p>
+    </Card>
+  )
+}
 
 const ForProfitStep: React.FC<{
   onSelect: (isNonProfit: boolean) => void

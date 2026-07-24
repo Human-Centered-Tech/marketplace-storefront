@@ -290,7 +290,7 @@ export const BarterDetail = ({
                   ? "Your Listing"
                   : messaging
                     ? "Starting…"
-                    : "Message Seller"}
+                    : "Message Member"}
               </button>
               {messageError && (
                 <p className="text-xs text-red-600 text-center">
@@ -300,8 +300,13 @@ export const BarterDetail = ({
               {/* "Buy Now" and "Make Trade Offer" are hidden for now: neither
                   had a working flow (no handler; Sacred Exchange is peer-to-peer
                   with no checkout). All Sacred Exchange transactions route
-                  through "Message Seller" until a real buy/offer flow exists.
-                  The price still shows in the listing details above. */}
+                  through "Message Member" until a real buy/offer flow exists.
+                  The price still shows in the listing details above.
+
+                  The button says "Message Member", not "Message Seller": a
+                  Trade listing is posted by a community member (the card above
+                  literally reads "Community Member"), who has no store — seller
+                  language is Merchants-only (Brooke 7/14). */}
             </div>
 
             <div className="pt-2 text-center">

@@ -11,9 +11,11 @@ import {
   listConversations,
   markConversationRead,
   sendMessage,
-  uploadMessageAttachment,
   notifyTyping,
 } from "@/lib/data/messaging"
+// Attachments upload through an API route, never a server action — see
+// @/lib/helpers/messaging-upload.
+import { uploadMessageAttachment } from "@/lib/helpers/messaging-upload"
 import { useMessagingStream } from "@/lib/hooks/useMessagingStream"
 
 type ConversationWithMessages = Conversation & { messages: Message[] }
@@ -131,9 +133,7 @@ export const UserMessagesSection = ({
     setUploading(true)
     try {
       for (const file of Array.from(files).slice(0, 5)) {
-        const fd = new FormData()
-        fd.append("file", file)
-        const res = await uploadMessageAttachment(fd)
+        const res = await uploadMessageAttachment(file)
         if (res.ok) {
           setPendingAttachments((prev) => [...prev, res.attachment])
         } else {
@@ -171,14 +171,25 @@ export const UserMessagesSection = ({
     }
   }
 
-  // Who the other participant is. Prefer the backend-resolved name (store name
-  // for a seller, person's name for a buyer); never fall back to the raw id.
+  // Who the other participant is. Prefer the backend-resolved name (business
+  // name for a seller, person's name for a buyer); never fall back to the raw
+  // id. The unnamed fallback can only say "Seller" for a `product` thread —
+  // that one implies a published product, i.e. a real Merchant. A `storefront`
+  // thread is ALSO how a Business Owner (service, no products) is messaged from
+  // their directory listing, so it falls back to the store-free "Business"
+  // (Brooke 7/14: a Business Owner is not a store; a Merchant is still a
+  // business, so the noun stays true for both).
   const counterpartyName = (c: Conversation) => {
     const name = c.counterparty_name?.trim()
     if (name) return name
-    return c.context_type === "product" || c.context_type === "storefront"
-      ? "Seller"
-      : "Member"
+    switch (c.context_type) {
+      case "product":
+        return "Seller"
+      case "storefront":
+        return "Business"
+      default:
+        return "Member"
+    }
   }
 
   const contextLabel = (c: Conversation) => {
@@ -188,7 +199,10 @@ export const UserMessagesSection = ({
       case "barter_listing":
         return "Trade listing"
       case "storefront":
-        return "Storefront"
+        // Not "Storefront": the same context_type backs the directory
+        // "Message this business" thread, where the counterparty may sell
+        // nothing at all.
+        return "Business inquiry"
       default:
         return "Conversation"
     }

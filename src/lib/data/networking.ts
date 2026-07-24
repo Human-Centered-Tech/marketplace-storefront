@@ -47,7 +47,14 @@ export const getNetworkingEvent = async (id: string) => {
   }
 }
 
-export const rsvpToEvent = async (eventId: string) => {
+export const rsvpToEvent = async (
+  eventId: string,
+  // Optional reminder details. `phone` is only collected when the backend told
+  // us it has no number on file (event.has_phone_on_file === false) and the
+  // user ticked the consent box. PII: it is forwarded straight to the backend
+  // and never logged, cached or sent anywhere else.
+  reminder?: { phone?: string; sms_opt_in?: boolean }
+) => {
   const BACKEND_URL =
     process.env.MEDUSA_BACKEND_URL || "http://localhost:9000"
   const authHeaders = await getAuthHeaders()
@@ -69,6 +76,10 @@ export const rsvpToEvent = async (eventId: string) => {
     {
       method: "POST",
       headers,
+      body: JSON.stringify({
+        phone: reminder?.phone || undefined,
+        sms_opt_in: reminder?.sms_opt_in ?? false,
+      }),
     }
   )
 

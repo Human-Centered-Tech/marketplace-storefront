@@ -122,6 +122,11 @@ export async function signup(formData: FormData) {
     customerForm.metadata = metadata
   }
 
+  // The RegisterForm forwards which flow this is (see __vendor_flow). Only the
+  // shopper flow gets the new "add a password" collision handling below; the
+  // vendor flow keeps its existing "already exists -> convert to merchant" path.
+  const isVendorFlow = formData.get("__vendor_flow") === "1"
+
   try {
     const token = await sdk.auth.register("customer", "emailpass", {
       email: customerForm.email as string,
@@ -134,11 +139,34 @@ export async function signup(formData: FormData) {
       ...(await getAuthHeaders()),
     }
 
-    const { customer: createdCustomer } = await sdk.store.customer.create(
-      customerForm as any,
-      {},
-      headers
-    )
+    let createdCustomer: HttpTypes.StoreCustomer
+    try {
+      const created = await sdk.store.customer.create(
+        customerForm as any,
+        {},
+        headers
+      )
+      createdCustomer = created.customer
+    } catch (createErr: any) {
+      // The email already belongs to an existing account. If that account signs
+      // in with a DIFFERENT provider (e.g. Google), sdk.auth.register above just
+      // minted an unlinked "orphan" emailpass identity — the source of the silent
+      // login lockout. For the shopper flow, don't leave the user on that orphan:
+      // clear the token, kick off the secure "add a password" email (a
+      // proof-of-ownership link that links a password to their EXISTING account),
+      // and signal the form to show a friendly message instead of a raw error.
+      const msg = String(createErr?.message || createErr)
+      const emailTaken =
+        /already exists|already in use|unique|duplicate|e11000|taken/i.test(msg)
+      if (emailTaken && !isVendorFlow) {
+        await removeAuthToken()
+        await requestPasswordSetup(customerForm.email as string)
+        return { email_exists: true } as any
+      }
+      // Vendor flow (or any non-email error): re-throw so the outer catch returns
+      // the raw string the RegisterForm vendor branch already keys on.
+      throw createErr
+    }
 
     // Post-create steps are best-effort. The customer exists in Medusa
     // and the auth token from sdk.auth.register() above is already set,
@@ -172,15 +200,36 @@ export async function login(formData: FormData) {
   const password = formData.get("password") as string
 
   try {
-    await sdk.auth
-      .login("customer", "emailpass", { email, password })
-      .then(async (token) => {
-        await setAuthToken(token as string)
-        const customerCacheTag = await getCacheTag("customers")
-        revalidateTag(customerCacheTag)
-      })
+    const token = await sdk.auth.login("customer", "emailpass", {
+      email,
+      password,
+    })
+    // emailpass returns a string token. An object here means a redirect-style
+    // provider flow we don't use for password login — don't persist it as the
+    // session (it would serialize to "[object Object]" and 401 everything).
+    if (typeof token !== "string") {
+      return "We couldn't sign you in. Please try again."
+    }
+    await setAuthToken(token)
+    const customerCacheTag = await getCacheTag("customers")
+    revalidateTag(customerCacheTag)
   } catch (error: any) {
     return error.toString()
+  }
+
+  // Guard against an ORPHANED auth identity. If an emailpass password was ever
+  // minted for an email whose real account signs in another way (e.g. a Google
+  // signup), sdk.auth.login SUCCEEDS — the password verifies and a token is
+  // issued — but that identity is linked to no customer. /store/customers/me
+  // then 401s, so every protected page silently bounces back to /login with no
+  // message: the "silent refresh" that turned the 7/15 Temple Builder Coaching
+  // lockout into a support escalation. Confirm a customer actually resolves; if
+  // not, clear the dead token and surface a real, actionable error instead of
+  // letting LoginForm push to /user (which just bounces back here blank).
+  const customer = await retrieveCustomer()
+  if (!customer) {
+    await removeAuthToken()
+    return "We couldn't finish signing you in with a password. If you normally use “Continue with Google,” please sign in that way. Otherwise, reset your password or contact support@catholicowned.com."
   }
 
   // Attempt seller authentication with same credentials
@@ -232,6 +281,48 @@ export async function signout() {
   const cartCacheTag = await getCacheTag("carts")
   revalidateTag(cartCacheTag)
   redirect(`/`)
+}
+
+/**
+ * "Add a password to my account" — request step. Fired when an email+password
+ * signup collides with an account that signs in another way (e.g. Google), and
+ * usable as a standalone request. The backend ALWAYS responds the same way
+ * whether or not the email exists (no account-existence oracle), so this is
+ * intentionally fire-and-forget and never surfaces success/failure to the UI.
+ */
+export async function requestPasswordSetup(email: string): Promise<void> {
+  try {
+    await sdk.client.fetch("/store/customers/request-password-setup", {
+      method: "POST",
+      body: { email },
+    })
+  } catch {
+    // Neutral by design — never reveal whether the email exists.
+  }
+}
+
+/**
+ * "Add a password to my account" — completion step. Trades the one-time token
+ * from the emailed link for a real email+password login, linked to the existing
+ * account. No session required: the token IS the proof of email ownership.
+ */
+export async function completePasswordSetup(
+  token: string,
+  password: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    await sdk.client.fetch("/store/customers/complete-password-setup", {
+      method: "POST",
+      body: { token, password },
+    })
+    return { success: true }
+  } catch (err: any) {
+    const message =
+      err?.response?.data?.message ||
+      err?.message ||
+      "Something went wrong. Please request a new link."
+    return { success: false, error: message }
+  }
 }
 
 /**

@@ -9,10 +9,17 @@ import { MessageIcon } from "@/icons"
 import { startConversation } from "@/lib/data/messaging"
 
 /**
- * "Message seller" entry point. Starts (or reuses) a conversation in the
- * first-party messaging module and sends the user to their inbox thread.
- * Replaces the former TalkJS modal. Props are kept stable so existing call
- * sites (product header, seller pages, order views) don't need changes.
+ * "Message seller" / "Message this business" entry point. Starts (or reuses) a
+ * conversation in the first-party messaging module and sends the user to their
+ * inbox thread. Replaces the former TalkJS modal. Props are kept stable so
+ * existing call sites (product header, seller pages, order views) don't need
+ * changes.
+ *
+ * Taxonomy (Brooke 7/14): a Business Owner (service, no products) is NOT a
+ * store — only a Merchant is. Directory listings therefore pass both a
+ * business-worded `label` AND `recipientNoun="business"`, because the failure
+ * modes are user-facing too: a "seller"-worded error under a "Message this
+ * business" button leaks store language onto non-merchants.
  */
 export const Chat = ({
   user,
@@ -21,6 +28,7 @@ export const Chat = ({
   icon,
   product,
   label = "Message seller",
+  recipientNoun = "seller",
 }: {
   user: HttpTypes.StoreCustomer | null
   // Only `id` is required so directory listings can pass their slim
@@ -32,10 +40,14 @@ export const Chat = ({
   product?: HttpTypes.StoreProduct
   subject?: string
   order_id?: string
-  // Button text. Directory listing pages pass "Message business" (Business
-  // Owners aren't sellers in the taxonomy); marketplace surfaces keep the
-  // seller-scoped default.
+  // Button text. Directory listing pages pass "Message this business"
+  // (Business Owners aren't sellers in the taxonomy); marketplace surfaces
+  // keep the seller-scoped default.
   label?: string
+  // The noun used in the *error* strings, which sit right under the button.
+  // Must track `label`: "seller" on merchant surfaces, "business" on the
+  // directory.
+  recipientNoun?: "seller" | "business"
 }) => {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
@@ -47,7 +59,7 @@ export const Chat = ({
       return
     }
     if (!seller?.id) {
-      setError("This seller is unavailable.")
+      setError(`This ${recipientNoun} is unavailable.`)
       return
     }
 
@@ -73,7 +85,7 @@ export const Chat = ({
     if (res?.conversation?.id) {
       router.push(`/user/messages?conversation=${res.conversation.id}`)
     } else {
-      setError("This seller can't receive messages yet.")
+      setError(`This ${recipientNoun} can't receive messages yet.`)
     }
   }
 

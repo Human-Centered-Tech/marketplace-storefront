@@ -56,6 +56,9 @@ importers:
       '@talkjs/react':
         specifier: ^0.1.11
         version: 0.1.12(react@19.2.6)(talkjs@0.37.0)
+      '@tanstack/react-virtual':
+        specifier: ^3.13.24
+        version: 3.13.24(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       '@types/js-cookie':
         specifier: ^3.0.6
         version: 3.0.6

@@ -16,6 +16,10 @@ type ImageUploadFieldProps = {
   value: string
   onChange: (url: string) => void
   hint?: string
+  // Lets the parent form know an upload is in flight so Save can wait for it
+  // (saving mid-upload would persist the listing WITHOUT the image the owner
+  // just picked, which reads as "my edit didn't stick").
+  onUploadingChange?: (uploading: boolean) => void
 }
 
 /**
@@ -31,10 +35,16 @@ export const ImageUploadField = ({
   value,
   onChange,
   hint,
+  onUploadingChange,
 }: ImageUploadFieldProps) => {
   const inputRef = useRef<HTMLInputElement | null>(null)
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState("")
+
+  const markUploading = (busy: boolean) => {
+    setUploading(busy)
+    onUploadingChange?.(busy)
+  }
 
   const handleFile = async (file: File | undefined) => {
     if (!file) return
@@ -56,18 +66,21 @@ export const ImageUploadField = ({
       return
     }
 
-    setUploading(true)
+    markUploading(true)
     try {
       const res = await uploadDirectoryImage(file)
       if (res.ok) {
         onChange(res.url)
       } else {
+        // A failed upload leaves `value` exactly as it was — the previously
+        // saved image (and every other field in the form) is untouched. The
+        // owner can fix the image or just save their text edits.
         setError(res.error)
       }
     } catch (e: any) {
       setError(friendlyUploadError(e?.message))
     } finally {
-      setUploading(false)
+      markUploading(false)
       if (inputRef.current) inputRef.current.value = ""
     }
   }

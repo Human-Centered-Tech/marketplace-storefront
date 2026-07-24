@@ -140,7 +140,7 @@ export async function UpcomingEvents() {
             <span className="font-sans text-[11px] tracking-[0.2em] uppercase text-[#755b00] font-bold">
               Get Involved
             </span>
-            <h2 className="font-serif text-3xl md:text-4xl font-semibold text-[#001435]">
+            <h2 className="font-serif text-2xl md:text-3xl font-semibold text-[#001435]">
               Upcoming Events
             </h2>
           </div>

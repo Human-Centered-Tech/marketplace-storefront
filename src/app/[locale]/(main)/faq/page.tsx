@@ -54,7 +54,7 @@ const SECTIONS: { heading: string; items: FAQ[] }[] = [
       },
       {
         q: "What does it cost to sell?",
-        a: "Every marketplace seller needs an active Business Directory listing. Plans start at $50/year (Essential tier) and scale up to Featured ($400/year) and Enterprise ($2,000/year). See the full comparison on our pricing page.",
+        a: "Every marketplace seller needs an active Business Directory listing. Marketplace Merchant membership is $99/year plus 11% per sale. Directory-only plans start at $99/year (Catholic Owned® Local) and scale up to Featured ($699/year) and Enterprise ($2,999/year). See the full comparison on our pricing page.",
       },
       {
         q: "Do you take a commission?",
@@ -75,7 +75,7 @@ const SECTIONS: { heading: string; items: FAQ[] }[] = [
       },
       {
         q: "What are parish affiliations?",
-        a: "Businesses can be affiliated with one or more parishes. Your Essential tier includes 1 parish, Featured includes up to 3, and Enterprise includes up to 25. Parish affiliations help shoppers find businesses connected to their own community.",
+        a: "Businesses can be affiliated with one or more parishes. Your Essential tier includes 1 parish, Featured includes up to 3, and Enterprise includes up to 10. Parish affiliations help shoppers find businesses connected to their own community.",
       },
       {
         q: "What happens if I cancel my subscription?",

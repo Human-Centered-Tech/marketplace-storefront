@@ -17,6 +17,9 @@ type GalleryUploadFieldProps = {
   onChange: (urls: string[]) => void
   max?: number
   hint?: string
+  // See ImageUploadField — lets the parent form hold Save while an upload is
+  // still in flight.
+  onUploadingChange?: (uploading: boolean) => void
 }
 
 /**
@@ -32,16 +35,22 @@ export const GalleryUploadField = ({
   onChange,
   max = 8,
   hint,
+  onUploadingChange,
 }: GalleryUploadFieldProps) => {
   const inputRef = useRef<HTMLInputElement | null>(null)
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState("")
   const atMax = value.length >= max
 
+  const markUploading = (busy: boolean) => {
+    setUploading(busy)
+    onUploadingChange?.(busy)
+  }
+
   const handleFiles = async (files: FileList | null) => {
     if (!files || !files.length) return
     setError("")
-    setUploading(true)
+    markUploading(true)
     const remaining = max - value.length
     const toUpload = Array.from(files).slice(0, remaining)
     const added: string[] = []
@@ -84,7 +93,7 @@ export const GalleryUploadField = ({
     } catch (e: any) {
       setError(friendlyUploadError(e?.message))
     } finally {
-      setUploading(false)
+      markUploading(false)
       if (inputRef.current) inputRef.current.value = ""
     }
   }

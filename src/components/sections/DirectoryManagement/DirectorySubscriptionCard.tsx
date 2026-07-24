@@ -1,36 +1,76 @@
 "use client"
 
+// These ids are BILLING tiers (pricing_tier) and must stay in the "modern"
+// vocabulary — the keys the backend resolves to a real Stripe price ID via
+// STRIPE_PRICE_DIRECTORY_*. The legacy ids (verified/featured/enterprise) are
+// NOT in that map: they used to fall through to a hardcoded auto-created price
+// and charged $50/$400/$2,000 while this page and checkout advertised the
+// current rates. Nobody was ever billed through it (verified on prod 2026-07-14
+// — zero legacy pricing_tier rows), but every "go live" and "upgrade" button in
+// the product lands here, so the 96 pending listings would have been.
+//
+// Keep this list in step with the claim funnel's (ClaimListingStart.tsx) — the
+// two surfaces sell the same thing and drifted apart once already.
 const tiers = [
   {
-    id: "verified",
-    name: "Essential",
-    price: "$50/year",
+    id: "local",
+    name: "Catholic Owned® Local",
+    price: "$99/year",
     parishes: 1,
-    features: ["Basic listing", "1 parish affiliation", "Search visibility"],
+    features: [
+      "Local service listing",
+      "1 parish affiliation",
+      "Search visibility",
+    ],
   },
   {
-    id: "featured",
+    id: "tier2_business",
     name: "Featured",
-    price: "$400/year",
+    price: "$699/year",
     parishes: 3,
     features: [
       "Featured placement",
+      "3 parish affiliations",
+      "Priority search ranking",
+      "Catholic Owned®-funded ads",
+      "Analytics dashboard",
+    ],
+  },
+  {
+    id: "tier2_startup",
+    name: "Featured — Startup",
+    price: "$349/year",
+    parishes: 3,
+    features: [
+      "Featured benefits at early-stage pricing",
       "3 parish affiliations",
       "Priority search ranking",
       "Analytics dashboard",
     ],
   },
   {
-    id: "enterprise",
+    id: "tier2_nonprofit",
+    name: "Featured — Non-profit",
+    price: "$349/year",
+    parishes: 3,
+    features: [
+      "Featured benefits at non-profit pricing",
+      "3 parish affiliations",
+      "Priority search ranking",
+      "Analytics dashboard",
+    ],
+  },
+  {
+    id: "tier3",
     name: "Enterprise",
-    price: "$2,000/year",
+    price: "$2,999/year",
     parishes: 10,
     features: [
       "Top placement",
       "10 parish affiliations",
       "Highest search priority",
+      "Sales-team consultation",
       "Full analytics suite",
-      "Dedicated support",
     ],
   },
 ]
@@ -50,7 +90,7 @@ export const DirectorySubscriptionCard = ({
 }: DirectorySubscriptionCardProps) => {
   return (
     <div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {tiers.map((tier) => {
           const isCurrent = tier.id === currentTier
           return (
