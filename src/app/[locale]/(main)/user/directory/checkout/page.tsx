@@ -40,6 +40,28 @@ const TIER_DETAILS: Record<
       "Eligibility for Local Boost",
     ],
   },
+  // HIDDEN tier — not on the subscription picker or the onboarding
+  // questionnaire, on purpose. Essentials is the $99 beyond-local
+  // directory-only plan for the edge case of product businesses that
+  // can't/won't sell on the marketplace (e.g. authors whose books ship via
+  // Amazon). A customer only lands here via an explicit ?tier=essential link,
+  // minted by go-live when an admin has manually set their
+  // recommended_tier to "essential". Copy mirrors Local minus the
+  // local-only items (state placement, sticker, Local Boost).
+  essential: {
+    name: "Catholic Owned® Essentials",
+    price: "$99",
+    annual: "$99/year",
+    features: [
+      "An Essential directory listing in the Catholic Owned® directory",
+      "The ability to edit and customize your listing",
+      "Higher directory placement than unclaimed listings",
+      "One parish affiliation",
+      "The ability to respond to reviews",
+      "A digital Catholic Owned® Member badge",
+      "Access to open Catholic Owned® networking opportunities",
+    ],
+  },
   merchant: {
     name: "Marketplace Merchant",
     price: "$99",
