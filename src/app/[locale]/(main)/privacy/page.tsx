@@ -127,10 +127,22 @@ export default function PrivacyPage() {
 
         <Section title="6. Cookies and Tracking">
           <p>
-            We use cookies to keep you signed in, remember your cart, and
-            understand how the platform is used. You can disable cookies in
-            your browser settings, though parts of the site may not work
-            correctly without them.
+            <strong>Essential cookies</strong> keep you signed in, remember your
+            cart, and secure your session. These are required for the site to
+            work and are always active.
+          </p>
+          <p>
+            <strong>Analytics cookies</strong> (Google Analytics 4) help us
+            understand how the platform is used so we can improve it. These are
+            optional. If you are visiting from the European Economic Area, the
+            United Kingdom, or Switzerland, we ask for your consent before
+            loading them, and they stay off unless you accept.
+          </p>
+          <p>
+            You can change your choice at any time using the{" "}
+            <strong>Cookie preferences</strong> link in the footer, or disable
+            cookies in your browser settings — though parts of the site may not
+            work correctly without the essential ones.
           </p>
         </Section>
 

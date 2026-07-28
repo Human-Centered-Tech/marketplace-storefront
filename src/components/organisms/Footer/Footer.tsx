@@ -1,4 +1,5 @@
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
+import { CookiePreferencesButton } from "@/components/consent/CookiePreferencesButton"
 import footerLinks from "@/data/footerLinks"
 
 // Footer links are mostly in-app (locale-prefixed). External/contact paths
@@ -89,6 +90,9 @@ export function Footer() {
               {footerLinks.legal.map(({ label, path }) => (
                 <FooterLink key={label} path={path} label={label} />
               ))}
+              {/* Withdrawing consent has to be as easy as giving it, so this
+                  sits with the other legal links rather than in the banner. */}
+              <CookiePreferencesButton className="block text-[14px] text-white/80 hover:text-white transition-colors text-left" />
             </nav>
           </div>
         </div>
