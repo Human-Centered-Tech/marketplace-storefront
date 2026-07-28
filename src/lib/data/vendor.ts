@@ -9,6 +9,7 @@ import {
   setVendorFlag,
   setVendorToken,
 } from "./cookies"
+import { forwardedClientIpHeaders } from "./client-ip"
 
 export type VendorStatus = {
   isVendor: boolean
@@ -145,7 +146,10 @@ export async function becomeVendor(formData: FormData) {
       `${process.env.MEDUSA_BACKEND_URL}/auth/seller/emailpass/register`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(await forwardedClientIpHeaders()),
+        },
         body: JSON.stringify({ email, password }),
       }
     )
@@ -159,7 +163,10 @@ export async function becomeVendor(formData: FormData) {
         `${process.env.MEDUSA_BACKEND_URL}/auth/seller/emailpass`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            ...(await forwardedClientIpHeaders()),
+          },
           body: JSON.stringify({ email, password }),
         }
       )
@@ -234,7 +241,10 @@ export async function becomeVendor(formData: FormData) {
         `${process.env.MEDUSA_BACKEND_URL}/auth/seller/emailpass`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            ...(await forwardedClientIpHeaders()),
+          },
           body: JSON.stringify({ email, password }),
         }
       )
@@ -276,6 +286,8 @@ export async function becomeVendor(formData: FormData) {
           "x-publishable-api-key":
             process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "",
           ...customerHeaders,
+          // Real visitor IP for the backend's claim-abuse limiters.
+          ...(await forwardedClientIpHeaders()),
         }
         // Persist funnel context BEFORE the listing create/attach below: the
         // listing events drive the CRM contact sync, which reads
@@ -398,6 +410,10 @@ export async function becomeMerchant(formData: FormData) {
     "x-publishable-api-key":
       process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "",
     ...customerHeaders,
+    // Real visitor IP for the backend's claim-abuse limiters (client-ip.ts) —
+    // these are server actions, so without it every caller looks like this
+    // server.
+    ...(await forwardedClientIpHeaders()),
   }
 
   // Step 1: create / link the seller onto the customer's auth identity.
@@ -480,7 +496,10 @@ export async function becomeMerchant(formData: FormData) {
       `${process.env.MEDUSA_BACKEND_URL}/auth/seller/emailpass`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(await forwardedClientIpHeaders()),
+        },
         body: JSON.stringify({ email, password }),
       }
     )
@@ -573,6 +592,10 @@ export async function convertToMerchant(input: {
     "x-publishable-api-key":
       process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "",
     ...customerHeaders,
+    // Real visitor IP for the backend's claim-abuse limiters (client-ip.ts) —
+    // these are server actions, so without it every caller looks like this
+    // server.
+    ...(await forwardedClientIpHeaders()),
   }
 
   try {
@@ -715,7 +738,10 @@ export async function refreshVendorSession(formData: FormData) {
     `${process.env.MEDUSA_BACKEND_URL}/auth/seller/emailpass`,
     {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(await forwardedClientIpHeaders()),
+      },
       body: JSON.stringify({ email, password }),
     }
   )
