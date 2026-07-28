@@ -445,9 +445,22 @@ export const NetworkingEventDetail = ({
                     onChange={(e) => setSmsOptIn(e.target.checked)}
                     className="mt-0.5 shrink-0"
                   />
+                  {/* Full carrier disclosure — A2P 10DLC reviewers require
+                      frequency, rates, STOP, HELP, and a privacy link on the
+                      consent line (Twilio rejection 7/21, error 30909). */}
                   <span>
-                    Text me reminders about this event. Msg &amp; data rates may
-                    apply. Reply STOP to opt out.
+                    I agree to receive event reminder text messages from
+                    Catholic Owned® at the number provided. Message frequency
+                    varies. Msg &amp; data rates may apply. Reply STOP to opt
+                    out or HELP for help. Consent is not a condition of
+                    attendance. See our{" "}
+                    <LocalizedClientLink
+                      href="/privacy"
+                      className="underline hover:text-navy-dark"
+                    >
+                      Privacy Policy
+                    </LocalizedClientLink>
+                    .
                   </span>
                 </label>
                 <button
