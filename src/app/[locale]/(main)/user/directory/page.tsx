@@ -58,9 +58,16 @@ export default async function UserDirectoryPage() {
                     </p>
                   </div>
                   <div className="flex gap-2">
+                    {/* Inline background/color instead of `bg-primary
+                        text-white`: --bg-primary resolves to --neutral-0
+                        (#fff), so that pair renders white-on-white and the
+                        button is invisible while still occupying space and
+                        being clickable. Same trap, same fix as the submit
+                        button in DirectoryListingForm. */}
                     <LocalizedClientLink
                       href="/user/directory/edit"
-                      className="bg-primary text-white px-4 py-2 rounded-sm text-sm uppercase font-medium"
+                      style={{ backgroundColor: "#17294A", color: "#ffffff" }}
+                      className="px-4 py-2 rounded-sm text-sm uppercase font-medium"
                     >
                       Edit
                     </LocalizedClientLink>
@@ -104,9 +111,11 @@ export default async function UserDirectoryPage() {
               <p className="text-secondary mb-4">
                 Get your Catholic-owned business discovered by the community.
               </p>
+              {/* Same white-on-white trap as the Edit button above. */}
               <LocalizedClientLink
                 href="/user/directory/create"
-                className="bg-primary text-white px-6 py-2 rounded-sm text-sm uppercase font-medium inline-block"
+                style={{ backgroundColor: "#17294A", color: "#ffffff" }}
+                className="px-6 py-2 rounded-sm text-sm uppercase font-medium inline-block"
               >
                 Create Listing
               </LocalizedClientLink>
