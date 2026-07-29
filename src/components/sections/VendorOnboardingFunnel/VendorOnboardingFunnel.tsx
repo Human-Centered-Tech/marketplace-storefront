@@ -97,11 +97,23 @@ export const VendorOnboardingFunnel = ({
   // drop-off leaves a "started" intent in admin Claim Attempts. The intent id
   // rides in sessionStorage and is finally passed through register → attach,
   // which completes it. Fire-and-forget; never blocks the funnel.
+  //
+  // Engagement gate (7/28): a bare page-load at the landing step is NOT a
+  // claim attempt. Every listing page links here with ?claim_listing=<id>, so
+  // recording on mount let a link-following, JS-executing crawler mint one
+  // "claim attempt" per listing — 875 anonymous step-1 rows in two days, all
+  // with no email and no progress, drowning Brooke's Claim Attempts view.
+  // The first breadcrumb now waits until the visitor advances past the
+  // Founding Pillars gate (or attests / enters an email, which ping directly).
+  // Nothing is lost: a step-1 row with no email was never a followable
+  // drop-off — the Suzi failure mode is someone who ENGAGED and then stalled.
   useEffect(() => {
     if (!claimListing) return
     const key = `claim_intent_${claimListing}`
+    const resuming = sessionStorage.getItem(key)
+    if (!resuming && state.step === initialState.step) return
     recordClaimProgress(claimListing, {
-      intent_id: sessionStorage.getItem(key),
+      intent_id: resuming,
       step: `funnel_${state.step}`,
       // The screening answer decides Arimathea-vs-register routing but lives
       // only in this component's state — without this it's unknowable which

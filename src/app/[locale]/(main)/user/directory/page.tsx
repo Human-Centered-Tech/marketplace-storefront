@@ -1,7 +1,7 @@
 import { retrieveCustomer } from "@/lib/data/customer"
 import { LoginForm, UserNavigation } from "@/components/molecules"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
-import { listDirectoryListings } from "@/lib/data/directory"
+import { getMyDirectoryListing } from "@/lib/data/directory-actions"
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
@@ -13,12 +13,14 @@ export default async function UserDirectoryPage() {
 
   if (!user) return <LoginForm />
 
-  const result = await listDirectoryListings({
-    q: user.id,
-    limit: 1,
-  })
-
-  const listing = result.listings?.[0]
+  // Resolve the owner's listing by owner_id, NOT by search. This page used to
+  // call listDirectoryListings({ q: user.id }), but `q` on the public browse
+  // endpoint is an ilike over business_name/description only — a customer id
+  // never matches either, so it returned zero rows and every Business Owner
+  // landed on the "List Your Business" empty state while their listing was
+  // visible on every sibling page (Suzi/Hixon Law, 7/29). /me also skips the
+  // public-visibility filters, so a pending (pre-go-live) listing resolves too.
+  const { listing } = await getMyDirectoryListing()
 
   return (
     <main className="container">

@@ -2,6 +2,7 @@
 
 import { DirectoryListing, DirectoryParishAffiliation } from "@/types/directory"
 import { getAuthHeaders } from "./cookies"
+import { forwardedClientIpHeaders } from "./client-ip"
 
 /**
  * Authenticated server-action helpers for directory operations that
@@ -30,6 +31,9 @@ async function authedBackendFetch<T>(
     "Content-Type": "application/json",
     "x-publishable-api-key": process.env
       .NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY as string,
+    // Real visitor IP, so the backend's abuse limiters see the caller and not
+    // this server. See client-ip.ts.
+    ...(await forwardedClientIpHeaders()),
     ...(init.headers || {}),
   }
 
@@ -258,6 +262,7 @@ export async function recordClaimProgress(
           "Content-Type": "application/json",
           "x-publishable-api-key": process.env
             .NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY as string,
+          ...(await forwardedClientIpHeaders()),
         },
         body: JSON.stringify({
           intent_id: payload.intent_id || undefined,

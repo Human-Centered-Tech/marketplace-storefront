@@ -4,6 +4,8 @@ import "./globals.css"
 import { Toaster } from "@medusajs/ui"
 import { retrieveCart } from "@/lib/data/cart"
 import GoogleAnalytics from "@/components/analytics/GoogleAnalytics"
+import { ConsentProvider } from "@/components/consent/ConsentProvider"
+import { CookieBanner } from "@/components/consent/CookieBanner"
 import { Providers } from "./providers"
 
 // Brand title/serif font (Brooke 3/2026 direction): EB Garamond replaces
@@ -180,10 +182,17 @@ export default async function RootLayout({
       <body
         className={`${dmSans.variable} ${ebGaramond.variable} font-sans antialiased bg-primary text-secondary relative`}
       >
-        <Providers cart={cart}>{children}</Providers>
-        <Toaster position="top-right" />
-        {/* GA4 — renders nothing unless NEXT_PUBLIC_GA_ID is set. */}
-        <GoogleAnalytics />
+        {/* ConsentProvider wraps the whole tree so the footer's "Cookie
+            preferences" control can re-open the banner. Server-rendered
+            children pass straight through it. */}
+        <ConsentProvider>
+          <Providers cart={cart}>{children}</Providers>
+          <Toaster position="top-right" />
+          {/* GA4 — renders nothing unless NEXT_PUBLIC_GA_ID is set AND
+              (visitor is outside the EEA/UK OR has accepted). */}
+          <GoogleAnalytics />
+          <CookieBanner />
+        </ConsentProvider>
       </body>
     </html>
   )

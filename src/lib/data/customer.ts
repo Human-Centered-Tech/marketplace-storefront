@@ -17,6 +17,8 @@ import {
   setVendorFlag,
   setVendorToken,
 } from "./cookies"
+import { getRequestSdk } from "./auth-sdk"
+import { forwardedClientIpHeaders } from "./client-ip"
 
 export const retrieveCustomer =
   async (): Promise<HttpTypes.StoreCustomer | null> => {
@@ -127,8 +129,12 @@ export async function signup(formData: FormData) {
   // vendor flow keeps its existing "already exists -> convert to merchant" path.
   const isVendorFlow = formData.get("__vendor_flow") === "1"
 
+  // Request-scoped SDK so authRateLimit buckets by VISITOR, not by this
+  // server — see lib/data/auth-sdk.ts.
+  const authSdk = await getRequestSdk()
+
   try {
-    const token = await sdk.auth.register("customer", "emailpass", {
+    const token = await authSdk.auth.register("customer", "emailpass", {
       email: customerForm.email as string,
       password: password,
     })
@@ -174,7 +180,7 @@ export async function signup(formData: FormData) {
     // must NOT bubble up as a signup error — that's the source of the
     // brief red error flash the user sees after a successful register.
     try {
-      const loginToken = await sdk.auth.login("customer", "emailpass", {
+      const loginToken = await authSdk.auth.login("customer", "emailpass", {
         email: customerForm.email,
         password,
       })
@@ -199,8 +205,12 @@ export async function login(formData: FormData) {
   const email = ((formData.get("email") as string) || "").trim().toLowerCase()
   const password = formData.get("password") as string
 
+  // Per-visitor auth bucketing — see lib/data/auth-sdk.ts.
+  const authSdk = await getRequestSdk()
+  const ipHeaders = await forwardedClientIpHeaders()
+
   try {
-    const token = await sdk.auth.login("customer", "emailpass", {
+    const token = await authSdk.auth.login("customer", "emailpass", {
       email,
       password,
     })
@@ -238,7 +248,7 @@ export async function login(formData: FormData) {
       `${process.env.MEDUSA_BACKEND_URL}/auth/seller/emailpass`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...ipHeaders },
         body: JSON.stringify({ email, password }),
       }
     )
@@ -267,7 +277,18 @@ export async function login(formData: FormData) {
 }
 
 export async function signout() {
-  await sdk.auth.logout()
+  // Logout shares the /auth/** limiter bucket, so it needs the visitor header
+  // too — otherwise a burst of sign-outs eats the site-wide auth allowance.
+  //
+  // Best-effort: the session that matters is the cookie we clear below. If the
+  // backend call fails (network, an already-expired token, a 429) the user must
+  // still end up signed out locally — otherwise "Sign out" silently does
+  // nothing and leaves them logged in.
+  try {
+    await (await getRequestSdk()).auth.logout()
+  } catch {
+    // Fall through to clearing local state.
+  }
 
   await removeAuthToken()
   await removeVendorToken()
@@ -479,6 +500,7 @@ export const updateCustomerPassword = async (
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
+        ...(await forwardedClientIpHeaders()),
       },
       body: JSON.stringify({ password }),
     }
@@ -529,6 +551,7 @@ async function exchangeHandoffForSession(token: string): Promise<string> {
           authorization: `Bearer ${token}`,
           "x-publishable-api-key": process.env
             .NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY as string,
+          ...(await forwardedClientIpHeaders()),
         },
       }
     )
@@ -545,7 +568,9 @@ async function exchangeHandoffForSession(token: string): Promise<string> {
 }
 
 export const sendResetPasswordEmail = async (email: string) => {
-  const res = await sdk.auth
+  // Password reset is a brute-force AND enumeration target — it wants the
+  // per-visitor bucket more than anything else on /auth/**.
+  const res = await (await getRequestSdk()).auth
     .resetPassword("customer", "emailpass", {
       identifier: email,
     })
