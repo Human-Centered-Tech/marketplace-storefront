@@ -16,6 +16,7 @@ import { headers, cookies } from "next/headers"
 import Script from "next/script"
 import { listRegions } from "@/lib/data/regions"
 import { toHreflang } from "@/lib/helpers/hreflang"
+import { jsonLd } from "@/lib/util/json-ld"
 
 async function readUserLocation(): Promise<{ lat: number; lng: number } | null> {
   try {
@@ -149,7 +150,7 @@ export default async function Home({
         id="ld-org"
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: jsonLd({
             "@context": "https://schema.org",
             "@type": "Organization",
             name: siteName,
@@ -163,7 +164,7 @@ export default async function Home({
         id="ld-website"
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: jsonLd({
             "@context": "https://schema.org",
             "@type": "WebSite",
             name: siteName,

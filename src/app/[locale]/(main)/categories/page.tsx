@@ -12,6 +12,7 @@ import Script from "next/script"
 import { listRegions } from "@/lib/data/regions"
 import { listProducts } from "@/lib/data/products"
 import { toHreflang } from "@/lib/helpers/hreflang"
+import { jsonLd } from "@/lib/util/json-ld"
 
 export const revalidate = 60
 
@@ -118,7 +119,7 @@ async function AllCategories({
         id="ld-breadcrumbs-categories"
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: jsonLd({
             "@context": "https://schema.org",
             "@type": "BreadcrumbList",
             itemListElement: [
@@ -136,7 +137,7 @@ async function AllCategories({
         id="ld-itemlist-categories"
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: jsonLd({
             "@context": "https://schema.org",
             "@type": "ItemList",
             itemListElement: itemList,
