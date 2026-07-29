@@ -12,6 +12,7 @@ import Script from "next/script"
 import { getRegion, listRegions } from "@/lib/data/regions"
 import { listProducts } from "@/lib/data/products"
 import { toHreflang } from "@/lib/helpers/hreflang"
+import { jsonLd } from "@/lib/util/json-ld"
 
 export const revalidate = 60
 
@@ -135,7 +136,7 @@ async function Category({
         id="ld-breadcrumbs-category"
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: jsonLd({
             "@context": "https://schema.org",
             "@type": "BreadcrumbList",
             itemListElement: [
@@ -153,7 +154,7 @@ async function Category({
         id="ld-itemlist-category"
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: jsonLd({
             "@context": "https://schema.org",
             "@type": "ItemList",
             itemListElement: itemList,
