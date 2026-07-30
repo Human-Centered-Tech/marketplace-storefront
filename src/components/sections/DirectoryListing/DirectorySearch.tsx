@@ -101,6 +101,10 @@ type DirectoryHit = {
   // Unclaimed treatment.
   is_claimed?: boolean
   owner_id?: string | null
+  // Customer-review aggregate (7/28). `rating` is null for listings nobody has
+  // reviewed yet — it is NOT 0, so don't `?? 0` it anywhere downstream.
+  rating?: number | null
+  review_count?: number
   city: string
   state: string
   logo_url: string | null
@@ -172,6 +176,10 @@ function hitToListing(hit: DirectoryHit): DirectoryListing {
     metadata: null,
     affiliations: [],
     badges: [],
+    // Preserve null vs number: `?? 0` here would put five empty stars on every
+    // unreviewed listing, which is exactly the fake-rating bug this replaced.
+    rating: typeof hit.rating === "number" ? hit.rating : null,
+    review_count: hit.review_count ?? 0,
     created_at: "",
     updated_at: "",
     // Distance in miles from the aroundLatLng origin (rounded to 1
@@ -223,6 +231,12 @@ export const DirectorySearch = ({
   // string means "any". Initialized from ?state= in the URL so
   // shareable links work, kept in URL on change.
   const [stateServed, setStateServed] = useState<string>(urlState)
+  // Minimum customer rating (7/28). "" = no filter; otherwise "4" means 4 stars
+  // and up. Applied as an Algolia numericFilter on the real average, so a 4.6
+  // matches the "4 & up" bucket. Unrated listings have rating:null and
+  // deliberately match NO rating filter — an unreviewed business isn't a 1-star
+  // business, and silently including them would make the filter meaningless.
+  const [minRating, setMinRating] = useState<string>("")
   const setStateServedAndPersist = useCallback(
     (next: string) => {
       setStateServed(next)
@@ -470,10 +484,14 @@ export const DirectorySearch = ({
         hitsPerPage: PAGE_SIZE,
         ...(facetFilters.length ? { facetFilters } : {}),
         ...(optionalFilters ? { optionalFilters } : {}),
+        // Minimum-rating filter. numericFilters (not a facet) so it compares
+        // against the true average — facetFilters on rating_floor would treat
+        // "4 & up" as "exactly the 4 bucket" and drop every 5-star listing.
+        ...(minRating ? { numericFilters: [`rating>=${minRating}`] } : {}),
         ...geoParams,
       }
     },
-    [search, location, categoryId, effectiveStateServed, proximityActive, effectiveProximity, radiusMi, applyRadius, bbox]
+    [search, location, categoryId, effectiveStateServed, proximityActive, effectiveProximity, radiusMi, applyRadius, bbox, minRating]
   )
 
   const runSearch = useCallback(
@@ -756,6 +774,41 @@ export const DirectorySearch = ({
                 {cat.name}
               </option>
             ))}
+          </select>
+          <svg
+            aria-hidden="true"
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="ml-1 shrink-0 text-secondary"
+          >
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </div>
+        {/* Minimum customer rating. Plain "& up" thresholds rather than the
+            five-checkbox facet list the old (never-rendered) SellerRatingFilter
+            used: on a directory where most listings are still unreviewed, five
+            buckets are mostly zeroes, and "exactly 3 stars" isn't a thing
+            anyone shops by. */}
+        <div className="flex items-center px-3 border-r border-gray-100 shrink-0">
+          <span className="material-symbols-outlined text-secondary mr-2">
+            star
+          </span>
+          <select
+            value={minRating}
+            onChange={(e) => setMinRating(e.target.value)}
+            className="bg-transparent border-none focus:ring-0 font-sans text-sm py-4 pr-1 appearance-none cursor-pointer"
+            title="Minimum customer rating"
+          >
+            <option value="">Rating</option>
+            <option value="4">4★ &amp; up</option>
+            <option value="3">3★ &amp; up</option>
+            <option value="2">2★ &amp; up</option>
           </select>
           <svg
             aria-hidden="true"

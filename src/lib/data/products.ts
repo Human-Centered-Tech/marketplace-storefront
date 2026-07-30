@@ -20,6 +20,11 @@ export const listProducts = async ({
   // returned list. Callers must verify ownership before passing this —
   // it's intended for "preview my draft store" flows, not general use.
   ownerPreview = false,
+  // Expand the product's OWN reviews (reference: 'product'). Off by default and
+  // opt-in per call: this is a link expansion on every row returned, and the
+  // list surfaces (carousels, browse, related products) pull dozens-to-hundreds
+  // of products they'd never render reviews for. Only the PDP asks for it.
+  withProductReviews = false,
 }: {
   pageParam?: number
   queryParams?: HttpTypes.FindParams &
@@ -32,6 +37,7 @@ export const listProducts = async ({
   regionId?: string
   forceCache?: boolean
   ownerPreview?: boolean
+  withProductReviews?: boolean
 }): Promise<{
   response: {
     products: (HttpTypes.StoreProduct & { seller?: SellerProps })[]
@@ -84,7 +90,8 @@ export const listProducts = async ({
         region_id: region?.id,
         fields:
           "*variants.calculated_price,+variants.inventory_quantity,*seller,*variants,*seller.products," +
-          "*seller.reviews,*seller.reviews.customer,*seller.reviews.seller,*seller.products.variants,*attribute_values,*attribute_values.attribute,+metadata",
+          "*seller.reviews,*seller.reviews.customer,*seller.reviews.seller,*seller.products.variants,*attribute_values,*attribute_values.attribute,+metadata" +
+          (withProductReviews ? ",*reviews,*reviews.customer" : ""),
         ...queryParams,
       },
       headers,

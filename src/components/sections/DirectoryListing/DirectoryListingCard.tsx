@@ -4,6 +4,41 @@ import { DirectoryListing } from "@/types/directory"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 import { getTierBadge, tierBadgeColorClass } from "@/lib/directory-tiers"
 
+/** Compact gold stars + numeral for a directory result card. */
+const CardRating = ({
+  rating,
+  count,
+}: {
+  rating: number
+  count?: number
+}) => (
+  <span
+    className="inline-flex items-center gap-1 shrink-0"
+    title={`${rating.toFixed(1)} out of 5${
+      count ? ` from ${count} reviews` : ""
+    }`}
+  >
+    {[1, 2, 3, 4, 5].map((star) => (
+      <svg
+        key={star}
+        width="12"
+        height="12"
+        viewBox="0 0 24 24"
+        fill={star <= Math.round(rating) ? "#BE9B32" : "none"}
+        stroke="#BE9B32"
+        strokeWidth="2"
+        aria-hidden="true"
+      >
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+      </svg>
+    ))}
+    <span className="text-xs text-secondary font-semibold ml-0.5">
+      {rating.toFixed(1)}
+      {count ? ` (${count})` : ""}
+    </span>
+  </span>
+)
+
 export const DirectoryListingCard = ({
   listing,
   featured = false,
@@ -14,6 +49,11 @@ export const DirectoryListingCard = ({
   showDistance?: boolean
 }) => {
   const isUnclaimed = !listing.owner_id
+  // Customer rating (7/28). Rendered only when there IS one — `rating` is null
+  // until a listing has reviews, and an empty five-star row reads as a bad
+  // score rather than an absent one.
+  const rating =
+    typeof listing.rating === "number" ? listing.rating : null
   const isEnterprise =
     !isUnclaimed &&
     (listing.subscription_tier === "enterprise" ||
@@ -118,6 +158,9 @@ export const DirectoryListingCard = ({
               <span className="text-secondary text-xs">
                 {listing.category?.name || "Business"}
               </span>
+              {rating !== null && (
+                <CardRating rating={rating} count={listing.review_count} />
+              )}
             </div>
             <h3 className="font-serif text-2xl lg:text-3xl font-bold text-navy-dark mb-2">
               {listing.business_name}
@@ -262,9 +305,14 @@ export const DirectoryListingCard = ({
               ))}
           </div>
         </div>
-        <h3 className="font-serif text-xl font-bold text-navy-dark mb-3">
+        <h3 className="font-serif text-xl font-bold text-navy-dark mb-2">
           {listing.business_name}
         </h3>
+        {rating !== null && (
+          <div className="mb-3">
+            <CardRating rating={rating} count={listing.review_count} />
+          </div>
+        )}
         {listing.description && (
           <p className="text-sm text-secondary line-clamp-2 mb-4">
             {listing.description}

@@ -17,23 +17,50 @@ function getBadge(listing: DirectoryListing) {
   return { text: badge.label, color: badge.color === "gold" ? "gold" : "navy" }
 }
 
-function StarRating({ count }: { count?: number }) {
-  const rating = count || 5
+/**
+ * Real customer rating for a card (7/28).
+ *
+ * This used to be `const rating = count || 5` called with NO props, so every
+ * business on the homepage advertised a flat five stars regardless of whether
+ * anyone had ever reviewed it. Now `rating` comes from the listing's aggregate
+ * and the component renders NOTHING when it's null (no reviews yet) — an
+ * unrated business shows no stars rather than fake ones or an empty row that
+ * reads as a bad score.
+ */
+function StarRating({
+  rating,
+  reviewCount,
+}: {
+  rating?: number | null
+  reviewCount?: number
+}) {
+  if (typeof rating !== "number") return null
+
   return (
-    <div className="flex text-[#755b00]">
-      {[1, 2, 3, 4, 5].map((star) => (
-        <svg
-          key={star}
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill={star <= rating ? "#BE9B32" : "none"}
-          stroke="#BE9B32"
-          strokeWidth="1.5"
-        >
-          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-        </svg>
-      ))}
+    <div
+      className="flex items-center gap-1 shrink-0"
+      title={`${rating.toFixed(1)} out of 5${
+        reviewCount ? ` from ${reviewCount} reviews` : ""
+      }`}
+    >
+      <div className="flex text-[#755b00]">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <svg
+            key={star}
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill={star <= Math.round(rating) ? "#BE9B32" : "none"}
+            stroke="#BE9B32"
+            strokeWidth="1.5"
+          >
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+          </svg>
+        ))}
+      </div>
+      <span className="text-xs text-[#44474e] font-bold">
+        {rating.toFixed(1)}
+      </span>
     </div>
   )
 }
@@ -46,6 +73,8 @@ function DirectoryCard({
   badge,
   badgeColor,
   href,
+  rating,
+  reviewCount,
 }: {
   name: string
   category: string
@@ -54,6 +83,8 @@ function DirectoryCard({
   badge: string | null
   badgeColor: string
   href: string
+  rating?: number | null
+  reviewCount?: number
 }) {
   return (
     <LocalizedClientLink
@@ -98,7 +129,7 @@ function DirectoryCard({
           >
             {name}
           </h3>
-          <StarRating />
+          <StarRating rating={rating} reviewCount={reviewCount} />
         </div>
         {/* Category only. The tier pill (top-left of the image) is the single
             badge now — the old "Verified" chip here was the double badge Brooke
@@ -238,6 +269,8 @@ export async function DirectoryPreview({
                 badge={badge?.text || null}
                 badgeColor={badge?.color || "navy"}
                 href={`/directory/${listing.id}`}
+                rating={listing.rating}
+                reviewCount={listing.review_count}
               />
             )
           })}

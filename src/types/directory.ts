@@ -87,6 +87,12 @@ export type DirectoryListing = {
   verified_at: string | null
   owner_id: string | null
   vendor_id: string | null
+  // Customer-review aggregate (7/28). `rating` is the average to 1 decimal and
+  // is NULL when the listing has no reviews yet — never 0, which would render as
+  // an empty star row and read as "rated badly". Both come from the backend's
+  // denormalized columns, so they're the totals, not a count of what's loaded.
+  rating?: number | null
+  review_count?: number
   // Resolved by the GET /store/directory/listings/:id route, present for any
   // claimed listing whose store is ACTIVE — the messaging identity (Business
   // Owners included, Brooke 7/10). `has_live_shop` (published products exist)

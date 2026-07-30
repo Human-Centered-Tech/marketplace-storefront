@@ -8,7 +8,6 @@ import { PriceFilter } from "./PriceFilter/PriceFilter"
 import { SizeFilter } from "./SizeFilter/SizeFilter"
 import { ConditionFilter } from "./ConditionFilter/ConditionFilter"
 import { ColorFilter } from "./ColorFilter/ColorFilter"
-import { SellerRatingFilter } from "./SellerRatingFilter/SellerRatingFilter"
 import { ActiveFilterElement } from "./ActiveFilterElement/ActiveFilterElement"
 import { MobileNavbar } from "./MobileNavbar/MobileNavbar"
 import { ProductDetailsHeader } from "./ProductDetailsHeader/ProductDetailsHeader"
@@ -16,7 +15,6 @@ import { ProductPageDetails } from "./ProductPageDetails/ProductPageDetails"
 import { ProductDetailsMeasurements } from "./ProductDetailsMeasurements/ProductDetailsMeasurements"
 import { ProductDetailsShipping } from "./ProductDetailsShipping/ProductDetailsShipping"
 import { ProductDetailsSeller } from "./ProductDetailsSeller/ProductDetailsSeller"
-import { ProductDetailsSellerReviews } from "./ProductDetailsSellerReviews/ProductDetailsSellerReviews"
 import { ProductDetailsFooter } from "./ProductDetailsFooter/ProductDetailsFooter"
 import { ProductCarousel } from "./ProductCarousel/ProductCarousel"
 import { SellerReviewTab } from "./SellerReviewTab/SellerReviewTab"
@@ -43,7 +41,6 @@ export {
   SizeFilter,
   ConditionFilter,
   ColorFilter,
-  SellerRatingFilter,
   ActiveFilterElement,
   MobileNavbar,
   ProductDetailsHeader,
@@ -51,7 +48,6 @@ export {
   ProductDetailsMeasurements,
   ProductDetailsShipping,
   ProductDetailsSeller,
-  ProductDetailsSellerReviews,
   ProductDetailsFooter,
   ProductCarousel,
   SellerReviewTab,
