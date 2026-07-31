@@ -20,6 +20,34 @@ import {
 import { getRequestSdk } from "./auth-sdk"
 import { forwardedClientIpHeaders } from "./client-ip"
 
+/**
+ * The token authenticated fine, but the customer behind it no longer exists —
+ * /store/customers/me answers 404 ("Customer cus_… was not found"). That happens
+ * when an account is deleted (GDPR / Apple "delete my account" / admin removal)
+ * while a browser still holds its `_medusa_jwt` cookie. retrieveCustomer()
+ * swallows the error and returns null, so the user LOOKS logged out — but the
+ * dead cookie survives, and every subsequent render re-fires the same doomed
+ * request. That's the continuous error loop in Sentry (~40 events from a single
+ * deleted test account, web + app). The mobile app fixed this first; see
+ * marketplace-mobile/lib/auth.tsx `isCustomerGone` — this mirrors that guard.
+ *
+ * THE TRAP: do NOT key off the 404 status alone. Infrastructure answers 404 too.
+ * Railway serves "Application not found" while a deploy swaps instances, and any
+ * proxy/CDN misroute can do the same. A status-only check would turn a routine
+ * 30-second deploy into a mass sign-out of every logged-in visitor whose page
+ * render happened to land in the window. So we additionally require the error
+ * message to mention "customer", which only Medusa's own not-found error does.
+ * A missed customer-gone case costs one more harmless 404; a false positive
+ * costs everyone their session — the asymmetry decides the guard.
+ */
+const isCustomerGone = (e: unknown): boolean => {
+  const err = e as { status?: number; message?: string } | null | undefined
+  // Medusa's js-sdk throws FetchError, which carries `status` + the backend's
+  // JSON `message`. Transient failures (offline, 5xx, timeouts) have no 404
+  // status at all and therefore never reach the clear-token path below.
+  return err?.status === 404 && /customer/i.test(err?.message ?? "")
+}
+
 export const retrieveCustomer =
   async (): Promise<HttpTypes.StoreCustomer | null> => {
     const authHeaders = await getAuthHeaders()
@@ -64,7 +92,30 @@ export const retrieveCustomer =
         cache: "no-store",
       })
       .then(({ customer }) => customer)
-      .catch(() => null)
+      .catch(async (e) => {
+        if (isCustomerGone(e)) {
+          // Cookie writes are phase-restricted in the App Router: next/headers
+          // `cookies().set()` throws ReadonlyRequestCookiesError unless we're
+          // inside a Server Action or Route Handler, and retrieveCustomer runs
+          // in BOTH worlds — as a server action (login(), RegisterForm) and
+          // during plain Server Component render (the main/user layouts,
+          // Header, product + directory pages). Attempting the clear is still
+          // right: the render-phase call is a no-op we swallow, and the very
+          // next mutable-context call (any form post / server action, e.g. the
+          // sign-in the user is about to attempt) evicts the dead cookie for
+          // good. Throwing here instead would take down every page that merely
+          // asks "who is logged in?" — strictly worse than the error loop we're
+          // fixing.
+          try {
+            await removeAuthToken()
+          } catch {
+            // Read-only cookie phase (Server Component render). Leave the
+            // cookie for a later mutable call; the user still resolves to null
+            // and sees a logged-out UI either way.
+          }
+        }
+        return null
+      })
   }
 
 export const updateCustomer = async (body: HttpTypes.StoreUpdateCustomer) => {

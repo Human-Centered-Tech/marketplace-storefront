@@ -9,6 +9,7 @@ import {
 } from "react"
 
 import { addWishlistItem, removeWishlistItem } from "@/lib/data/wishlist"
+import { track } from "@/lib/analytics"
 
 type WishlistContextValue = {
   isLoggedIn: boolean
@@ -57,6 +58,14 @@ export function WishlistProvider({
           await removeWishlistItem({ product_id: productId })
         } else {
           await addWishlistItem({ reference_id: productId, reference: "product" })
+          // Conversion signal — feeds the product_view → favorite → cart_add →
+          // purchase funnel in admin/vendor analytics. Add only; the event
+          // vocabulary has no un-favorite counterpart. Fire-and-forget.
+          track({
+            event_type: "favorite",
+            entity_type: "product",
+            entity_id: productId,
+          })
         }
       } catch (error) {
         // Revert on failure.

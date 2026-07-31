@@ -92,6 +92,17 @@ export default async function UserPage({ searchParams }: Props) {
                   Manage your sacramental registries
                 </p>
               </LocalizedClientLink>
+              <LocalizedClientLink
+                href="/parishes"
+                className="block bg-[rgba(var(--neutral-0))] border border-[rgba(var(--neutral-100))] rounded-sm p-5 hover:border-[rgba(var(--brand-600))] transition-colors"
+              >
+                <h3 className="font-serif text-md font-semibold mb-1">
+                  My Parishes
+                </h3>
+                <p className="text-[13px] text-secondary">
+                  Follow the parishes closest to you
+                </p>
+              </LocalizedClientLink>
             </div>
           </div>
         </div>
