@@ -34,6 +34,7 @@ import { AddressForm } from "./AddressForm/AddressForm"
 import { ReviewForm } from "./ReviewForm/ReviewForm"
 import { ProfileDetails } from "./ProfileDetails/ProfileDetails"
 import { BecomeVendorForm } from "./BecomeVendorForm/BecomeVendorForm"
+import { SmsPreferences } from "./SmsPreferences/SmsPreferences"
 
 export {
   PrimeCategoryNavbar,
@@ -72,4 +73,5 @@ export {
   ReviewForm,
   ProfileDetails,
   BecomeVendorForm,
+  SmsPreferences,
 }

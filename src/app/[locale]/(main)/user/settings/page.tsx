@@ -1,12 +1,19 @@
 import { LoginForm, ProfileDetails } from "@/components/molecules"
 import { UserNavigation } from "@/components/molecules"
 import { ProfilePassword } from "@/components/molecules/ProfileDetails/ProfilePassword"
+import { SmsPreferences } from "@/components/molecules/SmsPreferences/SmsPreferences"
 import { retrieveCustomer } from "@/lib/data/customer"
+import { getSmsPreferences } from "@/lib/data/sms-preferences"
 
 export default async function ReviewsPage() {
   const user = await retrieveCustomer()
 
   if (!user) return <LoginForm />
+
+  // Read on the server so the consent box renders with the persisted value on
+  // first paint — it must never flash checked-then-unchecked (or the reverse)
+  // while a client fetch resolves.
+  const smsPreferences = await getSmsPreferences()
 
   return (
     <main className="container">
@@ -16,6 +23,7 @@ export default async function ReviewsPage() {
           <h1 className="heading-md uppercase mb-8">Settings</h1>
           <ProfileDetails user={user} />
           <ProfilePassword user={user} />
+          <SmsPreferences preferences={smsPreferences} />
         </div>
       </div>
     </main>
