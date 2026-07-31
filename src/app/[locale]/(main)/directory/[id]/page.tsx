@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
-import { getDirectoryListing } from "@/lib/data/directory"
+import { getDirectoryListing, listListingReviews } from "@/lib/data/directory"
 import { retrieveCustomer } from "@/lib/data/customer"
 import { getAuthHeaders } from "@/lib/data/cookies"
 import { sdk } from "@/lib/config"
@@ -70,9 +70,15 @@ export default async function DirectoryDetailPage({ params }: Props) {
     ? await getDirectoryClaimStatus(listing.id)
     : null
 
-  // Viewer, for the "Message business" CTA. Fetched here (not in the client
-  // component) because retrieveCustomer is server-only.
-  const user = listing.seller?.id ? await retrieveCustomer() : null
+  // Viewer, for the "Message business" CTA AND the reviews section (which needs
+  // to know whether you're signed in, and which review is yours). Fetched here,
+  // not in the client component, because retrieveCustomer is server-only.
+  // Unconditional now: reviews render on every listing, shop or not.
+  const user = await retrieveCustomer()
+
+  // First page of reviews, server-rendered so they're in the HTML for SEO and
+  // don't pop in. Further pages load client-side from the same endpoint.
+  const reviews = await listListingReviews(listing.id, { limit: 10 })
 
   return (
     <main className="bg-[#FAF9F5]">
@@ -86,6 +92,7 @@ export default async function DirectoryDetailPage({ params }: Props) {
         claimPending={!!claimStatus?.claim_pending}
         claimMine={!!claimStatus?.mine}
         user={user}
+        reviews={reviews}
       />
     </main>
   )

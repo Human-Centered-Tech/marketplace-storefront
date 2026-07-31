@@ -12,7 +12,8 @@ import { Button } from "@/components/atoms"
 import { InteractiveStarRating } from "@/components/atoms/InteractiveStarRating/InteractiveStarRating"
 import { useState } from "react"
 import { cn } from "@/lib/utils"
-import { createReview, Order, Review } from "@/lib/data/reviews"
+import { createReview, Order } from "@/lib/data/reviews"
+import { pendingReviewTargets, ReviewTarget } from "@/lib/review-targets"
 
 interface Props {
   handleClose?: () => void
@@ -38,6 +39,14 @@ export const ReviewForm: React.FC<Props> = ({ ...props }) => {
 
 const Form: React.FC<Props> = ({ handleClose, seller }) => {
   const [error, setError] = useState<string>()
+
+  // Everything on this order that still needs a review: the seller plus each
+  // distinct product. This used to be hardcoded to reference:"seller", so a
+  // buyer could never review the product itself from the web storefront even
+  // though the API and the mobile app both supported it.
+  const targets = pendingReviewTargets(seller)
+  const [target, setTarget] = useState<ReviewTarget | undefined>(targets[0])
+
   const {
     watch,
     handleSubmit,
@@ -47,18 +56,24 @@ const Form: React.FC<Props> = ({ handleClose, seller }) => {
   } = useFormContext()
 
   const submit = async (data: FieldValues) => {
-    const body = {
-      order_id: seller.id,
-      rating: data.rating,
-      reference: "seller",
-      reference_id: seller.seller.id,
-      customer_note: data.opinion,
+    if (!target) {
+      setError("There's nothing left to review on this order.")
+      return
     }
 
-    const response = await createReview(body)
+    const response = await createReview({
+      order_id: seller.id,
+      rating: data.rating,
+      reference: target.reference,
+      reference_id: target.reference_id,
+      customer_note: data.opinion,
+    })
 
-    if (response.error) {
-      setError("error")
+    // Surface the server's own words — "Product was not part of this order" and
+    // "Review already exists" both need to be readable. The old form only ever
+    // set a bare "error" string.
+    if (response?.error || response?.message) {
+      setError(response.message || "Could not save your review.")
       return
     }
 
@@ -73,6 +88,40 @@ const Form: React.FC<Props> = ({ handleClose, seller }) => {
     <form onSubmit={handleSubmit(submit)}>
       <div className="px-4 space-y-4">
         <div className="max-w-full grid grid-cols-1 items-top gap-4 mb-4">
+          {/* Target picker. Hidden when there's only one thing left to review —
+              a one-option chooser is just noise. */}
+          {targets.length > 1 && (
+            <div>
+              <label className="label-sm block mb-2">
+                What are you reviewing?
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {targets.map((t) => {
+                  const active =
+                    target?.reference === t.reference &&
+                    target?.reference_id === t.reference_id
+                  return (
+                    <button
+                      key={`${t.reference}:${t.reference_id}`}
+                      type="button"
+                      onClick={() => setTarget(t)}
+                      className={cn(
+                        "px-3 py-2 rounded-sm border text-sm transition-colors",
+                        active
+                          ? "border-primary bg-component-secondary font-semibold"
+                          : "border-base-primary hover:border-primary"
+                      )}
+                    >
+                      {t.reference === "seller"
+                        ? `${t.label} (seller)`
+                        : t.label}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
           <div>
             <label className="label-sm block mb-2">Rating</label>
             <InteractiveStarRating
@@ -94,7 +143,11 @@ const Form: React.FC<Props> = ({ handleClose, seller }) => {
                 "w-full px-4 py-3 h-32 border rounded-sm bg-component-secondary focus:border-primary focus:outline-none focus:ring-0 relative",
                 error && "border-negative focus:border-negative"
               )}
-              placeholder="Write your opinion about this seller..."
+              placeholder={
+                target?.reference === "product"
+                  ? `Write your opinion about ${target.label}...`
+                  : "Write your opinion about this seller..."
+              }
               {...register("opinion")}
             />
             <div
@@ -113,7 +166,9 @@ const Form: React.FC<Props> = ({ handleClose, seller }) => {
           </label>
         </div>
         {error && <p className="label-md text-negative">{error}</p>}
-        <Button className="w-full">SUBMIT REVIEW</Button>
+        <Button className="w-full" disabled={!target}>
+          SUBMIT REVIEW
+        </Button>
       </div>
     </form>
   )

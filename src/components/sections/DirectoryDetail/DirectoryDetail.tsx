@@ -16,6 +16,8 @@ import { SingleLocationMap } from "@/components/sections/DirectoryListing/Single
 import { trackButtonClick } from "@/lib/analytics"
 import { normalizeExternalUrl } from "@/lib/helpers/external-url"
 import { getTierBadge } from "@/lib/directory-tiers"
+import { ListingReviews } from "./ListingReviews"
+import type { ListingReview } from "@/lib/data/directory"
 
 const dayLabels: Record<string, string> = {
   monday: "Monday",
@@ -50,8 +52,17 @@ export const DirectoryDetail = ({
   claimPending = false,
   claimMine = false,
   user = null,
+  reviews,
 }: {
   listing: DirectoryListing
+  // First page of listing reviews + the aggregate, fetched server-side by the
+  // page. Optional so any other caller of this component keeps compiling.
+  reviews?: {
+    reviews: ListingReview[]
+    rating: number | null
+    review_count: number
+    count: number
+  }
   // Viewer, for the "Message business" CTA (Chat redirects logged-out
   // viewers to /user). Fetched by the page — this component must stay free
   // of server-only imports (sections barrel).
@@ -191,6 +202,41 @@ export const DirectoryDetail = ({
             <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl text-navy-dark mb-2">
               {listing.business_name}
             </h1>
+            {/* Rating summary next to the name — where people look for it.
+                Rendered only when the listing HAS reviews: `rating` is null (not
+                0) until then, and five empty stars would read as a bad score.
+                Anchors to the reviews section further down. */}
+            {typeof listing.rating === "number" && (
+              <a
+                href="#listing-reviews"
+                className="inline-flex items-center gap-2 mb-2 hover:opacity-80 transition-opacity"
+              >
+                <span className="font-bold text-navy-dark">
+                  {listing.rating.toFixed(1)}
+                </span>
+                <span className="flex" aria-hidden="true">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <svg
+                      key={star}
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill={
+                        star <= Math.round(listing.rating!) ? "#BE9B32" : "none"
+                      }
+                      stroke="#BE9B32"
+                      strokeWidth="1.5"
+                    >
+                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                    </svg>
+                  ))}
+                </span>
+                <span className="text-sm text-secondary underline">
+                  {listing.review_count}{" "}
+                  {listing.review_count === 1 ? "review" : "reviews"}
+                </span>
+              </a>
+            )}
             {(listing.category_links?.length || listing.category) && (
               <p className="font-serif italic text-lg text-secondary">
                 {(listing.category_links?.length
@@ -549,6 +595,21 @@ export const DirectoryDetail = ({
                 </div>
               )
             })()}
+
+            {/* Customer reviews (7/28). Last in the left column so the
+                business's own content leads and the reviews close it out. */}
+            {reviews && (
+              <ListingReviews
+                listingId={listing.id}
+                businessName={listing.business_name}
+                initialReviews={reviews.reviews}
+                initialRating={reviews.rating}
+                initialCount={reviews.review_count}
+                totalCount={reviews.count ?? reviews.reviews.length}
+                currentCustomerId={user?.id ?? null}
+                isOwner={!!user?.id && listing.owner_id === user.id}
+              />
+            )}
           </div>
 
           {/* Right Column / Sidebar.

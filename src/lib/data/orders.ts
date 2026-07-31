@@ -129,7 +129,11 @@ export const listOrders = async (
         offset,
         order: "-created_at",
         fields:
-          "id,display_id,currency_code,status,*items,+items.metadata,*items.variant,*items.product,*items.product.images,*seller,*reviews,*order_set,shipping_total,total,created_at",
+          // *reviews.product / *reviews.seller (7/28): `*reviews` alone returns
+          // the review's own columns but not what it points AT, so there was no
+          // way to tell which line item a review belonged to — which is why the
+          // account Reviews page could only ever offer one review per order.
+          "id,display_id,currency_code,status,*items,+items.metadata,*items.variant,*items.product,*items.product.images,*seller,*reviews,*reviews.product,*reviews.seller,*order_set,shipping_total,total,created_at",
         ...filters,
       },
       headers,

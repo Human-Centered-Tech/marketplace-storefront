@@ -29,6 +29,9 @@ export const ProductDetailsPage = async ({
     countryCode: locale,
     queryParams: { handle: [handle], limit: 1 },
     forceCache: false,
+    // PDP is the only surface that renders product reviews, so it's the only
+    // one that pays for the expansion.
+    withProductReviews: true,
   }).then(({ response }) => response.products[0])
 
   let isOwnerPreview = false
@@ -38,6 +41,7 @@ export const ProductDetailsPage = async ({
       queryParams: { handle: [handle], limit: 1 },
       forceCache: false,
       ownerPreview: true,
+      withProductReviews: true,
     }).then(({ response }) => response.products[0])
 
     if (ownerProd) {
@@ -168,6 +172,7 @@ export const ProductDetailsPage = async ({
         shippingInfo=""
         attributes={(prod as any)?.attribute_values || []}
         refundPolicy={effectiveReturnPolicy}
+        reviews={((prod as any)?.reviews || []).filter(Boolean)}
       />
 
       {vendorTags.length > 0 && <ProductTagsRow tags={vendorTags} />}
