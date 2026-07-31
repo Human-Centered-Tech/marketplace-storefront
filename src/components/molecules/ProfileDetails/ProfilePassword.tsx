@@ -9,6 +9,7 @@ import { Modal } from "../Modal/Modal"
 // import { ProfilePasswordForm } from "../ProfilePasswordForm/ProfilePasswordForm"
 import { HttpTypes } from "@medusajs/types"
 import { sendResetPasswordEmail } from "@/lib/data/customer"
+import { toast } from "@/lib/helpers/toast"
 
 export const ProfilePassword = ({
   user,
@@ -16,12 +17,27 @@ export const ProfilePassword = ({
   user: HttpTypes.StoreCustomer
 }) => {
   const [showForm, setShowForm] = useState(false)
+  const [sending, setSending] = useState(false)
 
   const handleSendResetPasswordEmail = async () => {
+    // Previously `if (res.success)` with no else and no confirmation: on
+    // failure the modal just sat there, and on success it closed with nothing
+    // telling the customer to go check their inbox.
+    setSending(true)
     const res = await sendResetPasswordEmail(user.email)
-    if (res.success) {
+    setSending(false)
+    if (res?.success) {
+      toast.success({
+        title: "Reset email sent",
+        description: `Check ${user.email} for a link to set a new password.`,
+      })
       setShowForm(false)
+      return
     }
+    toast.error({
+      title: "Couldn't send the reset email",
+      description: res?.error || "Please try again in a moment.",
+    })
   }
 
   return (
@@ -57,6 +73,8 @@ export const ProfilePassword = ({
             <Button
               className="uppercase py-3 px-6 !font-semibold"
               onClick={handleSendResetPasswordEmail}
+              disabled={sending}
+              loading={sending}
             >
               Send reset password email
             </Button>

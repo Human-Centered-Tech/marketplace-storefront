@@ -9,6 +9,7 @@ import {
 } from "react"
 
 import { addWishlistItem, removeWishlistItem } from "@/lib/data/wishlist"
+import { toast } from "@/lib/helpers/toast"
 
 type WishlistContextValue = {
   isLoggedIn: boolean
@@ -59,7 +60,9 @@ export function WishlistProvider({
           await addWishlistItem({ reference_id: productId, reference: "product" })
         }
       } catch (error) {
-        // Revert on failure.
+        // Revert on failure. This path was unreachable until the wishlist
+        // actions started throwing on a non-2xx — the heart stayed flipped
+        // for saves the backend had rejected.
         setIds((prev) => {
           const next = new Set(prev)
           if (wasFav) next.add(productId)
@@ -67,6 +70,13 @@ export function WishlistProvider({
           return next
         })
         console.error(error)
+        toast.error({
+          title: wasFav
+            ? "Couldn't remove this from your wishlist"
+            : "Couldn't save to your wishlist",
+          description:
+            error instanceof Error ? error.message : "Please try again.",
+        })
       }
     },
     [ids, isLoggedIn]

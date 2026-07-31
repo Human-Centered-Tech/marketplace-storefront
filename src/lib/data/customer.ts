@@ -428,12 +428,15 @@ export const addCustomerAddress = async (formData: FormData): Promise<any> => {
 
 export const deleteCustomerAddress = async (
   addressId: string
-): Promise<void> => {
+): Promise<{ success: boolean; error: string | null }> => {
   const headers = {
     ...(await getAuthHeaders()),
   }
 
-  await sdk.store.customer
+  // Was `Promise<void>` with the result discarded, so a failed delete looked
+  // exactly like a successful one — the modal closed and the address came
+  // back on the next refresh. Return it like the sibling address actions do.
+  return sdk.store.customer
     .deleteAddress(addressId, headers)
     .then(async () => {
       const customerCacheTag = await getCacheTag("customers")
@@ -505,7 +508,20 @@ export const updateCustomerPassword = async (
       body: JSON.stringify({ password }),
     }
   )
-    .then(async () => {
+    .then(async (response) => {
+      // fetch only rejects on a transport error, so without this check an
+      // expired reset token (401) or a rejected password (400) still reported
+      // success — and we'd log the customer out of a password that never
+      // changed, leaving them locked out with the old one.
+      if (!response.ok) {
+        const body = await response.json().catch(() => null)
+        return {
+          success: false,
+          error:
+            body?.message ||
+            "We couldn't update your password. The reset link may have expired — request a new one.",
+        }
+      }
       await removeAuthToken()
       const customerCacheTag = await getCacheTag("customers")
       revalidateTag(customerCacheTag)

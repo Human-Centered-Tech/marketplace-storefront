@@ -5,6 +5,14 @@ import { sdk } from "../config"
 import { getAuthHeaders } from "./cookies"
 import { revalidatePath } from "next/cache"
 
+// Pull the backend's message off a failed wishlist response, falling back to
+// something a shopper can act on. Not exported — a "use server" module may
+// only export async functions, and this is an internal helper.
+async function wishlistError(res: Response, fallback: string) {
+  const body = await res.json().catch(() => null)
+  return body?.message || fallback
+}
+
 // GET /store/wishlist returns the current customer's saved products directly
 // (`{ products, count, offset, limit }`) — NOT a wrapped wishlist object. We
 // adapt it to the `{ wishlists: [{ id, products }] }` shape the existing UI
@@ -69,16 +77,23 @@ export const addWishlistItem = async ({
       .NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY as string,
   }
 
-  await fetch(`${process.env.MEDUSA_BACKEND_URL}/store/wishlist`, {
+  const res = await fetch(`${process.env.MEDUSA_BACKEND_URL}/store/wishlist`, {
     headers,
     method: "POST",
     body: JSON.stringify({
       reference,
       reference_id,
     }),
-  }).then(() => {
-    revalidatePath("/wishlist")
   })
+
+  // fetch resolves on 4xx/5xx, so the old bare `.then()` meant the callers'
+  // catch blocks were unreachable and the heart flipped to "saved" for
+  // requests the backend had rejected. Throw so they can react.
+  if (!res.ok) {
+    throw new Error(await wishlistError(res, "Couldn't save to your wishlist."))
+  }
+
+  revalidatePath("/wishlist")
 }
 
 // Mercur resolves the wishlist from the logged-in customer, so removal only
@@ -95,13 +110,19 @@ export const removeWishlistItem = async ({
       .NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY as string,
   }
 
-  await fetch(
+  const res = await fetch(
     `${process.env.MEDUSA_BACKEND_URL}/store/wishlist/product/${product_id}`,
     {
       headers,
       method: "DELETE",
     }
-  ).then(() => {
-    revalidatePath("/wishlist")
-  })
+  )
+
+  if (!res.ok) {
+    throw new Error(
+      await wishlistError(res, "Couldn't remove this from your wishlist.")
+    )
+  }
+
+  revalidatePath("/wishlist")
 }
