@@ -89,6 +89,30 @@ export async function updateDirectoryListing(
   return { ok: true, listing: res.data.listing }
 }
 
+/**
+ * Set ONLY the states a listing serves.
+ *
+ * Deliberately not updateDirectoryListing(): `serviced_states` lives inside
+ * the listing's `address` jsonb, and the backend PUT replaces that object
+ * wholesale (only owner_interview/devotional are merged), so a partial save
+ * here would wipe the merchant's street/city/state/zip. The dedicated
+ * endpoint spreads the stored address and overwrites the single key.
+ */
+export async function setServiceArea(
+  id: string,
+  servicedStates: string[]
+): Promise<{ ok: true; serviced_states: string[] } | { ok: false; error: string }> {
+  const res = await authedBackendFetch<{ serviced_states: string[] }>(
+    `/store/directory/listings/${id}/service-area`,
+    {
+      method: "POST",
+      body: JSON.stringify({ serviced_states: servicedStates }),
+    }
+  )
+  if (!res.ok) return res
+  return { ok: true, serviced_states: res.data.serviced_states }
+}
+
 // NOTE: directory image uploads deliberately do NOT go through a server
 // action here — server-action multipart parsing dies mid-stream with
 // "Unexpected end of form" on large/slow uploads (Sentry). Files go through

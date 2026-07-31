@@ -1,4 +1,5 @@
 import { OrderConfirmedSection } from "@/components/sections/OrderConfirmedSection/OrderConfirmedSection"
+import { TrackPurchase } from "@/components/sections/Analytics/TrackPurchase"
 import { retrieveOrder } from "@/lib/data/orders"
 import { Metadata } from "next"
 import { notFound } from "next/navigation"
@@ -21,6 +22,9 @@ export default async function OrderConfirmedPage(props: Props) {
 
   return (
     <main className="container">
+      {/* Closes the product_view -> cart_add -> purchase funnel, which had no
+          final step emitted anywhere. Deduped per order inside the component. */}
+      <TrackPurchase order_id={order.id} />
       <OrderConfirmedSection order={order} />
     </main>
   )

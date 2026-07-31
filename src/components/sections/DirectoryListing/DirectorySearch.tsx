@@ -206,6 +206,13 @@ export const DirectorySearch = ({
   const urlNearLon = parseFloat(searchParams.get("near_lon") || "")
   const urlRadiusKm = parseFloat(searchParams.get("radius_km") || "")
   const urlState = (searchParams.get("state") || "").toUpperCase()
+  // Only the thresholds the control actually offers — a hand-typed
+  // ?min_rating=4.5 would silently filter to something the dropdown can't show.
+  const urlMinRating = ["2", "3", "4"].includes(
+    searchParams.get("min_rating") || ""
+  )
+    ? (searchParams.get("min_rating") as string)
+    : ""
 
   const { location: userLocation, hydrated } = useUserLocation()
 
@@ -236,7 +243,21 @@ export const DirectorySearch = ({
   // matches the "4 & up" bucket. Unrated listings have rating:null and
   // deliberately match NO rating filter — an unreviewed business isn't a 1-star
   // business, and silently including them would make the filter meaningless.
-  const [minRating, setMinRating] = useState<string>("")
+  // Seeded from ?min_rating= and written back on change, like the state filter —
+  // otherwise the selection is lost on reload and a filtered directory can't be
+  // linked to anyone.
+  const [minRating, setMinRating] = useState<string>(urlMinRating)
+  const setMinRatingAndPersist = useCallback(
+    (next: string) => {
+      setMinRating(next)
+      const params = new URLSearchParams(searchParams.toString())
+      if (next) params.set("min_rating", next)
+      else params.delete("min_rating")
+      const qs = params.toString()
+      router.replace(`${pathname}${qs ? `?${qs}` : ""}`, { scroll: false })
+    },
+    [pathname, router, searchParams]
+  )
   const setStateServedAndPersist = useCallback(
     (next: string) => {
       setStateServed(next)
@@ -767,6 +788,8 @@ export const DirectorySearch = ({
             value={categoryId}
             onChange={(e) => setCategoryId(e.target.value)}
             className="flex-1 min-w-0 bg-transparent border-none focus:ring-0 font-sans text-sm py-4 appearance-none cursor-pointer"
+            title="Category"
+            aria-label="Category"
           >
             <option value="">All Categories</option>
             {categories.map((cat) => (
@@ -801,9 +824,10 @@ export const DirectorySearch = ({
           </span>
           <select
             value={minRating}
-            onChange={(e) => setMinRating(e.target.value)}
+            onChange={(e) => setMinRatingAndPersist(e.target.value)}
             className="bg-transparent border-none focus:ring-0 font-sans text-sm py-4 pr-1 appearance-none cursor-pointer"
             title="Minimum customer rating"
+            aria-label="Minimum customer rating"
           >
             <option value="">Rating</option>
             <option value="4">4★ &amp; up</option>
@@ -850,6 +874,7 @@ export const DirectorySearch = ({
             onChange={(e) => setStateServedAndPersist(e.target.value)}
             className="bg-transparent border-none focus:ring-0 font-sans text-sm py-4 pr-1 appearance-none cursor-pointer"
             title="Serves my state"
+            aria-label="Serves my state"
           >
             <option value="">State</option>
             {US_STATES.map((s) => (

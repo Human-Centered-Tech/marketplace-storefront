@@ -21,6 +21,65 @@ export const retrieveOrderSet = async (id: string) => {
     .catch((err) => medusaError(err))
 }
 
+export type OrderTrackingCheckpoint = {
+  at: string | null
+  status: string | null
+  label: string | null
+  message: string | null
+  location: string | null
+}
+
+export type OrderTracking = {
+  id: string
+  tracking_number: string
+  carrier: string | null
+  tracking_url: string | null
+  status: string
+  status_label: string
+  status_detail: string | null
+  last_checkpoint_message: string | null
+  last_checkpoint_location: string | null
+  last_checkpoint_at: string | null
+  expected_delivery_at: string | null
+  delivered_at: string | null
+  checkpoints: OrderTrackingCheckpoint[]
+  live: boolean
+  updated_at: string | null
+}
+
+/**
+ * Live carrier status for one order's parcels.
+ *
+ * FAILS SOFT BY DESIGN — returns [] on any error instead of throwing like the
+ * other order fetchers. This is a decorative enhancement on the order page: if
+ * the tracking provider, the route or the network is having a bad day, the
+ * buyer should still see their order, with the carrier deep-link that has
+ * worked since before live tracking existed.
+ *
+ * Never cached: the whole point is that it changes between page loads.
+ */
+export const retrieveOrderTracking = async (
+  orderId: string
+): Promise<OrderTracking[]> => {
+  const headers = {
+    ...(await getAuthHeaders()),
+  }
+
+  try {
+    const res = await sdk.client.fetch<{ tracking: OrderTracking[] }>(
+      `/store/orders/${orderId}/tracking`,
+      {
+        method: "GET",
+        headers,
+        cache: "no-cache",
+      }
+    )
+    return res?.tracking || []
+  } catch {
+    return []
+  }
+}
+
 export const retrieveOrder = async (id: string) => {
   const headers = {
     ...(await getAuthHeaders()),

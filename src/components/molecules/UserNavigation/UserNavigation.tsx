@@ -70,6 +70,10 @@ const navigationItems = [
     label: "My Registries",
     href: "/user/registry",
   },
+  {
+    label: "My Parishes",
+    href: "/parishes",
+  },
 ]
 
 export const UserNavigation = () => {

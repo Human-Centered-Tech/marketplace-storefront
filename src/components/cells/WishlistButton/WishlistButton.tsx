@@ -3,6 +3,7 @@
 import { Button } from "@/components/atoms"
 import { HeartFilledIcon, HeartIcon } from "@/icons"
 import { addWishlistItem, removeWishlistItem } from "@/lib/data/wishlist"
+import { track } from "@/lib/analytics"
 import { Wishlist } from "@/types/wishlist"
 import { useEffect, useState } from "react"
 import { HttpTypes } from "@medusajs/types"
@@ -37,6 +38,14 @@ export const WishlistButton = ({
       await addWishlistItem({
         reference_id: productId,
         reference: "product",
+      })
+      // Conversion signal — feeds the product_view → favorite → cart_add →
+      // purchase funnel in admin/vendor analytics. Add only; the event
+      // vocabulary has no un-favorite counterpart. Fire-and-forget.
+      track({
+        event_type: "favorite",
+        entity_type: "product",
+        entity_id: productId,
       })
     } catch (error) {
       console.error(error)

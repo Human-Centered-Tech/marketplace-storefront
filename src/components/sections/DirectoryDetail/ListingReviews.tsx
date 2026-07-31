@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useMemo, useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { formatDistanceToNow } from "date-fns"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
@@ -44,11 +44,35 @@ export const ListingReviews = ({
   isOwner: boolean
 }) => {
   const router = useRouter()
-  const [reviews, setReviews] = useState(initialReviews)
+
+  // The server is the source of truth for page one. `initialReviews` arrives
+  // fresh on every router.refresh() after a write, so it must NOT be mirrored
+  // into state — useState would freeze the list at its mount value while the
+  // summary (read straight from props) moved, which is exactly how a new review
+  // came out invisible until reload: aggregate 4.0/1, list still empty, and the
+  // write form still mounted because `own` was searched in the stale copy.
+  // Client state here is only what the server didn't send: extra pages from
+  // "Load more", and rows deleted a moment ago that the refresh hasn't caught
+  // up to yet.
+  const [extraPages, setExtraPages] = useState<ListingReview[]>([])
+  const [removedIds, setRemovedIds] = useState<string[]>([])
   const [loadingMore, setLoadingMore] = useState(false)
-  const [exhausted, setExhausted] = useState(
-    initialReviews.length >= totalCount
-  )
+  const [noMorePages, setNoMorePages] = useState(false)
+
+  const reviews = useMemo(() => {
+    const removed = new Set(removedIds)
+    const seen = new Set<string>()
+    // De-dupe by id: a review written between page loads shifts the window and
+    // would otherwise repeat a row across pages. A refresh can also pull a row
+    // into page one that we already hold in extraPages.
+    return [...initialReviews, ...extraPages].filter((r) => {
+      if (removed.has(r.id) || seen.has(r.id)) return false
+      seen.add(r.id)
+      return true
+    })
+  }, [initialReviews, extraPages, removedIds])
+
+  const exhausted = noMorePages || reviews.length >= totalCount
 
   const own = currentCustomerId
     ? reviews.find((r) => r.customer_id === currentCustomerId)
@@ -65,17 +89,10 @@ export const ListingReviews = ({
     })
     setLoadingMore(false)
     if (!next.reviews.length) {
-      setExhausted(true)
+      setNoMorePages(true)
       return
     }
-    // De-dupe by id: a review written between page loads shifts the window and
-    // would otherwise repeat a row across pages.
-    setReviews((prev) => {
-      const seen = new Set(prev.map((r) => r.id))
-      const merged = [...prev, ...next.reviews.filter((r) => !seen.has(r.id))]
-      if (merged.length >= next.count) setExhausted(true)
-      return merged
-    })
+    setExtraPages((prev) => [...prev, ...next.reviews])
   }
 
   return (
@@ -136,7 +153,9 @@ export const ListingReviews = ({
             isOwn={!!currentCustomerId && review.customer_id === currentCustomerId}
             onEdit={() => setEditing(true)}
             onDeleted={() => {
-              setReviews((prev) => prev.filter((r) => r.id !== review.id))
+              // Hide it immediately; the refresh drops it from initialReviews a
+              // moment later and this entry goes inert (ids are never reused).
+              setRemovedIds((prev) => [...prev, review.id])
               router.refresh()
             }}
           />

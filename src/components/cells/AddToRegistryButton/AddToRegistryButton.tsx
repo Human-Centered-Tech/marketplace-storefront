@@ -6,6 +6,7 @@ type StoreProduct = { id: string; title?: string; thumbnail?: string | null; han
 type StoreCustomer = { id: string } | null
 import { GiftRegistry } from "@/types/registry"
 import { addRegistryItem } from "@/lib/data/registry"
+import { trackButtonClick } from "@/lib/analytics"
 import { Button } from "@/components/atoms"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 
@@ -40,6 +41,11 @@ export const AddToRegistryButton = ({
         product_image: product.thumbnail || null,
         quantity_desired: 1,
       })
+      // There is no dedicated registry event in the analytics vocabulary, so
+      // this rides the generic button_click channel (same shape the directory
+      // contact buttons use) rather than inventing a new event name.
+      // Fire-and-forget.
+      trackButtonClick("product", product.id, "registry_add")
       const registry = activeRegistries.find((r) => r.id === registryId)
       setSuccess(registry?.title || "Registry")
       setTimeout(() => {
