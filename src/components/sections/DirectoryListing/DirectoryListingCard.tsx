@@ -11,12 +11,16 @@ const CardRating = ({
 }: {
   rating: number
   count?: number
-}) => (
+}) => {
+  const label = `${rating.toFixed(1)} out of 5${
+    count ? ` from ${count} ${count === 1 ? "review" : "reviews"}` : ""
+  }`
+
+  return (
   <span
     className="inline-flex items-center gap-1 shrink-0"
-    title={`${rating.toFixed(1)} out of 5${
-      count ? ` from ${count} reviews` : ""
-    }`}
+    title={label}
+    aria-label={label}
   >
     {[1, 2, 3, 4, 5].map((star) => (
       <svg
@@ -32,12 +36,13 @@ const CardRating = ({
         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
       </svg>
     ))}
-    <span className="text-xs text-secondary font-semibold ml-0.5">
+    <span className="text-xs text-secondary font-semibold ml-0.5" aria-hidden="true">
       {rating.toFixed(1)}
       {count ? ` (${count})` : ""}
     </span>
   </span>
-)
+  )
+}
 
 export const DirectoryListingCard = ({
   listing,
