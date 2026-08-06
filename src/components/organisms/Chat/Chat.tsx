@@ -85,7 +85,11 @@ export const Chat = ({
     if (res?.conversation?.id) {
       router.push(`/user/messages?conversation=${res.conversation.id}`)
     } else {
-      setError(`This ${recipientNoun} can't receive messages yet.`)
+      // Prefer the server's reason. It distinguishes "you can't message
+      // yourself" (a merchant previewing their own shop) from a seller who
+      // genuinely has no linked account — previously both rendered as the
+      // latter, which is what generated the support reports.
+      setError(res?.error || `This ${recipientNoun} can't receive messages yet.`)
     }
   }
 
