@@ -34,6 +34,43 @@ async function authedFetch<T>(
   }
 }
 
+/**
+ * Like authedFetch, but keeps the server's error message instead of collapsing
+ * every failure to null.
+ *
+ * The plain helper returns null on any non-2xx, so a caller can't tell "you
+ * can't message yourself" from "this seller has no account" from a network
+ * blip. That's how a merchant previewing their own shop got told their shop
+ * couldn't receive messages — two support reports before anyone realised the
+ * backend had been sending the real reason all along.
+ */
+async function authedFetchWithError<T>(
+  path: string,
+  init: RequestInit = {}
+): Promise<{ data: T | null; error: string | null }> {
+  const headers = {
+    "Content-Type": "application/json",
+    "x-publishable-api-key": publishableKey(),
+    ...(await getAuthHeaders()),
+    ...(init.headers || {}),
+  }
+
+  try {
+    const res = await fetch(`${backendUrl()}${path}`, {
+      ...init,
+      headers,
+      cache: "no-store",
+    })
+    const body = await res.json().catch(() => null)
+    if (!res.ok) {
+      return { data: null, error: (body as any)?.message ?? null }
+    }
+    return { data: body as T, error: null }
+  } catch {
+    return { data: null, error: null }
+  }
+}
+
 export type Conversation = {
   id: string
   context_type: "product" | "barter_listing" | "storefront" | "general"
@@ -97,13 +134,14 @@ export async function startConversation(args: {
   context_id?: string
   initial_message?: string
 }) {
-  return authedFetch<{ conversation: Conversation }>(
-    "/store/messaging/conversations",
-    {
-      method: "POST",
-      body: JSON.stringify(args),
-    }
-  )
+  const { data, error } = await authedFetchWithError<{
+    conversation: Conversation
+  }>("/store/messaging/conversations", {
+    method: "POST",
+    body: JSON.stringify(args),
+  })
+
+  return { conversation: data?.conversation, error }
 }
 
 export async function getUnreadCount() {
