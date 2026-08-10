@@ -610,7 +610,7 @@ export const DirectoryListingForm = ({
             label="Banner"
             value={form.cover_image_url}
             onChange={(url) => setField("cover_image_url", url)}
-            hint="Wide image (around 1600×500px) shown across the top of your listing."
+            hint="Wide image (around 2000×800px) shown across the top of your listing. Keep the subject centred — it is cropped narrower in search results and wider on large screens. JPG, PNG, or WebP, up to 10 MB."
           />
         </div>
       </div>
@@ -715,6 +715,7 @@ export const DirectoryListingForm = ({
             setForm((prev) => ({ ...prev, gallery_urls: urls }))
           }
           max={8}
+          hint="square photos work best (around 1600×1600px), JPG, PNG, or WebP, up to 10 MB"
         />
       </div>
 
