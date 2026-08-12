@@ -28,7 +28,18 @@ export const listNetworkingEvents = async (params?: {
     .catch(() => ({ events: [], count: 0 }))
 }
 
-export const getNetworkingEvent = async (id: string) => {
+/**
+ * Sentinel for a featured event viewed while signed out. The backend answers
+ * 401 `sign_in_required` (with no event data) instead of 404, so the page can
+ * show a "sign in to view" interstitial rather than a dead end — invites go
+ * out by email, and logged-out recipients used to bounce off "Event not
+ * found".
+ */
+export const EVENT_GATED = "gated" as const
+
+export const getNetworkingEvent = async (
+  id: string
+): Promise<NetworkingEvent | typeof EVENT_GATED | null> => {
   const authHeaders = await getAuthHeaders()
   // Single-event endpoint may not exist; fall back to listing and filtering
   try {
@@ -40,7 +51,13 @@ export const getNetworkingEvent = async (id: string) => {
       }
     )
     return event
-  } catch {
+  } catch (e: any) {
+    // Members-only event, viewer not signed in. Must be detected BEFORE the
+    // list fallback: the anonymous list excludes featured events, so falling
+    // through would resolve to null and render the 404 this exists to avoid.
+    if (e?.status === 401) {
+      return EVENT_GATED
+    }
     // Fallback: fetch all and find by id
     const { events } = await listNetworkingEvents()
     return events.find((e) => e.id === id) ?? null
