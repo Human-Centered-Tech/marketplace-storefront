@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
-import { EVENT_GATED, getNetworkingEvent } from "@/lib/data/networking"
+import { getNetworkingEvent } from "@/lib/data/networking"
+import { EVENT_GATED } from "@/lib/data/networking-gated"
 import { NetworkingEventDetail } from "@/components/sections/Networking/NetworkingEventDetail"
 import { buildSocialMetadata } from "@/lib/helpers/seo"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"

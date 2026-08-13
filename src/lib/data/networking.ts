@@ -1,5 +1,6 @@
 "use server"
 
+import { EVENT_GATED } from "./networking-gated"
 import {
   NetworkingContactExchange,
   NetworkingEvent,
@@ -27,15 +28,6 @@ export const listNetworkingEvents = async (params?: {
     })
     .catch(() => ({ events: [], count: 0 }))
 }
-
-/**
- * Sentinel for a featured event viewed while signed out. The backend answers
- * 401 `sign_in_required` (with no event data) instead of 404, so the page can
- * show a "sign in to view" interstitial rather than a dead end — invites go
- * out by email, and logged-out recipients used to bounce off "Event not
- * found".
- */
-export const EVENT_GATED = "gated" as const
 
 export const getNetworkingEvent = async (
   id: string
