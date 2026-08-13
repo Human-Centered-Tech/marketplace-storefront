@@ -11,6 +11,22 @@
   }
 }
 
+/* iOS Safari auto-zooms the page when a focused form control's font-size is
+   under 16px — and leaves it zoomed after typing (reported on the directory
+   and marketplace search bars, 8/11). Floor every text-entry control at 16px
+   on touch devices so focusing one never triggers the zoom. Desktop (fine
+   pointer) keeps the designed sizes. max(16px, 1em) preserves controls that
+   are deliberately larger. !important is required to outrank Tailwind
+   font-size utilities set on the controls themselves; unlayered element
+   selectors alone would lose to them. */
+@media (pointer: coarse) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+  select,
+  textarea {
+    font-size: max(16px, 1em) !important;
+  }
+}
+
 /* Typography — body text */
 .text-xl {
   @apply font-light tracking-normal;
