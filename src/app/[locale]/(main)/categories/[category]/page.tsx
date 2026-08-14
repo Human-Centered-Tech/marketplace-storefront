@@ -7,6 +7,7 @@ import { Breadcrumbs } from "@/components/atoms"
 import { AlgoliaProductsListing, ProductListing } from "@/components/sections"
 import { notFound } from "next/navigation"
 import isBot from "@/lib/helpers/isBot"
+import { TrackPageView } from "@/components/sections/Analytics/TrackPageView"
 import { headers } from "next/headers"
 import Script from "next/script"
 import { getRegion, listRegions } from "@/lib/data/regions"
@@ -131,6 +132,7 @@ async function Category({
 
   return (
     <main className="container">
+      <TrackPageView entity_type="category" entity_id={handle} />
       <Script
         id="ld-breadcrumbs-category"
         type="application/ld+json"
