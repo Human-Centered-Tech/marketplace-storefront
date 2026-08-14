@@ -113,6 +113,12 @@ type DirectoryListingFormProps = {
   // Catholic Owned. Such listings are locked to the "Visit Our Shop" CTA so
   // directory discovery always routes buyers to their on-platform products.
   hasShop?: boolean
+  // The signed-in owner's ACCOUNT email/phone, offered as one-click fills for
+  // the public contact fields. Deliberately a button, never an auto-copy: the
+  // account contact is private (the platform strips it from all public seller
+  // responses), so publishing it on the listing must be the owner's explicit
+  // choice — clicking the fill and saving IS that consent.
+  accountContact?: { email?: string | null; phone?: string | null }
 }
 
 function slugify(text: string): string {
@@ -133,6 +139,7 @@ export const DirectoryListingForm = ({
   onParishSelectionsChange,
   createParishTier,
   hasShop = false,
+  accountContact,
 }: DirectoryListingFormProps) => {
   const [form, setForm] = useState<DirectoryFormData>({
     business_name: initialData?.business_name || "",
@@ -448,6 +455,22 @@ export const DirectoryListingForm = ({
               onChange={handleChange}
               className="w-full border rounded-sm px-3 py-2 text-sm"
             />
+            {accountContact?.email &&
+              form.contact_email.trim().toLowerCase() !==
+                accountContact.email.trim().toLowerCase() && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setForm((f) => ({
+                      ...f,
+                      contact_email: accountContact.email as string,
+                    }))
+                  }
+                  className="mt-1 text-xs text-secondary underline hover:text-primary"
+                >
+                  Use my account email ({accountContact.email})
+                </button>
+              )}
           </div>
           <div>
             <label className="label-sm text-secondary block mb-1">Phone</label>
@@ -457,6 +480,21 @@ export const DirectoryListingForm = ({
               onChange={handleChange}
               className="w-full border rounded-sm px-3 py-2 text-sm"
             />
+            {accountContact?.phone &&
+              form.contact_phone.trim() !== accountContact.phone.trim() && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setForm((f) => ({
+                      ...f,
+                      contact_phone: accountContact.phone as string,
+                    }))
+                  }
+                  className="mt-1 text-xs text-secondary underline hover:text-primary"
+                >
+                  Use my account phone ({accountContact.phone})
+                </button>
+              )}
           </div>
           <div className="md:col-span-2">
             <label className="label-sm text-secondary block mb-1">

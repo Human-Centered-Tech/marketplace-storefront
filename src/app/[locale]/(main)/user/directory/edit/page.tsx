@@ -7,6 +7,7 @@ import {
   getMyDirectoryListing,
   updateDirectoryListing,
 } from "@/lib/data/directory-actions"
+import { retrieveCustomer } from "@/lib/data/customer"
 import { retrieveVendorStatus } from "@/lib/data/vendor"
 import { socialLinksToArray } from "@/lib/social"
 import { US_STATE_CODES } from "@/lib/us-states"
@@ -16,6 +17,12 @@ export default function EditDirectoryListingPage() {
   const [listing, setListing] = useState<DirectoryListing | null>(null)
   const [loading, setLoading] = useState(true)
   const [signingIn, setSigningIn] = useState(false)
+  // Account email/phone for the form's one-click contact fills. Best-effort:
+  // if the fetch fails the fill links simply don't render.
+  const [accountContact, setAccountContact] = useState<{
+    email?: string | null
+    phone?: string | null
+  }>()
 
   const backendUrl =
     typeof window !== "undefined"
@@ -38,6 +45,14 @@ export default function EditDirectoryListingPage() {
       // the server-action helper which reads the cookie via next/headers.
       getMyDirectoryListing(),
     ])
+      .then(async (results) => {
+        // Separate await so a customer-fetch failure can't take down the load.
+        const customer = await retrieveCustomer().catch(() => null)
+        if (customer) {
+          setAccountContact({ email: customer.email, phone: customer.phone })
+        }
+        return results
+      })
       .then(([catData, listingResult]) => {
         setCategories(catData.categories || [])
         if (!listingResult.authenticated) {
@@ -160,6 +175,7 @@ export default function EditDirectoryListingPage() {
           // merchant with an ACTIVE shop that has published products — lock the
           // CTA to "Visit Our Shop".
           hasShop={Boolean((listing as any).seller)}
+          accountContact={accountContact}
           initialData={{
             business_name: listing.business_name,
             slug: listing.slug,
