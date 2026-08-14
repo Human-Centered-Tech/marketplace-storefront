@@ -16,6 +16,7 @@ import { getFacedFilters } from "@/lib/helpers/get-faced-filters"
 import { PRODUCT_LIMIT } from "@/const"
 import { ProductListingSkeleton } from "@/components/organisms/ProductListingSkeleton/ProductListingSkeleton"
 import { SellerProductSearch } from "@/components/molecules/SellerProductSearch/SellerProductSearch"
+import { ProductSortSelect } from "@/components/molecules/ProductSortSelect/ProductSortSelect"
 import { useEffect, useState } from "react"
 import { listProducts } from "@/lib/data/products"
 import { getProductPrice } from "@/lib/helpers/get-product-price"
@@ -24,6 +25,17 @@ import { getProductPrice } from "@/lib/helpers/get-product-price"
 // warrant it. Based on the seller-scoped Algolia count (nbHits) when no query
 // is active, so it reflects the shop's real catalog size.
 const SELLER_SEARCH_MIN_PRODUCTS = 75
+
+// ?sortBy= → Algolia replica index. Sorting in Algolia is done by querying a
+// sort replica (configured by the backend's init-algolia on deploy); the
+// primary "products" index is the default: relevance + tier rank ("Featured").
+// Unknown values fall through to the primary, so a stale URL can't 404 search.
+const PRODUCT_SORT_INDEX: Record<string, string> = {
+  price_asc: "products_price_asc",
+  price_desc: "products_price_desc",
+  newest: "products_newest",
+  oldest: "products_oldest",
+}
 
 export const AlgoliaProductsListing = ({
   category_id,
@@ -101,14 +113,21 @@ export const AlgoliaProductsListing = ({
       : trimmedFacetFilters
     : baseFilter
 
+  const sortParam = searchParamas.get("sortBy") || ""
+  const indexName = PRODUCT_SORT_INDEX[sortParam] ?? "products"
+
   return (
     <InstantSearchNext
+      // Remount on sort change: InstantSearchNext does not re-root cleanly on
+      // an indexName prop change, and the initialUiState key must match the
+      // active index anyway.
+      key={indexName}
       searchClient={client}
-      indexName="products"
+      indexName={indexName}
       // Seed the Algolia page from the URL so a direct load of ?page=2 is
       // server-rendered on the correct slice. uiState `page` is 1-indexed
       // (unlike Configure's 0-indexed `page`), so pass urlPage as-is.
-      initialUiState={{ products: { page: urlPage } }}
+      initialUiState={{ [indexName]: { page: urlPage } }}
     >
       {/*
         Server-side Algolia pagination: hitsPerPage scopes useHits() to
@@ -288,7 +307,9 @@ const ProductsListing = ({
         total={totalHits}
         page={page}
         pageSize={PRODUCT_LIMIT}
-      />
+      >
+        <ProductSortSelect />
+      </ProductListingHeader>
       <div className="hidden lg:block">
         <ProductListingActiveFilters />
       </div>

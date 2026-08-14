@@ -5,6 +5,7 @@ import { useSearchParams, useRouter, usePathname } from "next/navigation"
 import { algoliasearch } from "algoliasearch"
 import { useWindowVirtualizer } from "@tanstack/react-virtual"
 import { DirectoryListing, DirectoryCategory } from "@/types/directory"
+import { trackSearch } from "@/lib/analytics"
 import { DirectoryListingCard } from "./DirectoryListingCard"
 import { DirectoryMapView } from "./DirectoryMap"
 import type { MapBbox } from "./GoogleDirectoryMap"
@@ -432,6 +433,13 @@ export const DirectorySearch = ({
       setSearch(urlQuery)
     }
   }, [urlQuery])
+
+  // Search-term logging (SOW §11.3): the free-text term only, never the
+  // location string. trackSearch debounces + dedupes internally, so firing
+  // on every keystroke of `search` is safe.
+  useEffect(() => {
+    trackSearch(search, "directory")
+  }, [search])
 
   // Build Algolia query options. `location` is a freeform string that
   // could be a city or state — we use it as a secondary query term so

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation"
 import { getBarterListing } from "@/lib/data/barter"
 import { retrieveCustomer } from "@/lib/data/customer"
 import { BarterDetail } from "@/components/sections/Barter/BarterDetail"
+import { TrackPageView } from "@/components/sections/Analytics/TrackPageView"
 import { buildSocialMetadata } from "@/lib/helpers/seo"
 
 type Props = {
@@ -45,6 +46,7 @@ export default async function BarterDetailPage({ params }: Props) {
 
   return (
     <main>
+      <TrackPageView entity_type="barter_listing" entity_id={listing.id} />
       <link
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         rel="stylesheet"

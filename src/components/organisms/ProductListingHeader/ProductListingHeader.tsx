@@ -2,15 +2,18 @@
  * Etsy-style "Showing X-Y of Z listings" — clarifies pagination state
  * at a glance. Falls back to a simpler "Z listings" when there's only
  * one page worth so the header doesn't get pedantic at small counts.
+ * `children` renders on the right of the row (the sort control).
  */
 export const ProductListingHeader = ({
   total,
   page = 1,
   pageSize,
+  children,
 }: {
   total: number
   page?: number
   pageSize?: number
+  children?: React.ReactNode
 }) => {
   const noun = total === 1 ? "listing" : "listings"
 
@@ -21,6 +24,7 @@ export const ProductListingHeader = ({
         <span className="font-sans text-sm text-[#44474e]">
           {total} {noun}
         </span>
+        {children}
       </div>
     )
   }
@@ -34,6 +38,7 @@ export const ProductListingHeader = ({
         Showing {start.toLocaleString()}–{end.toLocaleString()} of{" "}
         {total.toLocaleString()} {noun}
       </span>
+      {children}
     </div>
   )
 }

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 import { client } from "@/lib/client"
+import { trackSearch } from "@/lib/analytics"
 import { listBarterListings } from "@/lib/data/barter"
 import { listNetworkingEvents } from "@/lib/data/networking"
 import { BarterListing } from "@/types/barter"
@@ -87,6 +88,9 @@ export function GlobalSearchResults({
     setLoading(true)
 
     const timer = setTimeout(async () => {
+      // Search-term logging (SOW §11.3) — trackSearch debounces and
+      // dedupes internally, so per-keystroke calls are safe.
+      trackSearch(q, "global")
       try {
         const [algoliaResults, exchangeListings, eventList] = await Promise.all([
           client
@@ -173,6 +177,24 @@ export function GlobalSearchResults({
         </div>
       ) : (
         <div className="py-2">
+          {/* Group order is deliberate (Brooke, 8/11): directory listings
+              first, then products, then storefronts — the directory is the
+              platform's front door, so business listings outrank catalog
+              hits in the federated dropdown. */}
+          <Group label="Listings" seeAllHref={`/directory?q=${encodeURIComponent(q)}`} onNavigate={onNavigate} show={results.listings.length > 0}>
+            {results.listings.map((l) => (
+              <Row
+                key={l.objectID}
+                href={`/directory/${l.objectID}`}
+                onNavigate={onNavigate}
+                thumb={l.logo_url ?? undefined}
+                icon="business"
+                title={l.business_name}
+                subtitle={[l.category_name, [l.city, l.state].filter(Boolean).join(", ")].filter(Boolean).join(" · ") || undefined}
+              />
+            ))}
+          </Group>
+
           <Group label="Products" seeAllHref={`/categories?q=${encodeURIComponent(q)}`} onNavigate={onNavigate} show={results.products.length > 0}>
             {results.products.map((p) => (
               <Row
@@ -196,20 +218,6 @@ export function GlobalSearchResults({
                 icon="storefront"
                 title={s.name}
                 subtitle="Visit shop"
-              />
-            ))}
-          </Group>
-
-          <Group label="Listings" seeAllHref={`/directory?q=${encodeURIComponent(q)}`} onNavigate={onNavigate} show={results.listings.length > 0}>
-            {results.listings.map((l) => (
-              <Row
-                key={l.objectID}
-                href={`/directory/${l.objectID}`}
-                onNavigate={onNavigate}
-                thumb={l.logo_url ?? undefined}
-                icon="business"
-                title={l.business_name}
-                subtitle={[l.category_name, [l.city, l.state].filter(Boolean).join(", ")].filter(Boolean).join(" · ") || undefined}
               />
             ))}
           </Group>

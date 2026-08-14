@@ -19,12 +19,22 @@ export type VendorStatus = {
   storeStatus?: string | null
 }
 
-// Returns true if the vendor JWT is malformed OR has an empty actor_id.
+// Returns true if the vendor JWT is malformed, has an empty actor_id, OR is
+// expired (or about to be).
+//
 // An empty actor_id is the post-becomeVendor stale-token bug — the
 // token gets issued by /auth/seller/emailpass/register BEFORE the
 // seller/member is auto-created, so it works for /vendor/sellers
 // (Mercur allows unregistered actors there) but 401s everywhere else,
 // putting the vendor app into a /dashboard ↔ /login#handoff= loop.
+//
+// The exp check (8/13, "signing you in" loop): this gate previously ignored
+// expiry entirely, so once the 7-day JWT outlived its exp while the cookie
+// survived, the handoff handed the vendor app a DEAD token — every /vendor/*
+// call 401s, the app bounces back to the handoff, gets the same dead token,
+// forever. Expired now counts as stale, which makes the handoff re-mint from
+// the live customer session instead. The 60s buffer keeps a token that would
+// die mid-handoff from slipping through.
 export async function isVendorTokenStale(jwt: string): Promise<boolean> {
   try {
     const body = jwt.split(".")[1]
@@ -35,6 +45,12 @@ export async function isVendorTokenStale(jwt: string): Promise<boolean> {
       "base64"
     ).toString()
     const payload = JSON.parse(decoded)
+    if (
+      typeof payload?.exp === "number" &&
+      payload.exp * 1000 < Date.now() + 60_000
+    ) {
+      return true
+    }
     return !payload?.actor_id
   } catch {
     return true
