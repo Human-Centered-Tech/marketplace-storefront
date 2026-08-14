@@ -13,6 +13,7 @@ import { OWNER_INTERVIEW_QUESTIONS } from "@/lib/owner-interview"
 import { socialLinksToArray } from "@/lib/social"
 import { SocialIcon } from "@/components/sections/DirectoryManagement/SocialIcon"
 import { SingleLocationMap } from "@/components/sections/DirectoryListing/SingleLocationMap"
+import { serviceAreaSummary } from "@/lib/helpers/service-area"
 import { trackButtonClick } from "@/lib/analytics"
 import { ShareButton } from "@/components/molecules/ShareButton/ShareButton"
 import { normalizeExternalUrl } from "@/lib/helpers/external-url"
@@ -99,6 +100,10 @@ export const DirectoryDetail = ({
   const hasLocation =
     Boolean(locationStr) ||
     (Number.isFinite(addrCoords?.lat) && Number.isFinite(addrCoords?.lng))
+  // Nationwide/online businesses have no pin — their address JSON carries only
+  // serviced_states. Show where they serve instead of omitting the block
+  // entirely (8/14, mon-listing-map-missing follow-up).
+  const serviceArea = hasLocation ? null : serviceAreaSummary(listing.address)
 
   const isUnclaimed = !listing.owner_id
   const websiteHref = normalizeExternalUrl(listing.website_url)
@@ -359,6 +364,33 @@ export const DirectoryDetail = ({
                 {claimMine ? "Finish Your Claim" : "Claim This Listing"}
               </LocalizedClientLink>
             )}
+          </div>
+        </section>
+      )}
+
+      {/* Lapsed-membership banner (Brooke/Matteo 8/14) — the listing is still
+          OWNED, so the claim CTA stays off; the owner just needs to sign in
+          and pay. Strangers see it as an ordinary directory entry with an
+          Unclaimed-style presentation in the cards/search. */}
+      {listing.lapsed && !isUnclaimed && (
+        <section className="max-w-7xl mx-auto px-6 mt-6">
+          <div className="bg-[#F2CD69]/15 border border-[#F2CD69] rounded-xl p-6 flex flex-col md:flex-row items-start md:items-center gap-4">
+            <div className="flex-1">
+              <p className="font-serif text-lg text-navy-dark font-bold mb-1">
+                This membership is no longer active.
+              </p>
+              <p className="text-secondary text-sm">
+                Is this your business? Sign in to reactivate your membership
+                and restore your member badge and search placement. Reaching
+                out as a customer? Tell them you found them on Catholic Owned!
+              </p>
+            </div>
+            <a
+              href="/api/vendor-handoff"
+              className="bg-navy-dark text-white px-6 py-3 rounded-xl label-sm text-[10px] font-bold tracking-widest hover:bg-navy transition-colors whitespace-nowrap"
+            >
+              Reactivate Membership
+            </a>
           </div>
         </section>
       )}
@@ -795,6 +827,21 @@ export const DirectoryDetail = ({
                   </ul>
                 </div>
               )
+            )}
+
+            {/* Service area — the map slot's stand-in for nationwide/online
+                businesses that have no physical pin. */}
+            {serviceArea && (
+              <div className="bg-gray-100 rounded-xl overflow-hidden">
+                <div className="p-6">
+                  <h3 className="label-sm text-[10px] text-navy-dark font-bold tracking-widest mb-2">
+                    SERVICE AREA
+                  </h3>
+                  <p className="font-serif text-lg text-secondary">
+                    {serviceArea}
+                  </p>
+                </div>
+              </div>
             )}
 
             {/* Location Map */}
