@@ -46,7 +46,7 @@
       "exact",
       "custom"
     ],
-    "customRanking": null,
+    "customRanking": ["desc(rank_weight)", "desc(created_at)"],
     "separatorsToIndex": "",
     "removeWordsIfNoResults": "none",
     "queryType": "prefixLast",
