@@ -11,6 +11,7 @@ import { Chat } from "@/components/organisms/Chat/Chat"
 import { SellerProps } from "@/types/seller"
 import { WishlistButton } from "../WishlistButton/WishlistButton"
 import { AddToRegistryButton } from "../AddToRegistryButton/AddToRegistryButton"
+import { ShareButton } from "@/components/molecules/ShareButton/ShareButton"
 import { Wishlist } from "@/types/wishlist"
 import { GiftRegistry } from "@/types/registry"
 import { toast } from "@/lib/helpers/toast"
@@ -472,6 +473,18 @@ export const ProductDetailsHeader = ({
           variantId={variantId}
           user={user}
           registries={registries || []}
+        />
+
+        {/* Share (Brooke 8/11). Sized to sit flush with the wishlist/registry
+            icon buttons; shares the PDP's canonical URL (variant params
+            dropped by design). */}
+        <ShareButton
+          title={product.title}
+          text={`${product.title} on Catholic Owned`}
+          entityType="product"
+          entityId={product.id}
+          className="relative w-10 h-10 shrink-0 rounded-sm bg-[#f4f4f0] hover:bg-[#e7e7de] text-[#001435] flex items-center justify-center transition-colors"
+          iconSize={18}
         />
       </div>
 

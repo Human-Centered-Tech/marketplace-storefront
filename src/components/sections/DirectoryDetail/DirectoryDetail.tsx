@@ -14,6 +14,7 @@ import { socialLinksToArray } from "@/lib/social"
 import { SocialIcon } from "@/components/sections/DirectoryManagement/SocialIcon"
 import { SingleLocationMap } from "@/components/sections/DirectoryListing/SingleLocationMap"
 import { trackButtonClick } from "@/lib/analytics"
+import { ShareButton } from "@/components/molecules/ShareButton/ShareButton"
 import { normalizeExternalUrl } from "@/lib/helpers/external-url"
 import { getTierBadge } from "@/lib/directory-tiers"
 import { ListingReviews } from "./ListingReviews"
@@ -317,6 +318,15 @@ export const DirectoryDetail = ({
                 <span className="material-symbols-outlined">language</span>
               </a>
             )}
+            {/* Share (Brooke 8/11). Unconditional — unlike the contact
+                buttons, every listing has a URL worth sharing. */}
+            <ShareButton
+              title={listing.business_name}
+              text={`${listing.business_name} on Catholic Owned`}
+              entityType="directory_listing"
+              entityId={listing.id}
+              iconSize={24}
+            />
           </div>
         </div>
       </section>

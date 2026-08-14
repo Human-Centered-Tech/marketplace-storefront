@@ -1,6 +1,7 @@
 import { SellerAvatar } from "@/components/cells/SellerAvatar/SellerAvatar"
 import { StarRating } from "@/components/atoms"
 import { Chat } from "@/components/organisms/Chat/Chat"
+import { ShareButton } from "@/components/molecules/ShareButton/ShareButton"
 import { HttpTypes } from "@medusajs/types"
 import { SellerProps } from "@/types/seller"
 
@@ -98,17 +99,26 @@ export const SellerPageHeader = ({
               </div>
             </div>
 
-            {/* Message Seller Button */}
-            {user && (
-              <div className="shrink-0">
+            {/* Message Seller + Share. Share renders for every viewer —
+                unlike Chat it doesn't need an account (Brooke 8/11). */}
+            <div className="shrink-0 flex items-center gap-3">
+              {user && (
                 <Chat
                   user={user}
                   seller={seller}
                   icon
                   buttonClassNames="bg-[#001435] text-white px-8 py-4 rounded-xl font-sans font-bold flex items-center gap-3 border-2 border-transparent hover:bg-transparent hover:text-[#001435] hover:border-[#755b00] transition-all duration-500 shadow-lg text-sm uppercase tracking-wider"
                 />
-              </div>
-            )}
+              )}
+              <ShareButton
+                title={seller.name}
+                text={`${seller.name} on Catholic Owned`}
+                entityType="seller"
+                entityId={seller.id}
+                className="relative p-4 rounded-xl bg-[#f4f4f0] text-[#001435] hover:bg-[#F2CD69]/30 transition-colors"
+                iconSize={22}
+              />
+            </div>
           </div>
         </div>
       </header>
