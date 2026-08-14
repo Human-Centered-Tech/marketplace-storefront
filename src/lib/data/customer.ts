@@ -137,6 +137,24 @@ export const updateCustomer = async (body: HttpTypes.StoreUpdateCustomer) => {
 }
 
 export async function signup(formData: FormData) {
+  // Bot tripwires (8/13 — the CRM "random subsource strings" turned out to be
+  // ~3/day form-bot registrations: gibberish names, source always "Affiliate",
+  // random text in the free-text subsource, email never verified). Two cheap
+  // signals from the RegisterForm: an offscreen honeypot field real users
+  // never see, and the form-mount timestamp — no human fills five fields and
+  // accepts the ToS in under 1.5 seconds. The error string is deliberately
+  // generic: a bot author gets no hint about what tripped.
+  const honeypot = ((formData.get("website_url") as string | null) ?? "").trim()
+  const startedAt = Number(formData.get("form_started_at"))
+  const elapsedMs = Number.isFinite(startedAt) ? Date.now() - startedAt : null
+  const tooFast = elapsedMs !== null && elapsedMs >= 0 && elapsedMs < 1500
+  if (honeypot || tooFast) {
+    console.warn(
+      `[signup] bot tripwire: honeypot=${honeypot ? "filled" : "empty"} elapsed_ms=${elapsedMs ?? "n/a"}`
+    )
+    return "Something went wrong. Please try again."
+  }
+
   const password = formData.get("password") as string
   // Tier from the /sell/onboarding sizing quiz, threaded through the
   // register URL as ?recommended_tier=. Stored on customer.metadata so

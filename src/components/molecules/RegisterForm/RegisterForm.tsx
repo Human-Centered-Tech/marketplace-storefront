@@ -14,7 +14,7 @@ import { MARKETING_SOURCES } from "./marketing-sources"
 import { signup, login, retrieveCustomer } from "@/lib/data/customer"
 import { becomeVendor, becomeMerchant } from "@/lib/data/vendor"
 import { recordClaimProgress } from "@/lib/data/directory-actions"
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { PasswordValidator } from "@/components/cells/PasswordValidator/PasswordValidator"
@@ -92,6 +92,13 @@ const Form = ({
     symbolOrDigit: false,
   })
   const [error, setError] = useState()
+  // Bot tripwires (8/13 — the CRM "random subsource strings" investigation):
+  // dumb form-bots fill every field they can see and submit instantly. The
+  // honeypot is an offscreen input real users never touch; the timestamp
+  // lets signup() reject impossibly fast submissions. Both are verified
+  // server-side in signup() — this just carries the signals.
+  const [formStartedAt] = useState(() => Date.now())
+  const honeypotRef = useRef<HTMLInputElement | null>(null)
   const {
     handleSubmit,
     register,
@@ -127,6 +134,9 @@ const Form = ({
     // "email already has an account -> add-a-password email" handling; the
     // vendor flow keeps its own "convert existing customer to merchant" path.
     formData.append("__vendor_flow", vendorFlow ? "1" : "")
+    // Bot tripwires — verified server-side in signup().
+    formData.append("website_url", honeypotRef.current?.value ?? "")
+    formData.append("form_started_at", String(formStartedAt))
 
     const res = passwordError.isValid && (await signup(formData))
 
@@ -262,6 +272,32 @@ const Form = ({
           </div>
 
           <form onSubmit={handleSubmit(submit)} className="space-y-4">
+            {/* Honeypot — offscreen (not display:none, which some bots skip),
+                unreachable by keyboard, ignored by screen readers and
+                autofill. A filled value here means a bot submitted the form. */}
+            <div
+              aria-hidden="true"
+              style={{
+                position: "absolute",
+                left: "-9999px",
+                top: "auto",
+                width: "1px",
+                height: "1px",
+                overflow: "hidden",
+              }}
+            >
+              <label>
+                Website
+                <input
+                  ref={honeypotRef}
+                  type="text"
+                  name="website_url"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  defaultValue=""
+                />
+              </label>
+            </div>
             <div className="flex flex-col md:flex-row gap-4">
               <LabeledInput
                 className="md:w-1/2"
