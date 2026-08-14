@@ -165,7 +165,11 @@ export const DirectoryDetail = ({
           {/* Business name + badges */}
           <div className="flex-grow text-center md:text-left">
             <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-2">
-              {isUnclaimed ? (
+              {/* Lapsed members lose the tier pill too — showing a paid-tier
+                  badge directly above the "membership is no longer active"
+                  banner contradicts it (and the search card already shows
+                  the Unclaimed chip). */}
+              {isUnclaimed || listing.lapsed ? (
                 <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full label-sm text-[10px] font-bold tracking-widest border border-gray-300">
                   UNCLAIMED LISTING
                 </span>
