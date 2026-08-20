@@ -20,6 +20,11 @@ export default function CreateDirectoryListingPage() {
   // (customer.metadata.recommended_tier), so the parish picker offers the
   // right number of slots before a listing exists.
   const [createParishTier, setCreateParishTier] = useState<string | undefined>()
+  // Account email/phone for the form's one-click contact fills.
+  const [accountContact, setAccountContact] = useState<{
+    email?: string | null
+    phone?: string | null
+  }>()
 
   useEffect(() => {
     const backendUrl =
@@ -41,6 +46,9 @@ export default function CreateDirectoryListingPage() {
         const rec = (customer?.metadata as Record<string, unknown> | undefined)
           ?.recommended_tier as string | undefined
         setCreateParishTier(subscriptionTierForPricing(rec))
+        if (customer) {
+          setAccountContact({ email: customer.email, phone: customer.phone })
+        }
       })
       .catch(() => {})
   }, [])
@@ -91,6 +99,7 @@ export default function CreateDirectoryListingPage() {
           submitLabel="Create Listing"
           onParishSelectionsChange={setSelectedParishes}
           createParishTier={createParishTier}
+          accountContact={accountContact}
         />
       </div>
     </main>

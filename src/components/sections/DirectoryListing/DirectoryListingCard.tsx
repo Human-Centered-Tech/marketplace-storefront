@@ -53,7 +53,11 @@ export const DirectoryListingCard = ({
   featured?: boolean
   showDistance?: boolean
 }) => {
-  const isUnclaimed = !listing.owner_id
+  // Lapsed members (8/14) render with the same unclaimed treatment: chip, no
+  // member badge, dimmed border. Algolia records already arrive owner-less;
+  // this covers the SSR path where the public API keeps owner_id and sets
+  // `lapsed` instead.
+  const isUnclaimed = !listing.owner_id || !!listing.lapsed
   // Customer rating (7/28). Rendered only when there IS one — `rating` is null
   // until a listing has reviews, and an empty five-star row reads as a bad
   // score rather than an absent one.

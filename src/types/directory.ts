@@ -87,6 +87,11 @@ export type DirectoryListing = {
   verified_at: string | null
   owner_id: string | null
   vendor_id: string | null
+  // Lapsed-member presentation (8/14): computed server-side by the public
+  // serializer when an owned listing's subscription is cancelled/expired past
+  // the grace window. Cards show the Unclaimed chip; the detail page swaps
+  // the claim banner for a reactivate banner. Ownership is intact.
+  lapsed?: boolean
   // Customer-review aggregate (7/28). `rating` is the average to 1 decimal and
   // is NULL when the listing has no reviews yet — never 0, which would render as
   // an empty star row and read as "rated badly". Both come from the backend's
