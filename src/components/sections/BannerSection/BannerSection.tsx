@@ -85,7 +85,9 @@ export const BannerSection = async () => {
       <div className="max-w-7xl mx-auto relative z-10">
         {/* Header */}
         <div className="flex items-center gap-4 mb-16">
-          <h2 className="font-serif text-3xl md:text-4xl font-semibold text-white">
+          {/* Match the other home section headers (437b2d5 reduced those to
+              2xl/3xl; this one was missed). */}
+          <h2 className="font-serif text-2xl md:text-3xl font-semibold text-white">
             Sacred Exchange
           </h2>
           <div className="h-[1px] flex-grow bg-white/20" />

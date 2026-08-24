@@ -281,7 +281,10 @@ export const ProductDetailsHeader = ({
       {/* Product title + subtitle (e.g. artist / maker name). Subtitle is
           optional — rendered subtly below the title only when present. */}
       <div className="space-y-2">
-        <h1 className="font-serif text-4xl lg:text-5xl font-bold text-[#001435] leading-tight">
+        {/* One step down from text-4xl/5xl — display names read as shouting,
+            especially on phones (Brooke web-polish: "product name fonts
+            smaller"). */}
+        <h1 className="font-serif text-3xl lg:text-4xl font-bold text-[#001435] leading-tight">
           {product.title}
         </h1>
         {product.subtitle && product.subtitle.trim() && (
@@ -535,7 +538,9 @@ export const ProductDetailsHeader = ({
               strokeLinejoin="round"
               className="text-[#755b00]"
             >
-              <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+              {/* Delivery truck (was a shipping-box cube — read as "package",
+                  not "shipping"; Brooke's polish list asked for shield+TRUCK). */}
+              <path d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
             </svg>
           }
           title="Carefully Packaged"

@@ -54,7 +54,9 @@ export const SellerPageHeader = ({
 
             {/* Seller Info */}
             <div className="flex-grow text-center md:text-left">
-              <h1 className="font-serif text-5xl font-bold text-[#001435] mb-3">
+              {/* Was a non-responsive text-5xl — 48px even on phones. Step up
+                  with viewport instead (Brooke web-polish: storefront name). */}
+              <h1 className="font-serif text-3xl md:text-4xl lg:text-5xl font-bold text-[#001435] mb-3">
                 {seller.name}
               </h1>
               {seller.description && (
