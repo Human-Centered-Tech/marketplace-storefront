@@ -209,7 +209,9 @@ export const DirectoryDetail = ({
                   </span>
                 ))}
             </div>
-            <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl text-navy-dark mb-2">
+            {/* Stepped down from 4xl/5xl/6xl — 60px business names dwarfed the
+                page (Brooke web-polish: "listing name fonts smaller"). */}
+            <h1 className="font-serif text-3xl md:text-4xl lg:text-5xl text-navy-dark mb-2">
               {listing.business_name}
             </h1>
             {/* Rating summary next to the name — where people look for it.
