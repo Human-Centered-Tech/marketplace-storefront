@@ -424,10 +424,16 @@ export const DirectoryDetail = ({
                 featured/enterprise gate that used to wrap this is deliberately
                 gone: tiers differentiate by visibility/placement, not by hiding
                 profile content the owner already wrote. Do not re-gate. */}
+            {/* Photo OR any answer opens the section (Matteo 8/18): owners who
+                upload a photo but skip the questions still get their picture
+                shown — same gate shape as the Devotional block below. The Q&A
+                renderer already skips unanswered questions, so a photo-only
+                interview renders as just the photo. */}
             {listing.owner_interview &&
-              ([1, 2, 3, 4] as const).some(
-                (n) => (listing.owner_interview as any)?.[`q${n}_answer`]
-              ) && (
+              (listing.owner_interview.photo_url ||
+                ([1, 2, 3, 4] as const).some(
+                  (n) => (listing.owner_interview as any)?.[`q${n}_answer`]
+                )) && (
                 <div>
                   <h2 className="label-sm text-[10px] text-gold-dark font-bold tracking-[0.2em] mb-4">
                     MEET THE OWNER
