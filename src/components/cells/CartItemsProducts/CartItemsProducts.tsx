@@ -2,7 +2,10 @@ import Image from "next/image"
 import { HttpTypes } from "@medusajs/types"
 import { convertToLocale } from "@/lib/helpers/money"
 import { filterValidCartItems } from "@/lib/helpers/filter-valid-cart-items"
-import { filterRealVariantOptions } from "@/lib/helpers/variant-options"
+import {
+  filterRealVariantOptions,
+  isPlaceholderVariantTitle,
+} from "@/lib/helpers/variant-options"
 import { getLineItemThumbnail } from "@/lib/helpers/get-line-item-thumbnail"
 import { DeleteCartItemButton } from "@/components/molecules"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
@@ -68,7 +71,16 @@ export const CartItemsProducts = ({
                   <div className="w-[100px] md:w-[200px] lg:w-[280px] mb-4 lg:mb-0">
                     <h3 className="heading-xs uppercase truncate">
                       {product.product_title}
-                      {product.subtitle && ` - ${product.subtitle}`}
+                      {/*
+                        Medusa stamps the VARIANT title into line_item.subtitle
+                        (core-flows prepare-line-item-data), so a single-variant
+                        product arrives as "Default variant". The cart drawer
+                        already hides that placeholder; this summary (checkout
+                        + cart page) is the surface #163 missed (tr-cart-variant).
+                      */}
+                      {product.subtitle &&
+                        !isPlaceholderVariantTitle(product.subtitle) &&
+                        ` - ${product.subtitle}`}
                     </h3>
                   </div>
                 </LocalizedClientLink>

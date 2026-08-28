@@ -65,32 +65,43 @@ export const AlgoliaProductsListing = ({
   const urlPage = Math.max(1, parseInt(searchParamas.get("page") || "1") || 1)
   const algoliaPage = urlPage - 1
 
-  // Transitional flag — set NEXT_PUBLIC_RELAX_ALGOLIA_PRODUCT_FILTERS=true
-  // while we're still working with test products that lack seller assignments
-  // and supported_countries data. Drops the per-product attribution filters
-  // so the shop renders something instead of an empty list.
+  // NEXT_PUBLIC_RELAX_ALGOLIA_PRODUCT_FILTERS=true is still set on prod and
+  // staging (a "transitional" flag from the test-product days). It used to
+  // drop EVERY attribution clause below, which is why the shop counted and
+  // paged over products it then hid client-side — "Showing 1–48 of 485" with
+  // an 11-page pager that only ever yielded 400 products and an empty page 11
+  // (qa78-marketplace-pagination). The 85 phantoms were all products of
+  // INACTIVE (not-yet-live) sellers, which listProducts' ACTIVE post-filter
+  // removes after Algolia has already counted them.
+  //
+  // The flag now scopes ONLY the supported_countries clause. That one is still
+  // unsafe to enforce: the indexer derives supported_countries from variant →
+  // inventory item → stock location, so made-to-order products
+  // (manage_inventory=false — e.g. the 7/2 Shopify import) get [] and would
+  // vanish from the shop even though they add to cart and ship fine. Fix
+  // selectSupportedCountries in the backend indexer + reindex before unsetting
+  // the flag.
   const relaxFilters =
     process.env.NEXT_PUBLIC_RELAX_ALGOLIA_PRODUCT_FILTERS === "true"
 
-  const clauses: string[] = []
+  const clauses: string[] = ["NOT seller:null"]
 
+  // Only ACTIVE stores show. INACTIVE = vendor still in draft (no
+  // payment / not gone live yet); SUSPENDED = admin-blocked. The
+  // store_status clause is dropped in owner-preview mode so a vendor
+  // can see their own draft — the seller_handle scope below keeps it
+  // narrowed to just their products.
+  if (!owner_preview) {
+    clauses.push("seller.store_status:ACTIVE")
+    // Vendors that never finished Stripe payout onboarding can't take
+    // orders (add-to-cart 400s server-side). The indexer stamps
+    // accepts_orders:false on their products; NOT-false (vs :true) keeps
+    // records the indexer hasn't restamped yet visible until the full
+    // reindex. Owner preview skips this so a vendor mid-onboarding can
+    // still see their own catalog.
+    clauses.push("NOT accepts_orders:false")
+  }
   if (!relaxFilters) {
-    clauses.push("NOT seller:null")
-    // Only ACTIVE stores show. INACTIVE = vendor still in draft (no
-    // payment / not gone live yet); SUSPENDED = admin-blocked. The
-    // store_status clause is dropped in owner-preview mode so a vendor
-    // can see their own draft — the seller_handle scope below keeps it
-    // narrowed to just their products.
-    if (!owner_preview) {
-      clauses.push("seller.store_status:ACTIVE")
-      // Vendors that never finished Stripe payout onboarding can't take
-      // orders (add-to-cart 400s server-side). The indexer stamps
-      // accepts_orders:false on their products; NOT-false (vs :true) keeps
-      // records the indexer hasn't restamped yet visible until the full
-      // reindex. Owner preview skips this so a vendor mid-onboarding can
-      // still see their own catalog.
-      clauses.push("NOT accepts_orders:false")
-    }
     clauses.push(`supported_countries:${locale}`)
   }
 
