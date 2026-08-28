@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { HttpTypes } from "@medusajs/types"
 import { DirectoryListing } from "@/types/directory"
 import { Chat } from "@/components/organisms/Chat/Chat"
@@ -104,6 +104,62 @@ export const DirectoryDetail = ({
   // serviced_states. Show where they serve instead of omitting the block
   // entirely (8/14, mon-listing-map-missing follow-up).
   const serviceArea = hasLocation ? null : serviceAreaSummary(listing.address)
+
+  // The Location card renders in two slots: at the top of the page on
+  // phones/tablets and in the sidebar at `lg`. Matteo's 8/18 mobile-web ask
+  // was "CTA and map near the top"; the CTA landed but the map stayed in the
+  // sidebar, which the single-column stack drops to the very bottom (73%
+  // down a 3,600px page in the regimen). Only ONE map instance is mounted:
+  // the slot that's actually visible, decided after mount via matchMedia so
+  // server and client render the same markup (no hydration mismatch).
+  const [isLg, setIsLg] = useState<boolean | null>(null)
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)")
+    const apply = () => setIsLg(mq.matches)
+    apply()
+    mq.addEventListener("change", apply)
+    return () => mq.removeEventListener("change", apply)
+  }, [])
+
+  const locationCard = (slot: "mobile" | "desktop") => {
+    if (!hasLocation || !listing.address) return null
+    const mountMap = isLg !== null && (isLg ? slot === "desktop" : slot === "mobile")
+    return (
+      <div className="bg-gray-100 rounded-xl overflow-hidden">
+        <div className="p-6">
+          <h3 className="label-sm text-[10px] text-navy-dark font-bold tracking-widest mb-2">
+            LOCATION
+          </h3>
+          <p className="font-serif text-lg text-secondary">{locationStr}</p>
+        </div>
+        {mountMap ? (
+          <LocationEmbed address={listing.address} />
+        ) : (
+          <div className="h-48 bg-gray-100" aria-hidden="true" />
+        )}
+        {listing.address.street && (
+          <a
+            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+              [
+                listing.address.street,
+                listing.address.city,
+                listing.address.state,
+                listing.address.zip,
+              ]
+                .filter(Boolean)
+                .join(", ")
+            )}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full py-4 bg-gray-200 text-navy-dark label-sm text-[10px] font-bold tracking-widest flex items-center justify-center gap-2 hover:bg-gray-300 transition-colors"
+          >
+            <span className="material-symbols-outlined text-lg">directions</span>
+            Get Directions
+          </a>
+        )}
+      </div>
+    )
+  }
 
   const isUnclaimed = !listing.owner_id
   const websiteHref = normalizeExternalUrl(listing.website_url)
@@ -406,6 +462,10 @@ export const DirectoryDetail = ({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
           {/* Left Column */}
           <div className="lg:col-span-8 space-y-16">
+            {/* Location — phone/tablet slot (sidebar copy takes over at lg) */}
+            {hasLocation && listing.address && (
+              <div className="lg:hidden">{locationCard("mobile")}</div>
+            )}
             {/* About / Description */}
             {listing.description && (
               <div>
@@ -856,41 +916,10 @@ export const DirectoryDetail = ({
               </div>
             )}
 
-            {/* Location Map */}
+            {/* Location Map — desktop slot (the phone/tablet copy sits at
+                the top of the left column) */}
             {hasLocation && listing.address && (
-              <div className="bg-gray-100 rounded-xl overflow-hidden">
-                <div className="p-6">
-                  <h3 className="label-sm text-[10px] text-navy-dark font-bold tracking-widest mb-2">
-                    LOCATION
-                  </h3>
-                  <p className="font-serif text-lg text-secondary">
-                    {locationStr}
-                  </p>
-                </div>
-                <LocationEmbed address={listing.address} />
-                {listing.address.street && (
-                  <a
-                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                      [
-                        listing.address.street,
-                        listing.address.city,
-                        listing.address.state,
-                        listing.address.zip,
-                      ]
-                        .filter(Boolean)
-                        .join(", ")
-                    )}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full py-4 bg-gray-200 text-navy-dark label-sm text-[10px] font-bold tracking-widest flex items-center justify-center gap-2 hover:bg-gray-300 transition-colors"
-                  >
-                    <span className="material-symbols-outlined text-lg">
-                      directions
-                    </span>
-                    Get Directions
-                  </a>
-                )}
-              </div>
+              <div className="hidden lg:block">{locationCard("desktop")}</div>
             )}
           </div>
         </div>
