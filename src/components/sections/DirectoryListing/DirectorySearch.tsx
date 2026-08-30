@@ -562,9 +562,14 @@ export const DirectorySearch = ({
           // results: bring the top of the new list into view rather than
           // swapping content underneath them. No-op when the list top is
           // already on screen (the common case — filters sit right above it).
+          // Absolute target, applied after React commits the shorter/longer
+          // list: a smooth relative scroll issued before the commit gets
+          // clamped when the document shrinks and strands the user at the
+          // BOTTOM of the new results.
           const top = listRef.current?.getBoundingClientRect().top
           if (typeof top === "number" && top < 0) {
-            window.scrollBy({ top: top - 16, behavior: "smooth" })
+            const target = Math.max(0, window.scrollY + top - 16)
+            requestAnimationFrame(() => window.scrollTo({ top: target }))
           }
         }
         setCount(result.nbHits ?? 0)
