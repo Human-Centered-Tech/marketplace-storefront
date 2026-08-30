@@ -279,8 +279,8 @@ export const DirectorySearch = ({
     [pathname, router, searchParams]
   )
   const [loading, setLoading] = useState(false)
-  // The windowed list's root — declared up here because runSearch (below)
-  // reads its position after a page-0 refetch.
+  // The windowed list's root. Its document offset feeds the virtualizer's
+  // scrollMargin (measured further down).
   const listRef = useRef<HTMLDivElement | null>(null)
   const [loadingMore, setLoadingMore] = useState(false)
   // Whether Algolia has another page for the current query. Seeded from the
@@ -557,20 +557,13 @@ export const DirectorySearch = ({
             return fresh.length ? [...prev, ...fresh] : prev
           })
         } else {
+          // Straight replace. Deliberately NO scroll repositioning here: with
+          // the list kept mounted (see the render below), the browser's own
+          // scroll anchoring holds the user's place, and measuring the list
+          // before React commits gave a stale position anyway. Verified on
+          // staging 8/29 — a filter change at scrollY 2000 stays at 2000, and
+          // only moves when the result set genuinely shrinks the page.
           setAllListings(listings)
-          // A filter change while the user is scrolled deep into the old
-          // results: bring the top of the new list into view rather than
-          // swapping content underneath them. No-op when the list top is
-          // already on screen (the common case — filters sit right above it).
-          // Absolute target, applied after React commits the shorter/longer
-          // list: a smooth relative scroll issued before the commit gets
-          // clamped when the document shrinks and strands the user at the
-          // BOTTOM of the new results.
-          const top = listRef.current?.getBoundingClientRect().top
-          if (typeof top === "number" && top < 0) {
-            const target = Math.max(0, window.scrollY + top - 16)
-            requestAnimationFrame(() => window.scrollTo({ top: target }))
-          }
         }
         setCount(result.nbHits ?? 0)
         pageRef.current = page
