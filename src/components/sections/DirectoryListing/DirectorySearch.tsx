@@ -279,6 +279,9 @@ export const DirectorySearch = ({
     [pathname, router, searchParams]
   )
   const [loading, setLoading] = useState(false)
+  // The windowed list's root — declared up here because runSearch (below)
+  // reads its position after a page-0 refetch.
+  const listRef = useRef<HTMLDivElement | null>(null)
   const [loadingMore, setLoadingMore] = useState(false)
   // Whether Algolia has another page for the current query. Seeded from the
   // server-rendered first page; recomputed from nbPages on every search.
@@ -305,7 +308,12 @@ export const DirectorySearch = ({
     Number.isFinite(urlNearLat) && Number.isFinite(urlNearLon)
   )
   // Auto-enable Near-me once location becomes available, unless the user
-  // has explicitly toggled it off.
+  // has explicitly toggled it off — or has already started browsing.
+  // Geolocation permission can resolve seconds after mount; flipping the
+  // ranking to distance at that point refetched page 0 and REPLACED the list
+  // under a user who was already scrolled into it (tr-dir-scroll-jump: the
+  // 12 → 27 → 12 shrink with a different first card). Past the list top, leave
+  // it off; the toggle is still there.
   const [nearMeTouched, setNearMeTouched] = useState(false)
   useEffect(() => {
     if (
@@ -315,6 +323,7 @@ export const DirectorySearch = ({
       !useNearMe &&
       !stateServed
     ) {
+      if (typeof window !== "undefined" && window.scrollY > 150) return
       setUseNearMe(true)
     }
   }, [hydrated, userLocation, nearMeTouched, useNearMe, stateServed])
@@ -549,6 +558,14 @@ export const DirectorySearch = ({
           })
         } else {
           setAllListings(listings)
+          // A filter change while the user is scrolled deep into the old
+          // results: bring the top of the new list into view rather than
+          // swapping content underneath them. No-op when the list top is
+          // already on screen (the common case — filters sit right above it).
+          const top = listRef.current?.getBoundingClientRect().top
+          if (typeof top === "number" && top < 0) {
+            window.scrollBy({ top: top - 16, behavior: "smooth" })
+          }
         }
         setCount(result.nbHits ?? 0)
         pageRef.current = page
@@ -676,7 +693,6 @@ export const DirectorySearch = ({
     return chunked
   }, [filteredListings, columns])
 
-  const listRef = useRef<HTMLDivElement | null>(null)
   // Distance from the top of the document to the top of the list. The
   // virtualizer needs it to map window scroll onto row offsets; without it it
   // would behave as though the list started at y=0 and skip the first rows as
@@ -684,6 +700,7 @@ export const DirectorySearch = ({
   // above the list can change height (premium banners load in async) or the
   // window resizes.
   const [listOffsetTop, setListOffsetTop] = useState(0)
+  const listOffsetTopRef = useRef<number | null>(null)
   useEffect(() => {
     if (!mounted || view !== "list") return
     const measure = () => {
@@ -692,9 +709,18 @@ export const DirectorySearch = ({
       // getBoundingClientRect + scrollY, NOT offsetTop: the directory page
       // wraps this component in a `relative` <header>, which makes it the
       // offsetParent — offsetTop would measure from there, not the document.
-      setListOffsetTop(
-        Math.round(el.getBoundingClientRect().top + window.scrollY)
-      )
+      const next = Math.round(el.getBoundingClientRect().top + window.scrollY)
+      const prev = listOffsetTopRef.current
+      // Something above the list changed height (premium banners landing,
+      // the zip hint, the radius select) while the user was already inside
+      // the list. The rows are absolutely positioned off scrollMargin, so
+      // the browser's scroll anchoring can't hold them — shift the window by
+      // the same delta so what they're reading stays where it is.
+      if (prev !== null && next !== prev && window.scrollY > prev) {
+        window.scrollBy(0, next - prev)
+      }
+      listOffsetTopRef.current = next
+      setListOffsetTop(next)
     }
     measure()
     window.addEventListener("resize", measure)
@@ -1013,14 +1039,21 @@ export const DirectorySearch = ({
       {/* List View */}
       {view === "list" && (
         <>
-          {loading ? (
+          {loading && filteredListings.length === 0 ? (
             <div className="text-center py-12 text-secondary">Searching...</div>
           ) : filteredListings.length === 0 ? (
             <div className="text-center py-12 text-secondary">
               No businesses found. Try adjusting your search.
             </div>
           ) : (
-            <>
+            // A page-0 refetch (filter change) keeps the current list mounted
+            // and dims it instead of swapping in a one-line "Searching..." —
+            // unmounting a windowed list thousands of px tall collapsed the
+            // document and yanked the scroll position (tr-dir-scroll-jump).
+            <div
+              aria-busy={loading || undefined}
+              className={loading ? "opacity-60 transition-opacity" : "transition-opacity"}
+            >
               {!mounted ? (
                 // Server render / first paint: the plain grid, exactly as
                 // before. Swapped for the windowed list on mount.
@@ -1091,7 +1124,7 @@ export const DirectorySearch = ({
                   </p>
                 </div>
               )}
-            </>
+            </div>
           )}
         </>
       )}

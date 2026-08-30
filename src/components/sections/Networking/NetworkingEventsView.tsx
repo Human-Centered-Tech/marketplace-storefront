@@ -127,13 +127,18 @@ export const NetworkingEventsView = ({
 
   return (
     <section className="max-w-7xl mx-auto px-4 lg:px-8 py-12 lg:py-16">
-      {/* Search — standardized: gray magnifying-glass inside the input on the
-          left, navy "Search" button on the right. Typing still live-filters
-          (debounced); the button forces an immediate search. */}
-      <div className="max-w-2xl mx-auto mb-10">
-        <div className="flex items-stretch gap-2">
-          <div className="relative flex-1">
-            <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-secondary text-xl">
+      {/* Search — the SHOP bar is the standard (Brooke, 6/29 + 7/3): one white
+          floating card holding a borderless input with the gray magnifying
+          glass on the left and the navy "Search" button on the right. This
+          used to be a bare bordered input with the button floating OUTSIDE it
+          ("the button is in, then out of the search bar") at a different
+          height and radius. Markup/classes mirror SearchBar.tsx's hero
+          variant so the two measure identically; typing still live-filters
+          (debounced) and the button forces an immediate search. */}
+      <div className="max-w-2xl mx-auto mb-10 px-4">
+        <div className="flex items-stretch gap-2 bg-white border border-gray-100 shadow-lg rounded-xl p-2 focus-within:ring-2 focus-within:ring-[#755b00] transition-all">
+          <div className="relative flex-1 flex items-center">
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-secondary pointer-events-none">
               search
             </span>
             <input
@@ -141,10 +146,10 @@ export const NetworkingEventsView = ({
               placeholder="Search events..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-12 pr-12 py-3.5 bg-white border border-gray-100 rounded-xl focus:ring-2 focus:ring-[#755b00] focus:border-transparent font-sans text-[15px] outline-none shadow-lg transition-all placeholder:text-secondary"
+              className="w-full bg-transparent border-none focus:ring-0 font-sans text-[15px] py-3 pl-11 pr-9 placeholder:text-[#75777f]"
             />
             {searching && (
-              <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-secondary text-xl animate-spin">
+              <span className="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-[#75777f] text-[18px] animate-spin">
                 progress_activity
               </span>
             )}
@@ -153,16 +158,29 @@ export const NetworkingEventsView = ({
                 type="button"
                 aria-label="Clear search"
                 onClick={() => setSearch("")}
-                className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-secondary hover:text-navy-dark text-xl"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-[#75777f] hover:text-[#17294a] transition-colors"
               >
-                close
+                <svg
+                  aria-hidden="true"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
               </button>
             )}
           </div>
           <button
             type="button"
             onClick={() => setDebouncedSearch(search)}
-            className="bg-navy-dark text-white px-8 rounded-xl label-sm text-[10px] font-bold tracking-widest hover:bg-navy active:scale-95 transition-all shrink-0"
+            className="bg-navy-dark text-white px-8 rounded-lg label-sm text-[10px] font-bold tracking-widest hover:bg-navy active:scale-95 transition-all shrink-0"
           >
             Search
           </button>
