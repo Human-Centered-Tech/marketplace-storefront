@@ -698,8 +698,6 @@ export const DirectorySearch = ({
   // above the list can change height (premium banners load in async) or the
   // window resizes.
   const [listOffsetTop, setListOffsetTop] = useState(0)
-  const listOffsetTopRef = useRef<number | null>(null)
-  const selfScrollRef = useRef(false)
   useEffect(() => {
     if (!mounted || view !== "list") return
     const measure = () => {
@@ -708,35 +706,18 @@ export const DirectorySearch = ({
       // getBoundingClientRect + scrollY, NOT offsetTop: the directory page
       // wraps this component in a `relative` <header>, which makes it the
       // offsetParent — offsetTop would measure from there, not the document.
-      const next = Math.round(el.getBoundingClientRect().top + window.scrollY)
-      const prev = listOffsetTopRef.current
-      // Something above the list changed height (premium banners landing,
-      // the zip hint, the radius select) while the user was already inside
-      // the list. The rows are absolutely positioned off scrollMargin, so
-      // the browser's scroll anchoring can't hold them — shift the window by
-      // the same delta so what they're reading stays where it is.
       //
-      // Guarded two ways, because the naive version froze the tab: a scroll
-      // re-measures rows → the body resizes → this observer fires → sub-pixel
-      // rounding makes `next` differ by 1px → scrollBy(1) → another scroll…
-      // a frame-rate ping-pong that starved the renderer and walked the page
-      // to the bottom. So: ignore jitter (real layout shifts are tens of px),
-      // and ignore the measurement our own scrollBy provokes.
-      const delta = next - prev!
-      if (
-        prev !== null &&
-        Math.abs(delta) > 4 &&
-        window.scrollY > prev &&
-        !selfScrollRef.current
-      ) {
-        selfScrollRef.current = true
-        window.scrollBy(0, delta)
-        requestAnimationFrame(() => {
-          selfScrollRef.current = false
-        })
-      }
-      listOffsetTopRef.current = next
-      setListOffsetTop(next)
+      // MEASURE ONLY — never scroll from here. A previous attempt shifted the
+      // window by the offset delta to "hold the reader's place" when content
+      // above the list changed height. It deadlocked the renderer: scrolling
+      // re-measures virtualized rows → body resizes → this observer fires →
+      // the offset differs again → scroll… A 4px dead-band only slowed the
+      // ping-pong to ~1 FPS with the scroll still creeping. The browser's own
+      // scroll anchoring already handles this correctly (measured: a clean
+      // 130px adjustment when the list shrank), so leave it to the browser.
+      setListOffsetTop(
+        Math.round(el.getBoundingClientRect().top + window.scrollY)
+      )
     }
     measure()
     window.addEventListener("resize", measure)
