@@ -706,6 +706,7 @@ export const DirectorySearch = ({
   // window resizes.
   const [listOffsetTop, setListOffsetTop] = useState(0)
   const listOffsetTopRef = useRef<number | null>(null)
+  const selfScrollRef = useRef(false)
   useEffect(() => {
     if (!mounted || view !== "list") return
     const measure = () => {
@@ -721,8 +722,25 @@ export const DirectorySearch = ({
       // the list. The rows are absolutely positioned off scrollMargin, so
       // the browser's scroll anchoring can't hold them — shift the window by
       // the same delta so what they're reading stays where it is.
-      if (prev !== null && next !== prev && window.scrollY > prev) {
-        window.scrollBy(0, next - prev)
+      //
+      // Guarded two ways, because the naive version froze the tab: a scroll
+      // re-measures rows → the body resizes → this observer fires → sub-pixel
+      // rounding makes `next` differ by 1px → scrollBy(1) → another scroll…
+      // a frame-rate ping-pong that starved the renderer and walked the page
+      // to the bottom. So: ignore jitter (real layout shifts are tens of px),
+      // and ignore the measurement our own scrollBy provokes.
+      const delta = next - prev!
+      if (
+        prev !== null &&
+        Math.abs(delta) > 4 &&
+        window.scrollY > prev &&
+        !selfScrollRef.current
+      ) {
+        selfScrollRef.current = true
+        window.scrollBy(0, delta)
+        requestAnimationFrame(() => {
+          selfScrollRef.current = false
+        })
       }
       listOffsetTopRef.current = next
       setListOffsetTop(next)
