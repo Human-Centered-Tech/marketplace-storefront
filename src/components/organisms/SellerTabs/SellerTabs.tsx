@@ -59,6 +59,7 @@ export const SellerTabs = ({
             <AlgoliaProductsListing
               locale={locale}
               seller_handle={seller_handle}
+              seller_id={seller_id}
               currency_code={currency_code}
               owner_preview={owner_preview}
             />
