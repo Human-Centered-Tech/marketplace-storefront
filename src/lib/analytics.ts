@@ -21,6 +21,11 @@ type EventType =
   | "cart_add"
   | "purchase"
   | "registry_add"
+  // Browse fell back to the Medusa catalog because the Algolia search index
+  // didn't answer. Emitted from the product listing; count these to see how
+  // often shoppers hit a search outage (and whether it clusters by
+  // seller/category/time) instead of finding out from a support ticket.
+  | "search_unavailable"
 
 type TrackArgs = {
   event_type: EventType

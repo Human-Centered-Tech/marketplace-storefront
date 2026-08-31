@@ -155,16 +155,21 @@ async function AllCategories({
           <h1 className="display-md text-navy-dark mb-6 tracking-tight">
             The Marketplace
           </h1>
-          <p className="font-serif text-xl italic text-secondary max-w-2xl mx-auto leading-relaxed mb-8">
+          <p className="font-serif text-xl italic text-secondary max-w-2xl mx-auto leading-relaxed">
             Discover and support Catholic-owned businesses across the marketplace.
           </p>
-          <SearchBar variant="hero" placeholder="Search products" />
         </div>
         <div className="absolute bottom-0 left-0 w-full h-px bg-gold/30" />
       </section>
 
       <div className="w-full" style={{ backgroundColor: "#faf9f5" }}>
         <div className="max-w-7xl mx-auto px-4 lg:px-8 py-12 lg:py-16">
+          {/* Search sits BELOW the hero's divider, like Directory, Trade and
+              Events (Brooke, 6/29: "on shop the search bar should be below
+              the line because it is below the line on the other three"). */}
+          <div className="mb-10">
+            <SearchBar variant="hero" placeholder="Search products" />
+          </div>
           <Suspense fallback={<ProductListingSkeleton />}>
             {bot || !ALGOLIA_ID || !ALGOLIA_SEARCH_KEY ? (
               <ProductListing

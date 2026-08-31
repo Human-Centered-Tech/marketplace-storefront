@@ -36,6 +36,17 @@ export const ImageLightbox = ({
     setIndex((i) => (i - 1 + images.length) % images.length)
   const goNext = () => setIndex((i) => (i + 1) % images.length)
 
+  // Lock the page behind the viewer. The Dialog's own scroll lock wasn't
+  // holding on the listing page — the page kept scrolling under an open
+  // photo (regimen: gallery lightbox). Restore whatever was there on close.
+  useEffect(() => {
+    const prev = document.body.style.overflow
+    document.body.style.overflow = "hidden"
+    return () => {
+      document.body.style.overflow = prev
+    }
+  }, [])
+
   useEffect(() => {
     if (!hasMultiple) return
     const onKey = (e: KeyboardEvent) => {
