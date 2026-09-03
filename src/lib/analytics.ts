@@ -36,6 +36,14 @@ type TrackArgs = {
 
 const SESSION_KEY = "co_session_id"
 const SESSION_START_KEY = "co_session_start"
+const SESSION_LAST_KEY = "co_session_last"
+
+// A tab left open in a background window keeps sessionStorage alive, so a raw
+// (pagehide - start) span counted hours of nobody-looking-at-it as "time on
+// app" — prod showed a 129-minute average. Measure the ENGAGED window
+// instead: start → last tracked activity. Anything past this idle gap is not
+// part of the session (30 min is the GA convention).
+const IDLE_GAP_MS = 30 * 60 * 1000
 
 // Session lifecycle (SOW Exhibit A §11.3 "Login and session tracking",
 // §11.4 "Average time spent on app"): a session_start fires once when the
@@ -54,11 +62,16 @@ function armSessionLifecycle() {
       const id = window.sessionStorage.getItem(SESSION_KEY)
       const start = Number(window.sessionStorage.getItem(SESSION_START_KEY))
       if (!id || !Number.isFinite(start) || start <= 0) return
+      // Engaged window: start → last activity, not start → whenever the tab
+      // finally closed. Falls back to now for a session that never tracked
+      // anything after session_start.
+      const last = Number(window.sessionStorage.getItem(SESSION_LAST_KEY))
+      const end = Number.isFinite(last) && last > start ? last : Date.now()
       track({
         event_type: "session_end",
         entity_type: "session",
         entity_id: id,
-        metadata: { duration_ms: Date.now() - start },
+        metadata: { duration_ms: Math.max(0, end - start) },
       })
     } catch {
       // analytics must never disrupt user flow
@@ -70,6 +83,18 @@ function getSessionId(): string {
   if (typeof window === "undefined") return ""
   try {
     let id = window.sessionStorage.getItem(SESSION_KEY)
+    // Idle longer than the gap? That's a new visit, not a continuation of the
+    // old one — retire the id so the next session starts clean and the old
+    // session's duration isn't stretched across the break.
+    if (id) {
+      const last = Number(window.sessionStorage.getItem(SESSION_LAST_KEY))
+      if (Number.isFinite(last) && last > 0 && Date.now() - last > IDLE_GAP_MS) {
+        window.sessionStorage.removeItem(SESSION_KEY)
+        window.sessionStorage.removeItem(SESSION_START_KEY)
+        window.sessionStorage.removeItem(SESSION_LAST_KEY)
+        id = null
+      }
+    }
     if (!id) {
       id = `s_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`
       // Persist BEFORE emitting session_start: track() re-enters
@@ -117,9 +142,20 @@ export function track(args: TrackArgs) {
 
   armSessionLifecycle()
 
+  const sessionId = getSessionId()
+  // Stamp activity AFTER resolving the id (getSessionId reads the previous
+  // stamp to decide whether the session has gone stale).
+  try {
+    if (sessionId && args.event_type !== "session_end") {
+      window.sessionStorage.setItem(SESSION_LAST_KEY, String(Date.now()))
+    }
+  } catch {
+    // analytics must never disrupt user flow
+  }
+
   const body = JSON.stringify({
     ...args,
-    session_id: getSessionId(),
+    session_id: sessionId,
     platform: detectPlatform(),
   })
 

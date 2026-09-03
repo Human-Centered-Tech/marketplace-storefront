@@ -35,8 +35,14 @@ function formatTime(dateStr: string) {
 
 export const NetworkingEventDetail = ({
   event,
+  isSignedIn = true,
+  signInHref = "/user",
 }: {
   event: NetworkingEvent
+  /** Server-decided. When false the RSVP controls become a sign-in link —
+   *  no reminder step, no "Submitting…" flash for something that can't succeed. */
+  isSignedIn?: boolean
+  signInHref?: string
 }) => {
   const [rsvpLoading, setRsvpLoading] = useState(false)
   // RSVP made in THIS session. Separate from `event.has_rsvped` (the server's
@@ -123,6 +129,13 @@ export const NetworkingEventDetail = ({
   // First click opens the reminder step when we have no number on file;
   // otherwise it RSVPs straight away.
   const handleRsvp = () => {
+    // Belt and braces: the signed-out UI never renders this button, but if it
+    // is somehow reached, go straight to the prompt — never open the phone
+    // step or flash "Submitting…" for a request that cannot succeed.
+    if (!isSignedIn) {
+      setRsvpError("SIGN_IN_REQUIRED")
+      return
+    }
     if (needsPhone && !showPhoneStep) {
       setRsvpError("")
       setShowPhoneStep(true)
@@ -222,13 +235,22 @@ export const NetworkingEventDetail = ({
                       : "Reserve your spot for this event."}
                 </p>
                 {!isPast && !isGoing && !isFull && !showPhoneStep && (
-                  <button
-                    onClick={handleRsvp}
-                    disabled={rsvpLoading}
-                    className="text-gold-dark label-sm text-[10px] tracking-widest border-b border-gold/30 hover:border-gold transition-all disabled:opacity-50"
-                  >
-                    {rsvpLoading ? "Submitting..." : "RSVP Now"}
-                  </button>
+                  isSignedIn ? (
+                    <button
+                      onClick={handleRsvp}
+                      disabled={rsvpLoading}
+                      className="text-gold-dark label-sm text-[10px] tracking-widest border-b border-gold/30 hover:border-gold transition-all disabled:opacity-50"
+                    >
+                      {rsvpLoading ? "Submitting..." : "RSVP Now"}
+                    </button>
+                  ) : (
+                    <LocalizedClientLink
+                      href={signInHref}
+                      className="text-gold-dark label-sm text-[10px] tracking-widest border-b border-gold/30 hover:border-gold transition-all"
+                    >
+                      Sign in to RSVP
+                    </LocalizedClientLink>
+                  )
                 )}
                 {rsvpError && (
                   <p className="text-sm mt-2">
@@ -401,21 +423,30 @@ export const NetworkingEventDetail = ({
 
             {/* RSVP Button (sidebar) */}
             {!isPast && !isGoing && !showPhoneStep && (
-              <button
-                onClick={handleRsvp}
-                disabled={rsvpLoading || isFull}
-                className={`w-full py-3 rounded-xl label-sm text-[10px] font-bold tracking-widest transition-all shadow-lg active:scale-95 ${
-                  isFull
-                    ? "bg-gray-300 text-secondary cursor-default"
-                    : "bg-navy-dark text-white hover:bg-navy"
-                }`}
-              >
-                {rsvpLoading
-                  ? "Submitting..."
-                  : isFull
-                    ? "Event Full"
-                    : "RSVP Now"}
-              </button>
+              !isSignedIn && !isFull ? (
+                <LocalizedClientLink
+                  href={signInHref}
+                  className="block w-full text-center py-3 rounded-xl label-sm text-[10px] font-bold tracking-widest transition-all shadow-lg active:scale-95 bg-navy-dark text-white hover:bg-navy"
+                >
+                  Sign in to RSVP
+                </LocalizedClientLink>
+              ) : (
+                <button
+                  onClick={handleRsvp}
+                  disabled={rsvpLoading || isFull}
+                  className={`w-full py-3 rounded-xl label-sm text-[10px] font-bold tracking-widest transition-all shadow-lg active:scale-95 ${
+                    isFull
+                      ? "bg-gray-300 text-secondary cursor-default"
+                      : "bg-navy-dark text-white hover:bg-navy"
+                  }`}
+                >
+                  {rsvpLoading
+                    ? "Submitting..."
+                    : isFull
+                      ? "Event Full"
+                      : "RSVP Now"}
+                </button>
+              )
             )}
 
             {/* Reminder step. Only shown when we have NO number on file — a

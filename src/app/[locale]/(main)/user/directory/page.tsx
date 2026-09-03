@@ -20,7 +20,14 @@ export default async function UserDirectoryPage() {
   // landed on the "List Your Business" empty state while their listing was
   // visible on every sibling page (Suzi/Hixon Law, 7/29). /me also skips the
   // public-visibility filters, so a pending (pre-go-live) listing resolves too.
-  const { listing } = await getMyDirectoryListing()
+  const { authenticated, listing } = await getMyDirectoryListing()
+
+  // The `authenticated` flag used to be dropped here. We already know the
+  // customer is signed in (retrieveCustomer above), so a false value means the
+  // /me lookup itself failed — and falling through rendered "List Your
+  // Business" to an owner who has one, which is the same lie as the Suzi/Hixon
+  // regression described below. Say the truth instead.
+  const lookupFailed = !authenticated
 
   return (
     <main className="container">
@@ -29,7 +36,21 @@ export default async function UserDirectoryPage() {
         <div className="md:col-span-3">
           <h1 className="heading-xl uppercase mb-6">My Directory Listing</h1>
 
-          {listing ? (
+          {lookupFailed ? (
+            <div
+              role="alert"
+              className="border rounded-sm p-8 text-center border-red-200 bg-red-50"
+            >
+              <h2 className="heading-md text-primary mb-2">
+                We couldn&rsquo;t load your listing
+              </h2>
+              <p className="text-secondary mb-4">
+                Something went wrong reaching your directory listing. Please
+                refresh in a moment — if you already have a listing, it is still
+                there and still live.
+              </p>
+            </div>
+          ) : listing ? (
             <div className="space-y-6">
               {/* Listing summary */}
               <div className="border rounded-sm p-6">

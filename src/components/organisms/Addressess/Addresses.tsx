@@ -4,6 +4,7 @@ import { AddressForm, Modal } from "@/components/molecules"
 import { emptyDefaultAddressValues } from "@/components/molecules/AddressForm/AddressForm"
 import { AddressFormData } from "@/components/molecules/AddressForm/schema"
 import { deleteCustomerAddress } from "@/lib/data/customer"
+import { toast } from "@/lib/helpers/toast"
 import { cn } from "@/lib/utils"
 import { HttpTypes } from "@medusajs/types"
 import { isEmpty } from "lodash"
@@ -46,7 +47,17 @@ export const Addresses = ({
   }
 
   const handleDelete = async (addressId: string) => {
-    await deleteCustomerAddress(addressId)
+    const res = await deleteCustomerAddress(addressId)
+    if (!res?.success) {
+      // Previously the modal closed either way, so a failed delete was
+      // indistinguishable from a successful one until the address reappeared.
+      toast.error({
+        title: "Couldn't delete this address",
+        description: res?.error || "Please try again.",
+      })
+      return
+    }
+    toast.success({ title: "Address deleted" })
     setDeleteAddress(null)
   }
 

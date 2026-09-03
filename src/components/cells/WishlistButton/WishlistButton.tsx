@@ -4,6 +4,7 @@ import { Button } from "@/components/atoms"
 import { HeartFilledIcon, HeartIcon } from "@/icons"
 import { addWishlistItem, removeWishlistItem } from "@/lib/data/wishlist"
 import { track } from "@/lib/analytics"
+import { toast } from "@/lib/helpers/toast"
 import { Wishlist } from "@/types/wishlist"
 import { useEffect, useState } from "react"
 import { HttpTypes } from "@medusajs/types"
@@ -49,6 +50,11 @@ export const WishlistButton = ({
       })
     } catch (error) {
       console.error(error)
+      toast.error({
+        title: "Couldn't save to your wishlist",
+        description:
+          error instanceof Error ? error.message : "Please try again.",
+      })
     } finally {
       setIsWishlistAdding(false)
     }
@@ -63,6 +69,11 @@ export const WishlistButton = ({
       })
     } catch (error) {
       console.error(error)
+      toast.error({
+        title: "Couldn't remove this from your wishlist",
+        description:
+          error instanceof Error ? error.message : "Please try again.",
+      })
     } finally {
       setIsWishlistAdding(false)
     }

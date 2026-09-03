@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { getNetworkingEvent } from "@/lib/data/networking"
 import { EVENT_GATED } from "@/lib/data/networking-gated"
+import { getAuthHeaders } from "@/lib/data/cookies"
 import { NetworkingEventDetail } from "@/components/sections/Networking/NetworkingEventDetail"
 import { buildSocialMetadata } from "@/lib/helpers/seo"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
@@ -83,13 +84,28 @@ export default async function NetworkingEventPage({ params }: Props) {
     notFound()
   }
 
+  // Signed-out viewers used to get a full "RSVP Now" button that opened the
+  // reminder step, flashed "Submitting...", and then showed a small gold
+  // "sign in" link — read as "it did nothing" (Liam, 9/3). We know before the
+  // first click whether they can RSVP, so tell them up front and send them to
+  // sign in with a return hop straight back here (same pattern as the gated
+  // interstitial above).
+  const isSignedIn = "authorization" in (await getAuthHeaders())
+  const signInHref = `/user?return_to=${encodeURIComponent(
+    `/${locale}/networking/${id}`
+  )}`
+
   return (
     <main className="bg-[#FAF9F5]">
       <link
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         rel="stylesheet"
       />
-      <NetworkingEventDetail event={event} />
+      <NetworkingEventDetail
+        event={event}
+        isSignedIn={isSignedIn}
+        signInHref={signInHref}
+      />
     </main>
   )
 }
