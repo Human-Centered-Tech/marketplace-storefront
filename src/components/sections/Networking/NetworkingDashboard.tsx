@@ -31,6 +31,7 @@ export const NetworkingDashboard = ({
 }: Props) => {
   const [sub, setSub] = useState(subscription)
   const [contactList, setContactList] = useState(contacts)
+  const [actionError, setActionError] = useState("")
   const [pending, startTransition] = useTransition()
 
   const isActive = sub?.status === "active" || sub?.status === "gifted"
@@ -44,13 +45,22 @@ export const NetworkingDashboard = ({
     return d.getTime() >= Date.now()
   })
 
+  // Every networking action returns null on a non-2xx or network failure, so
+  // each `if (result)` below used to end in silence — Subscribe, Cancel and
+  // the contact-consent toggle all did nothing visible when they failed.
   const handleSubscribe = (plan: "monthly" | "annual") => {
+    setActionError("")
     startTransition(async () => {
       const result = await subscribeToNetworking(plan)
       if (result?.checkout_url) {
         window.location.href = result.checkout_url
       } else if (result?.subscription) {
         setSub(result.subscription)
+      } else {
+        setActionError(
+          result?.message ||
+            "We couldn't start your subscription. Please try again."
+        )
       }
     })
   }
@@ -58,20 +68,30 @@ export const NetworkingDashboard = ({
   const handleCancel = () => {
     if (!sub) return
     if (!confirm("Cancel your networking subscription at end of period?")) return
+    setActionError("")
     startTransition(async () => {
       const res = await cancelNetworkingSubscription(sub.id)
       if (res) {
         setSub({ ...sub, status: "cancelled" })
+      } else {
+        setActionError(
+          "We couldn't cancel your subscription. Please try again, or contact support if it keeps failing."
+        )
       }
     })
   }
 
   const handleContactConsent = (contactId: string, consent: boolean) => {
+    setActionError("")
     startTransition(async () => {
       const updated = await respondToContactExchange(contactId, consent)
       if (updated) {
         setContactList((prev) =>
           prev.map((c) => (c.id === contactId ? updated : c))
+        )
+      } else {
+        setActionError(
+          "We couldn't record that choice. Please try again."
         )
       }
     })
@@ -79,6 +99,15 @@ export const NetworkingDashboard = ({
 
   return (
     <div className="space-y-8">
+      {actionError && (
+        <div
+          role="alert"
+          className="border border-red-200 bg-red-50 text-red-700 rounded-xl px-4 py-3 text-sm"
+        >
+          {actionError}
+        </div>
+      )}
+
       {/* Subscription status */}
       <section className="border border-[#d6d0c4]/40 rounded-xl bg-white p-6">
         <h2 className="font-serif text-xl font-semibold text-[#17294A] mb-4">

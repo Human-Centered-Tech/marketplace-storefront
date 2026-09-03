@@ -89,9 +89,17 @@ export default function RegistryDetailPage() {
     }
   }
 
+  // Both delete actions swallow their own errors and return false rather than
+  // throwing, so the catch blocks below can never fire — the boolean is the
+  // only failure signal there is. Without checking it, a failed registry
+  // delete still navigated away as though it had worked.
   const handleDeleteItem = async (itemId: string) => {
     try {
-      await deleteRegistryItem(id, itemId)
+      const ok = await deleteRegistryItem(id, itemId)
+      if (!ok) {
+        setError("Failed to delete item. Please try again.")
+        return
+      }
       fetchRegistry()
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to delete item")
@@ -100,7 +108,12 @@ export default function RegistryDetailPage() {
 
   const handleDelete = async () => {
     try {
-      await deleteRegistry(id)
+      const ok = await deleteRegistry(id)
+      if (!ok) {
+        setError("Failed to delete registry. Please try again.")
+        setConfirmDelete(false)
+        return
+      }
       router.push(`/${locale}/user/registry`)
       router.refresh()
     } catch (err: unknown) {

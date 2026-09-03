@@ -40,6 +40,7 @@ export const UserMessagesSection = ({
   const [pendingAttachments, setPendingAttachments] = useState<MessageAttachment[]>([])
   const [uploading, setUploading] = useState(false)
   const [attachError, setAttachError] = useState("")
+  const [sendError, setSendError] = useState("")
   const [typingFrom, setTypingFrom] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -151,6 +152,7 @@ export const UserMessagesSection = ({
     e.preventDefault()
     if (!selectedId || (!draft.trim() && pendingAttachments.length === 0)) return
     setSending(true)
+    setSendError("")
     const res = await sendMessage(
       selectedId,
       draft,
@@ -168,6 +170,11 @@ export const UserMessagesSection = ({
       listConversations().then((data) =>
         setConversations(data?.conversations || [])
       )
+    } else {
+      // sendMessage returns null on any non-2xx or network failure. Without
+      // this branch the send just did nothing: no error, and the draft sat in
+      // the box looking like it had been delivered.
+      setSendError("Message not sent. Check your connection and try again.")
     }
   }
 
@@ -404,6 +411,11 @@ export const UserMessagesSection = ({
                     <span className="text-xs text-red-600">{attachError}</span>
                   )}
                 </div>
+              )}
+              {sendError && (
+                <span role="alert" className="text-xs text-red-600">
+                  {sendError}
+                </span>
               )}
               <div className="flex gap-2">
                 <input

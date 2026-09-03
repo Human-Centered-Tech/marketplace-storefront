@@ -24,6 +24,7 @@ export const OrderReturnSection = ({
   const [tab, setTab] = useState(0)
   const [selectedItems, setSelectedItems] = useState<any[]>([])
   const [error, setError] = useState<boolean>(false)
+  const [submitError, setSubmitError] = useState<string>("")
   const [returnMethod, setReturnMethod] = useState<any>(null)
   const router = useRouter()
 
@@ -69,13 +70,21 @@ export const OrderReturnSection = ({
       line_items: selectedItems,
     }
 
-    const { order_return_request } = await createReturnRequest(data)
+    // createReturnRequest passes the raw JSON body through, so a 4xx arrives
+    // as `{ message }` with no order_return_request. Reading `.id` off that
+    // threw a TypeError inside the click handler and the shopper saw nothing.
+    setSubmitError("")
+    const res = await createReturnRequest(data)
 
-    if (!order_return_request.id) {
-      return console.log("Error creating return request")
+    if (!res?.order_return_request?.id) {
+      setSubmitError(
+        res?.message ||
+          "We couldn't submit your return request. Please try again."
+      )
+      return
     }
 
-    router.push(`/user/orders/${order_return_request.id}/request-success`)
+    router.push(`/user/orders/${res.order_return_request.id}/request-success`)
   }
 
   return (
@@ -139,6 +148,11 @@ export const OrderReturnSection = ({
               returnMethod={returnMethod}
               handleSubmit={handleSubmit}
             />
+            {submitError && (
+              <p role="alert" className="mt-3 text-sm text-red-600">
+                {submitError}
+              </p>
+            )}
           </div>
         </div>
       </div>
