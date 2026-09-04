@@ -20,6 +20,8 @@ import {
   isPreApprovedScreening,
   recommendTier,
 } from "./routing"
+import { includedForTier } from "@/lib/membership-tiers"
+import { ContactSupportButton } from "@/components/molecules/ContactSupportForm/ContactSupportForm"
 
 // Tier-aware "Book a call" Calendly links. Enterprise (Tier 3 / $2,999) books
 // the enterprise call; every other tier books the general membership call;
@@ -997,7 +999,27 @@ const RecommendedTierStep: React.FC<{
             ({upsell.price}) is also available — we can discuss it on the call.
           </p>
         )}
+        {/* "What's included" mirrors the sales page word for word (Brooke,
+            3 Sep 2026): the recommendation should read like the section
+            they just came from, not like a price tag. */}
+        <p className="text-[#BE9B32] text-[12px] font-semibold uppercase tracking-[0.18em] mt-5 mb-2">
+          What&rsquo;s included with your membership
+        </p>
+        <ul className="flex flex-col gap-1.5">
+          {includedForTier(tierKey).map((item) => (
+            <li key={item} className="flex items-start gap-2 text-[14px] text-[#1b1c1a] leading-snug">
+              <span aria-hidden="true" className="text-[#BE9B32]">
+                &bull;
+              </span>
+              {item}
+            </li>
+          ))}
+        </ul>
       </div>
+      {/* Buttons per Brooke's 3 Sep notes: [Get Started] [Contact Support].
+          The Calendly link stays as a quiet third option for tiers that
+          used to offer it — nobody asked to remove the call, only to lead
+          with support. */}
       <div className="flex flex-col sm:flex-row gap-4">
         <LocalizedClientLink
           href={signupHref}
@@ -1005,19 +1027,29 @@ const RecommendedTierStep: React.FC<{
         >
           {/* Session-aware (Brooke 7/10): signed-in customers continue in
               place — the register page hands them to the convert step. */}
-          {isLoggedIn ? "Continue" : "Get started"}
+          {isLoggedIn ? "Continue" : "Get Started"}
         </LocalizedClientLink>
-        {tier.bookCallOption && (
+        <ContactSupportButton
+          context={`Recommended tier: ${tier.name} (${tier.price} ${tier.period})`}
+          className="flex-1 inline-flex items-center justify-center px-8 py-4 text-[13px] font-semibold uppercase tracking-[0.1em] rounded-xl bg-white border-2 border-[#001435] text-[#001435] hover:bg-[#001435] hover:text-white transition-colors"
+        >
+          Contact Support
+        </ContactSupportButton>
+      </div>
+      {tier.bookCallOption && (
+        <p className="text-center text-[13px] text-[#44474e] mt-4">
+          Prefer to talk it through?{" "}
           <a
             href={calendlyForTier(tierKey)}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex-1 inline-flex items-center justify-center px-8 py-4 text-[13px] font-semibold uppercase tracking-[0.1em] rounded-xl bg-white border-2 border-[#001435] text-[#001435] hover:bg-[#001435] hover:text-white transition-colors"
+            className="underline underline-offset-4 text-[#001435]"
           >
-            Book a call instead
+            Book a call
           </a>
-        )}
-      </div>
+          .
+        </p>
+      )}
     </Card>
   )
 }

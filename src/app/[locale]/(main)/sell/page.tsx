@@ -1,377 +1,375 @@
 import Image from "next/image"
-import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 import type { Metadata } from "next"
+import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
+import {
+  AUDIENCES,
+  FOUNDING_PILLARS,
+  SALES_FAQ,
+  WHY_JOIN,
+  WHY_JOIN_TESTIMONIAL,
+  type Audience,
+} from "@/lib/membership-tiers"
 
 export const metadata: Metadata = {
-  title: "Sell on Catholic Owned®",
+  title: "Catholic Business Owner? You belong here | Catholic Owned®",
   description:
-    "Join the Catholic Owned® marketplace. Reach thousands of faithful Catholic shoppers and grow your business within the Catholic economy.",
+    "Catholic Owned® is a community of business owners who live their faith every day — business professionals, local shops, marketplace merchants, and enterprise businesses. See which membership is right for you.",
 }
 
-const STEPS = [
-  {
-    number: "01",
-    title: "Create Your Account",
-    description:
-      "Sign up in minutes with your email. Your account works for both shopping and selling.",
-  },
-  {
-    number: "02",
-    title: "Set Up Your Store",
-    description:
-      "Add your business name, branding, and shipping details through our guided onboarding.",
-  },
-  {
-    number: "03",
-    title: "List Your Products",
-    description:
-      "Upload your products with photos, descriptions, and pricing. Go live when you're ready.",
-  },
-]
+/**
+ * The "For Businesses" sales page, rebuilt 4 Sep 2026 from Brooke's deck
+ * (catholicowned_sales_page.pptx.pdf — one page per section). Previously this
+ * page pitched only the marketplace; it now speaks to every audience the
+ * directory serves. Copy lives in @/lib/membership-tiers so the quiz's
+ * recommended-tier card shows the identical "What's included" list.
+ *
+ * Section order (deck page in brackets):
+ *   hero [1] → founding pillars [2] → who we serve [3] → one section per
+ *   audience with "Take the quiz" bar [4–7] → why join us [8] → FAQ [9].
+ *   The site footer stands in for deck page 10 (Brooke's note).
+ */
 
-const BENEFITS = [
-  {
-    icon: (
-      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-        <circle cx="9" cy="7" r="4" />
-        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-      </svg>
-    ),
-    title: "Faithful Community",
-    description:
-      "Connect with thousands of Catholic shoppers who want to support businesses that share their values.",
-  },
-  {
-    icon: (
-      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="1" y="3" width="15" height="13" />
-        <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
-        <circle cx="5.5" cy="18.5" r="2.5" />
-        <circle cx="18.5" cy="18.5" r="2.5" />
-      </svg>
-    ),
-    title: "Simple Fulfillment",
-    description:
-      "Manage orders, shipping, and inventory from one clean merchant dashboard. We handle the marketplace, you handle your craft.",
-  },
-  {
-    icon: (
-      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <line x1="12" y1="1" x2="12" y2="23" />
-        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-      </svg>
-    ),
-    title: "Transparent Pricing",
-    description:
-      "No hidden fees or complicated commission structures. Know exactly what you earn on every sale.",
-  },
-  {
-    icon: (
-      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-      </svg>
-    ),
-    title: "Values-Aligned",
-    description:
-      "Every merchant is part of a marketplace built on Catholic principles. Your business belongs here.",
-  },
-]
+const QUIZ_HREF = "/sell/onboarding"
 
-// Real merchant testimonials (Brooke, 2026-06-28). Lightly cleaned for card
-// display; quotes + attributions are verbatim in substance.
-const TESTIMONIALS = [
-  {
-    quote:
-      "The message was what really struck me — it wasn't a watered-down Catholic faith. That stuck out to me, and I thought, \"okay, these people are serious about being Catholic.\"",
-    name: "Conoon Kim",
-    business: "Covenant",
-  },
-  {
-    quote:
-      "Catholic Owned® is the best, and I really think there is a big trend coming. Everyone wants to support companies that align with their values.",
-    name: "Thomas Lahart",
-    business: "Flight Foods",
-  },
-  {
-    quote:
-      "I just created my listing — it looks great! I love what you do and how you're connecting people, and it's all so well done. Even the signup process was quick and easy. You have really built something special!",
-    name: "Kate Sell",
-    business: "Mission Advantage Partners",
-  },
-  {
-    quote:
-      "I downloaded the app last week and met a Catholic marketing strategist the next day — an incredible conversation about faith and business and our Catholic network. We'll be working together to up our marketing game. I am feeling very blessed!",
-    name: "Barb Johnson",
-    business: "Elston Johnson & Associates",
-  },
-  {
-    quote:
-      "I'm so proud to be a part of a phenomenal group of Catholic businesses!",
-    name: "Michelle",
-    business: "Common Thread Textiles",
-  },
-]
+const eyebrow = "text-[#BE9B32] text-[12px] font-semibold uppercase tracking-[0.2em]"
+const serifH2 = "font-serif font-bold text-[#001435] uppercase tracking-wide"
 
 export default function SellPage() {
   return (
-    <main>
-      {/* Hero */}
-      <section className="relative overflow-hidden min-h-[500px] lg:min-h-[70vh]">
-        <Image
-          src="/images/hero/st-joseph-workshop.png"
-          fill
-          alt="St. Joseph in the carpenter's workshop"
-          className="object-cover"
-          style={{ objectPosition: "center 48%" }}
-          priority
-          quality={85}
-          sizes="100vw"
-        />
-        <div className="absolute inset-0 bg-gradient-to-tr from-[#001435]/80 via-[#001435]/50 to-transparent" />
-
-        <div className="absolute inset-0 z-10 flex items-center">
-          <div className="px-6 lg:px-16 max-w-3xl">
-            <p className="text-[#BE9B32] text-[13px] font-semibold uppercase tracking-[0.2em] mb-4">
-              For Catholic Businesses
-            </p>
-            <h1 className="font-serif text-4xl md:text-5xl lg:text-7xl font-bold text-white uppercase leading-[1.05] drop-shadow-lg mb-6">
-              Sell on
-              <br />
-              <span className="italic">Catholic Owned</span>
-              <sup className="text-[#BE9B32] text-[0.2em] relative top-[-1.2em] ml-[2px]">&reg;</sup>
-            </h1>
-            <p className="font-serif text-base lg:text-lg italic text-white/75 mb-10 max-w-xl drop-shadow leading-relaxed">
-              Join a marketplace built by and for the Catholic community.
-              Reach faithful shoppers who want to support businesses like yours.
-            </p>
-            <div className="flex flex-wrap gap-4">
-              <LocalizedClientLink
-                href="/sell/onboarding"
-                className="inline-flex items-center px-8 py-4 text-[13px] font-semibold uppercase tracking-[0.1em] rounded-xs bg-[#BE9B32] text-[#001435] hover:bg-[#d4af4c] shadow-lg transition-colors"
-              >
-                Start Selling
-              </LocalizedClientLink>
-              <a
-                href="#how-it-works"
-                className="inline-flex items-center px-8 py-4 text-[13px] font-semibold uppercase tracking-[0.1em] rounded-xs bg-white/10 backdrop-blur-sm border border-white/30 text-white hover:bg-white/20 transition-colors"
-              >
-                Learn More
-              </a>
-            </div>
-          </div>
+    <main className="text-[#001435]">
+      {/* ── Hero [1] ─────────────────────────────────────────────── */}
+      <section className="relative">
+        <div className="relative h-[46vw] min-h-[260px] max-h-[520px] overflow-hidden">
+          <Image
+            src="/images/hero/st-joseph-workshop.png"
+            fill
+            alt="St. Joseph at work in the carpenter's workshop"
+            className="object-cover"
+            style={{ objectPosition: "center 45%" }}
+            priority
+            quality={85}
+            sizes="100vw"
+          />
         </div>
-      </section>
-
-      {/* Benefits */}
-      <section className="py-16 lg:py-24 bg-[#faf9f5]">
-        <div className="max-w-7xl mx-auto px-6 lg:px-16">
-          <div className="text-center mb-14">
-            <p className="text-[#BE9B32] text-[12px] font-semibold uppercase tracking-[0.2em] mb-3">
-              Why Catholic Owned&reg;
-            </p>
-            <h2 className="font-serif text-3xl lg:text-4xl font-bold text-[#001435] uppercase">
-              Built for Catholic Businesses
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {BENEFITS.map((benefit) => (
-              <div
-                key={benefit.title}
-                className="bg-white rounded-xl p-8 shadow-sm hover:shadow-md transition-shadow"
-              >
-                <div className="text-[#BE9B32] mb-5">{benefit.icon}</div>
-                <h3 className="font-serif text-lg font-bold text-[#001435] mb-2">
-                  {benefit.title}
-                </h3>
-                <p className="text-[14px] text-[#44474e] leading-relaxed">
-                  {benefit.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Founding Pillars — eligibility gate */}
-      <section className="py-16 lg:py-24 bg-white">
-        <div className="max-w-3xl mx-auto px-6 lg:px-16">
-          <div className="bg-[#faf9f5] rounded-2xl border border-[#BE9B32]/40 shadow-sm p-8 lg:p-12">
-            <h2 className="font-serif text-2xl lg:text-3xl font-bold text-[#001435] text-center mb-6">
-              Our Founding Pillars
-            </h2>
-            <p className="text-[15px] lg:text-base text-[#001435] font-medium mb-8">
-              Every Member must align with our signature Founding Pillars:
-            </p>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-              {/* Pillar 1 */}
-              <div className="bg-[#001435] rounded-xl p-6 flex flex-col items-center text-center">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#BE9B32" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mb-4">
-                  <path d="M10 3h4v6h6v4h-6v8h-4v-8H4V9h6V3z" />
-                </svg>
-                <p className="text-[14px] text-white leading-relaxed">
-                  Faithful to the Magisterium &amp; in Full Communion with Rome
-                </p>
-              </div>
-
-              {/* Pillar 2 */}
-              <div className="bg-[#001435] rounded-xl p-6 flex flex-col items-center text-center">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#BE9B32" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mb-4">
-                  <rect x="3" y="4" width="18" height="17" rx="2" />
-                  <line x1="3" y1="9" x2="21" y2="9" />
-                  <line x1="8" y1="2" x2="8" y2="6" />
-                  <line x1="16" y1="2" x2="16" y2="6" />
-                  <path d="M12 17.5l-2.5-2.5a1.7 1.7 0 010-2.4 1.7 1.7 0 012.5 0l0 0a1.7 1.7 0 012.5 0 1.7 1.7 0 010 2.4z" fill="#BE9B32" />
-                </svg>
-                <p className="text-[14px] text-white leading-relaxed">
-                  Regularly practicing, sincere Catholic in good standing
-                  (Mass on Sundays + Holydays, regular confession)
-                </p>
-              </div>
-
-              {/* Pillar 3 */}
-              <div className="bg-[#001435] rounded-xl p-6 flex flex-col items-center text-center">
-                {/* Praying-hands icon from Phosphor Icons (MIT) */}
-                <svg width="32" height="32" viewBox="0 0 256 256" fill="#BE9B32" className="mb-4">
-                  <path d="M235.32,180l-36.24-36.25L162.62,23.46A21.76,21.76,0,0,0,128,12.93,21.76,21.76,0,0,0,93.38,23.46L56.92,143.76,20.68,180a16,16,0,0,0,0,22.62l32.69,32.69a16,16,0,0,0,22.63,0L124.28,187a40.68,40.68,0,0,0,3.72-4.29,40.68,40.68,0,0,0,3.72,4.29L180,235.32a16,16,0,0,0,22.63,0l32.69-32.69A16,16,0,0,0,235.32,180ZM64.68,224,32,191.32l12.69-12.69,32.69,32.69ZM120,158.75a23.85,23.85,0,0,1-7,17L88.68,200,56,167.32l13.65-13.66a8,8,0,0,0,2-3.34l37-122.22A5.78,5.78,0,0,1,120,29.78Zm23,17a23.85,23.85,0,0,1-7-17v-129a5.78,5.78,0,0,1,11.31-1.68l37,122.22a8,8,0,0,0,2,3.34l14.49,14.49-33.4,32ZM191.32,224l-12.56-12.57,33.39-32L224,191.32Z" />
-                </svg>
-                <p className="text-[14px] text-white leading-relaxed">
-                  Prays the Rosary or practices other sincere daily devotion(s)
-                </p>
-              </div>
-
-              {/* Pillar 4 */}
-              <div className="bg-[#001435] rounded-xl p-6 flex flex-col items-center text-center">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#BE9B32" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mb-4">
-                  <line x1="12" y1="3" x2="12" y2="21" />
-                  <line x1="5" y1="6" x2="19" y2="6" />
-                  <path d="M5 6l-3 7c0 2 1.5 3 3 3s3-1 3-3l-3-7z" />
-                  <path d="M19 6l-3 7c0 2 1.5 3 3 3s3-1 3-3l-3-7z" />
-                  <line x1="9" y1="21" x2="15" y2="21" />
-                </svg>
-                <p className="text-[14px] text-white leading-relaxed">
-                  Operates business in accordance with the principles of the
-                  Catholic faith
-                </p>
-              </div>
-            </div>
-
-            <p className="text-[13px] text-[#44474e] leading-relaxed text-center italic">
-              These pillars ensure that Catholic Owned&reg; remains a trusted
-              resource for the faithful—and a powerful witness for Christ in
-              the marketplace.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* How It Works */}
-      <section id="how-it-works" className="py-16 lg:py-24 bg-white scroll-mt-20">
-        <div className="max-w-5xl mx-auto px-6 lg:px-16">
-          <div className="text-center mb-14">
-            <p className="text-[#BE9B32] text-[12px] font-semibold uppercase tracking-[0.2em] mb-3">
-              Getting Started
-            </p>
-            <h2 className="font-serif text-3xl lg:text-4xl font-bold text-[#001435] uppercase">
-              Three Simple Steps
-            </h2>
-          </div>
-
-          <div className="space-y-0">
-            {STEPS.map((step, i) => (
-              <div
-                key={step.number}
-                className="flex gap-8 items-start py-10 border-b border-[#001435]/10 last:border-0"
-              >
-                <span className="font-serif text-5xl lg:text-6xl font-bold text-[#BE9B32]/20 shrink-0 leading-none">
-                  {step.number}
-                </span>
-                <div>
-                  <h3 className="font-serif text-xl lg:text-2xl font-bold text-[#001435] mb-2">
-                    {step.title}
-                  </h3>
-                  <p className="text-[15px] text-[#44474e] leading-relaxed max-w-lg">
-                    {step.description}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials */}
-      <section className="py-16 lg:py-24 bg-[#001435]">
-        <div className="max-w-5xl mx-auto px-6 lg:px-16">
-          <div className="text-center mb-14">
-            <p className="text-[#BE9B32] text-[12px] font-semibold uppercase tracking-[0.2em] mb-3">
-              From Our Merchants
-            </p>
-            <h2 className="font-serif text-3xl lg:text-4xl font-bold text-white uppercase">
-              Trusted by Catholic Businesses
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {TESTIMONIALS.map((t) => (
-              <div
-                key={t.name}
-                className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-8"
-              >
-                <svg
-                  width="32"
-                  height="32"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  className="text-[#BE9B32]/40 mb-4"
-                >
-                  <path
-                    d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"
-                    fill="currentColor"
-                  />
-                  <path
-                    d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"
-                    fill="currentColor"
-                  />
-                </svg>
-                <p className="font-serif text-[16px] italic text-white/80 leading-relaxed mb-6">
-                  {t.quote}
-                </p>
-                <div>
-                  <p className="text-[14px] font-semibold text-white">
-                    {t.name}
-                  </p>
-                  <p className="text-[13px] text-[#BE9B32]">{t.business}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="py-16 lg:py-24 bg-[#faf9f5]">
-        <div className="max-w-3xl mx-auto px-6 lg:px-16 text-center">
-          <h2 className="font-serif text-3xl lg:text-4xl font-bold text-[#001435] uppercase mb-4">
-            Ready to Join the
-            <br />
-            Catholic Economy?
-          </h2>
-          <p className="text-[15px] text-[#44474e] leading-relaxed mb-8 max-w-lg mx-auto">
-            Set up your store in minutes. No upfront costs, no complicated
-            contracts. Just a community that wants to support your business.
+        <div className="bg-[#EFEAE1] px-6 py-12 lg:py-16 text-center">
+          <h1 className={`${serifH2} text-3xl md:text-5xl lg:text-6xl mb-4`}>
+            Catholic Business Owner?
+          </h1>
+          <p className="text-[#BE9B32] text-2xl md:text-3xl lg:text-4xl font-medium">
+            You belong here!
           </p>
-          <LocalizedClientLink
-            href="/sell/onboarding"
-            className="inline-flex items-center px-10 py-4 text-[13px] font-semibold uppercase tracking-[0.1em] rounded-xs bg-[#001435] text-white hover:bg-[#17294a] shadow-lg transition-colors"
-          >
-            Add your business
-          </LocalizedClientLink>
         </div>
       </section>
+
+      {/* ── Founding pillars [2] ────────────────────────────────── */}
+      <section className="bg-white px-6 py-14 lg:py-20">
+        <div className="max-w-5xl mx-auto text-center">
+          <h2 className={`${serifH2} text-2xl md:text-3xl lg:text-4xl mb-5`}>
+            Our Founding Pillars
+          </h2>
+          <p className="font-serif text-[15px] md:text-[17px] text-[#1b1c1a] leading-relaxed max-w-2xl mx-auto mb-10">
+            Catholic Owned&reg; is a community of business owners who live their faith everyday.
+            <br className="hidden md:block" />
+            Every member affirms our Founding Pillars:
+          </p>
+          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-5 max-w-2xl mx-auto">
+            {FOUNDING_PILLARS.map((pillar) => (
+              <li
+                key={pillar.text}
+                className="bg-[#0F2145] rounded-xl px-6 py-8 flex flex-col items-center gap-4 text-center shadow-sm"
+              >
+                <PillarIcon name={pillar.icon} />
+                <p className="text-[#F1D9A0] text-[13px] font-semibold leading-snug">{pillar.text}</p>
+              </li>
+            ))}
+          </ul>
+          <p className="font-serif italic text-[13px] md:text-[14px] text-[#44474e] mt-10">
+            These pillars keep Catholic Owned&reg; a trusted resource for the faithful, and a powerful
+            witness for Christ in the marketplace.
+          </p>
+        </div>
+      </section>
+
+      {/* ── Who we serve [3] ─────────────────────────────────────── */}
+      <section className="bg-[#0F2145] px-6 py-14 lg:py-20">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="font-serif font-bold text-white uppercase tracking-wide text-2xl md:text-3xl text-center mb-10">
+            Who We Serve
+          </h2>
+          <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {AUDIENCES.map((a) => (
+              <li key={a.key} className="bg-white rounded-lg p-6 flex flex-col min-h-[260px]">
+                <AudienceIcon name={a.key} />
+                <h3 className="font-semibold text-[#001435] text-[16px] mt-4 mb-4">{a.cardTitle}</h3>
+                <p className="font-serif text-[13px] text-[#44474e] leading-relaxed flex-1">{a.cardBlurb}</p>
+                <a
+                  href={`#${a.key}`}
+                  className="mt-6 self-center text-[13px] font-semibold text-[#BE9B32] underline underline-offset-4 hover:text-[#001435]"
+                >
+                  Learn more
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      {/* ── One section per audience [4–7] ───────────────────────── */}
+      {AUDIENCES.map((a) => (
+        <AudienceSection key={a.key} audience={a} />
+      ))}
+
+      {/* ── Why join us [8] ──────────────────────────────────────── */}
+      <section className="bg-[#F7F5F0] px-6 py-14 lg:py-20">
+        <div className="max-w-6xl mx-auto">
+          <h2 className={`${serifH2} text-2xl md:text-3xl lg:text-4xl text-center mb-10`}>Why Join Us</h2>
+          <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {WHY_JOIN.map((w) => (
+              <li
+                key={w.text}
+                className="bg-[#D8CC96] rounded-lg px-6 py-10 flex flex-col items-center text-center gap-6 min-h-[220px]"
+              >
+                <WhyIcon name={w.icon} />
+                <p className="font-serif text-[15px] md:text-[16px] text-[#001435] leading-snug">{w.text}</p>
+              </li>
+            ))}
+          </ul>
+          <blockquote className="mt-10 max-w-3xl mx-auto bg-[#FBF9F4] rounded-lg px-8 py-7 text-[#1b1c1a] italic text-[15px] md:text-[16px] leading-relaxed">
+            &ldquo;{WHY_JOIN_TESTIMONIAL.quote}&rdquo;
+            <footer className="not-italic mt-2 text-[14px]">~{WHY_JOIN_TESTIMONIAL.name}</footer>
+          </blockquote>
+        </div>
+      </section>
+
+      {/* ── FAQ [9] ──────────────────────────────────────────────── */}
+      <section className="bg-white px-6 py-14 lg:py-20">
+        <div className="max-w-4xl mx-auto">
+          <h2 className={`${serifH2} text-2xl md:text-3xl lg:text-4xl text-center mb-8`}>
+            Frequently Asked Questions
+          </h2>
+          <div className="divide-y divide-[#BE9B32]/40 border-y border-[#BE9B32]/40">
+            {SALES_FAQ.map((item, i) => (
+              <details key={item.q} className="group py-4" open={i === 0}>
+                <summary className="flex items-center justify-between gap-4 cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+                  <span className="font-semibold text-[#001435] text-[15px] md:text-[16px]">{item.q}</span>
+                  <span
+                    aria-hidden="true"
+                    className="text-[#001435] transition-transform group-open:rotate-90 shrink-0"
+                  >
+                    &rsaquo;
+                  </span>
+                </summary>
+                <p className="font-serif text-[14px] md:text-[15px] text-[#1b1c1a] leading-relaxed mt-3 pr-8">
+                  {item.a}
+                </p>
+              </details>
+            ))}
+          </div>
+          <p className="text-center text-[13px] text-[#44474e] mt-8">
+            Full standards are in our{" "}
+            <LocalizedClientLink href="/merchant-terms" className="underline underline-offset-4 text-[#001435]">
+              Merchant Terms
+            </LocalizedClientLink>
+            .
+          </p>
+        </div>
+      </section>
+
+      {/* Closing quiz bar so the page never ends without the ask. */}
+      <QuizBar />
     </main>
   )
+}
+
+/* ────────────────────────────────────────────────────────────────── */
+
+function AudienceSection({ audience: a }: { audience: Audience }) {
+  return (
+    <section id={a.key} className="scroll-mt-24">
+      {a.image ? (
+        <div className="relative h-[36vw] min-h-[180px] max-h-[360px] overflow-hidden">
+          <Image
+            src={a.image.src}
+            fill
+            alt={a.image.alt}
+            className="object-cover"
+            style={{ objectPosition: a.image.position || "center" }}
+            sizes="100vw"
+          />
+        </div>
+      ) : (
+        // Photo strip placeholder until the Canva exports land — a quiet band
+        // rather than a stock photo that isn't ours.
+        <div className="h-14 md:h-20 bg-gradient-to-r from-[#0F2145] via-[#17294A] to-[#0F2145]" />
+      )}
+      <div className="bg-white px-6 py-12 lg:py-16">
+        <div className="max-w-5xl mx-auto">
+          <h2 className="text-center font-serif text-[#BE9B32] uppercase tracking-[0.18em] text-2xl md:text-3xl lg:text-[34px] mb-3">
+            {a.heading}
+          </h2>
+          <p className="text-center font-serif italic text-[15px] md:text-[17px] text-[#001435] mb-10">
+            {a.tagline}
+          </p>
+
+          <h3 className={`${eyebrow} text-[13px] tracking-[0.2em] mb-2`}>Who is this for?</h3>
+          <p className="font-serif text-[15px] md:text-[16px] text-[#1b1c1a] mb-8">{a.cardBlurb}</p>
+
+          <h3 className={`${eyebrow} text-[13px] tracking-[0.2em] mb-3`}>What&rsquo;s included with your membership</h3>
+          <ul className="flex flex-wrap gap-x-8 gap-y-2 mb-10">
+            {a.included.map((item) => (
+              <li key={item} className="font-serif text-[14px] md:text-[15px] text-[#1b1c1a] flex items-start gap-2">
+                <span aria-hidden="true" className="text-[#BE9B32] mt-[2px]">
+                  &bull;
+                </span>
+                {item}
+              </li>
+            ))}
+          </ul>
+
+          <div
+            className={`grid gap-5 ${a.testimonials.length > 1 ? "md:grid-cols-2" : "max-w-3xl mx-auto"}`}
+          >
+            {a.testimonials.map((t) => (
+              <blockquote
+                key={t.name}
+                className="bg-[#FBF9F4] rounded-lg px-6 py-5 text-[13px] md:text-[14px] italic text-[#1b1c1a] leading-relaxed"
+              >
+                &ldquo;{t.quote}&rdquo;
+                <footer className="not-italic mt-1">~{t.name}</footer>
+              </blockquote>
+            ))}
+          </div>
+        </div>
+      </div>
+      <QuizBar />
+    </section>
+  )
+}
+
+function QuizBar() {
+  return (
+    <div className="bg-[#17294A] px-6 py-6">
+      <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8">
+        <p className="font-serif text-white text-[16px] md:text-[18px]">See what membership is right for you</p>
+        <LocalizedClientLink
+          href={QUIZ_HREF}
+          className="inline-flex items-center px-7 py-3 text-[13px] md:text-[14px] font-serif font-bold uppercase tracking-[0.08em] bg-[#BE9B32] text-[#001435] hover:bg-[#d4af4c] rounded-sm transition-colors"
+        >
+          Take the Quiz
+        </LocalizedClientLink>
+      </div>
+    </div>
+  )
+}
+
+/* ── Icons (inline so the page has no icon-library dependency) ───── */
+
+const stroke = {
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: 1.6,
+  strokeLinecap: "round" as const,
+  strokeLinejoin: "round" as const,
+}
+
+function PillarIcon({ name }: { name: (typeof FOUNDING_PILLARS)[number]["icon"] }) {
+  const cls = "text-[#D9B855] w-8 h-8"
+  switch (name) {
+    case "cross":
+      return (
+        <svg viewBox="0 0 24 24" className={cls} {...stroke} aria-hidden="true">
+          <path d="M12 3v18M7 8h10" />
+        </svg>
+      )
+    case "calendar":
+      return (
+        <svg viewBox="0 0 24 24" className={cls} {...stroke} aria-hidden="true">
+          <rect x="3" y="5" width="18" height="16" rx="2" />
+          <path d="M3 10h18M8 3v4M16 3v4" />
+        </svg>
+      )
+    case "rosary":
+      return (
+        <svg viewBox="0 0 24 24" className={cls} {...stroke} aria-hidden="true">
+          <circle cx="12" cy="9" r="6" strokeDasharray="2 2.2" />
+          <path d="M12 15v3M10 20h4" />
+        </svg>
+      )
+    case "scales":
+      return (
+        <svg viewBox="0 0 24 24" className={cls} {...stroke} aria-hidden="true">
+          <path d="M12 3v18M5 21h14M12 6l6 2M12 6L6 8" />
+          <path d="M3 14l3-6 3 6a3 3 0 0 1-6 0zM15 14l3-6 3 6a3 3 0 0 1-6 0z" />
+        </svg>
+      )
+  }
+}
+
+function AudienceIcon({ name }: { name: Audience["key"] }) {
+  const cls = "text-[#BE9B32] w-7 h-7"
+  switch (name) {
+    case "professionals":
+      return (
+        <svg viewBox="0 0 24 24" className={cls} {...stroke} aria-hidden="true">
+          <rect x="3" y="7" width="18" height="13" rx="2" />
+          <path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M3 12h18" />
+        </svg>
+      )
+    case "local":
+      return (
+        <svg viewBox="0 0 24 24" className={cls} {...stroke} aria-hidden="true">
+          <path d="M4 10V20h16V10M2 10l2-6h16l2 6a3 3 0 0 1-6 0 3 3 0 0 1-6 0 3 3 0 0 1-6 0zM10 20v-6h4v6" />
+        </svg>
+      )
+    case "merchant":
+      return (
+        <svg viewBox="0 0 24 24" className={cls} {...stroke} aria-hidden="true">
+          <path d="M3 8h18l-1 12H4L3 8zM8 8V6a4 4 0 0 1 8 0v2" />
+        </svg>
+      )
+    case "enterprise":
+      return (
+        <svg viewBox="0 0 24 24" className={cls} {...stroke} aria-hidden="true">
+          <path d="M5 21V4h9v17M14 9h5v12M8 8h3M8 12h3M8 16h3M17 12h.01M17 16h.01" />
+          <path d="M3 21h18" />
+        </svg>
+      )
+  }
+}
+
+function WhyIcon({ name }: { name: (typeof WHY_JOIN)[number]["icon"] }) {
+  const cls = "text-[#001435] w-10 h-10"
+  switch (name) {
+    case "search":
+      return (
+        <svg viewBox="0 0 24 24" className={cls} {...stroke} aria-hidden="true">
+          <circle cx="10.5" cy="10.5" r="6.5" />
+          <path d="M15.5 15.5L21 21" />
+        </svg>
+      )
+    case "badge":
+      return (
+        <svg viewBox="0 0 24 24" className={cls} {...stroke} aria-hidden="true">
+          <path d="M12 3l9 9-9 9-9-9 9-9z" />
+          <path d="M12 8l4 4-4 4-4-4 4-4z" fill="#BE9B32" stroke="none" />
+        </svg>
+      )
+    case "support":
+      return (
+        <svg viewBox="0 0 24 24" className={cls} {...stroke} aria-hidden="true">
+          <circle cx="12" cy="12" r="4" />
+          <circle cx="12" cy="12" r="1.5" fill="#BE9B32" stroke="none" />
+          <path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2" />
+        </svg>
+      )
+    case "community":
+      return (
+        <svg viewBox="0 0 24 24" className={cls} {...stroke} aria-hidden="true">
+          <circle cx="7" cy="8" r="2.5" />
+          <circle cx="17" cy="8" r="2.5" />
+          <circle cx="12" cy="6" r="2.5" fill="#BE9B32" stroke="none" />
+          <path d="M3 18a4 4 0 0 1 8 0M13 18a4 4 0 0 1 8 0M4 21h16" />
+        </svg>
+      )
+  }
 }
