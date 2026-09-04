@@ -11,7 +11,7 @@ import {
 } from "@/lib/membership-tiers"
 
 export const metadata: Metadata = {
-  title: "Catholic Business Owner? You belong here | Catholic Owned®",
+  title: "Catholic Business Owner? You belong here",
   description:
     "Catholic Owned® is a community of business owners who live their faith every day — business professionals, local shops, marketplace merchants, and enterprise businesses. See which membership is right for you.",
 }
@@ -41,11 +41,11 @@ export default function SellPage() {
       <section className="relative">
         <div className="relative h-[46vw] min-h-[260px] max-h-[520px] overflow-hidden">
           <Image
-            src="/images/hero/st-joseph-workshop.png"
+            src="/images/sell/hero-workshop.jpg"
             fill
-            alt="St. Joseph at work in the carpenter's workshop"
+            alt="A carpenter at work in his workshop"
             className="object-cover"
-            style={{ objectPosition: "center 45%" }}
+            style={{ objectPosition: "center 40%" }}
             priority
             quality={85}
             sizes="100vw"

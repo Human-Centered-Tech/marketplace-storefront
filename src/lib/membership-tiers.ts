@@ -47,6 +47,11 @@ export const AUDIENCES: Audience[] = [
       "Monthly Networking Opportunities",
       "Featured Member Badge",
     ],
+    image: {
+      src: "/images/sell/professionals.jpg",
+      alt: "Business professionals shaking hands across a meeting table",
+      position: "center 30%",
+    },
     testimonials: [
       {
         quote:
@@ -73,6 +78,10 @@ export const AUDIENCES: Audience[] = [
       "Local Member Badge",
       "Eligible for Local Boost",
     ],
+    image: {
+      src: "/images/sell/local-shops.jpg",
+      alt: "A café owner greeting customers at the door of her shop",
+    },
     testimonials: [
       {
         quote: "I'm so proud to be a part of a phenomenal group of Catholic businesses!",
@@ -99,6 +108,10 @@ export const AUDIENCES: Audience[] = [
       "Marketplace Merchant Badge",
       "Monthly Office Hours for support",
     ],
+    image: {
+      src: "/images/sell/merchants.jpg",
+      alt: "A maker packaging handmade goods at a workbench",
+    },
     testimonials: [
       {
         quote:
@@ -125,6 +138,11 @@ export const AUDIENCES: Audience[] = [
       "Top-of-Directory placement in three states for 12 months",
       "Four email placements throughout the year to targeted list of choice",
     ],
+    image: {
+      src: "/images/sell/enterprise.jpg",
+      alt: "A leadership team in conversation around a conference table",
+      position: "center 35%",
+    },
     testimonials: [
       {
         quote:
