@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import { recordClaimProgress } from "@/lib/data/directory-actions"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
@@ -130,9 +130,26 @@ export const VendorOnboardingFunnel = ({
 
   const reset = () => setState(initialState)
 
+  // Each step replaces the last one in place, but the page keeps whatever
+  // scroll position the previous (often taller) step left it at — so after
+  // answering near the bottom, the next question renders above the fold and
+  // the visitor has to scroll back up to find it (Brooke, 4 Sep). Bring the
+  // card to the top on every step change; not on first paint, so a fresh
+  // page load doesn't jump.
+  const cardRef = useRef<HTMLDivElement>(null)
+  const firstStepRender = useRef(true)
+  useEffect(() => {
+    if (firstStepRender.current) {
+      firstStepRender.current = false
+      return
+    }
+    cardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+  }, [state.step])
+
   return (
     <main className="min-h-screen bg-[#faf9f5] py-16 px-6 lg:px-16">
-      <div className="max-w-3xl mx-auto">
+      {/* scroll-mt clears the sticky header so the eyebrow isn't hidden under it. */}
+      <div ref={cardRef} className="max-w-3xl mx-auto scroll-mt-32">
         <div className="mb-8 flex items-center justify-between">
           {/* Only the product path is a Merchant. Everyone else here — service
               businesses, and every directory claimant, who enters this funnel
