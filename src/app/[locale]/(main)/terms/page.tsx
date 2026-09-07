@@ -56,11 +56,14 @@ export default function TermsPage() {
 
         <Section title="4. Using the Marketplace (Buyers)">
           <p>
-            When you buy products or services on Catholic Owned, you enter
-            into a contract directly with the selling merchant. Catholic Owned
-            facilitates the transaction but is not party to it. Questions
-            about products, delivery, or returns should go to the merchant
-            first; we&rsquo;re happy to help mediate if needed.
+            When you buy products on the Catholic Owned marketplace, Catholic
+            Owned, PBC is the merchant of record for the transaction and the
+            merchant is the seller, supplier, and fulfiller of the products.
+            Catholic Owned processes payments, cancellations, and refunds for
+            every marketplace order. Questions about a product or its delivery
+            can go to the merchant; anything about your payment, a
+            cancellation, or a refund should come to us at
+            support@catholicowned.com and we will handle it directly.
           </p>
           <p>
             You agree not to use the Service to: purchase items for resale
@@ -82,7 +85,7 @@ export default function TermsPage() {
             <li>Accurately describe your products, including condition, materials, and origin</li>
             <li>Respond to customer messages within 2 business days</li>
             <li>Ship orders within the shipping window you specify on your storefront</li>
-            <li>Honor your stated return policy</li>
+            <li>Honor your stated return policy, and accept that Catholic Owned issues refunds to buyers as merchant of record and recovers the merchant&rsquo;s share from payouts</li>
             <li>Not list products that conflict with Catholic moral teaching</li>
           </ul>
           <p>

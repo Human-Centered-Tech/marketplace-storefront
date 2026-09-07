@@ -599,6 +599,20 @@ export const ProductDetailsHeader = ({
               <p className="text-[14px] text-[#001435] whitespace-pre-line leading-relaxed">
                 {sellerRefundPolicy}
               </p>
+              {/* Catholic Owned is the merchant of record and issues every
+                  refund itself (Brooke 9/7): say so under the shop's own
+                  policy so buyers know where the money comes from. */}
+              <p className="mt-4 pt-4 border-t border-[#75777f]/20 text-[13px] text-[#75777f] leading-relaxed">
+                Refunds for every marketplace order are issued by Catholic
+                Owned®, not the shop. Email{" "}
+                <a
+                  href="mailto:support@catholicowned.com"
+                  className="underline underline-offset-2 hover:text-[#001435]"
+                >
+                  support@catholicowned.com
+                </a>{" "}
+                with your order number and we&rsquo;ll take care of it.
+              </p>
             </div>
           </div>
         </div>

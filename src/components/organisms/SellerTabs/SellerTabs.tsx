@@ -80,6 +80,19 @@ export const SellerTabs = ({
             <p className="text-[15px] text-[#001435] whitespace-pre-line leading-relaxed">
               {refund_policy}
             </p>
+            {/* Merchant of record line (Brooke 9/7): the shop sets the
+                return policy, Catholic Owned issues the refund. */}
+            <p className="mt-6 pt-4 border-t border-[#d6d0c4]/60 text-[13px] text-[#75777f] leading-relaxed">
+              Refunds for every marketplace order are issued by Catholic
+              Owned®, not the shop. Email{" "}
+              <a
+                href="mailto:support@catholicowned.com"
+                className="underline underline-offset-2 hover:text-[#001435]"
+              >
+                support@catholicowned.com
+              </a>{" "}
+              with your order number and we&rsquo;ll take care of it.
+            </p>
           </div>
         </TabsContent>
       )}

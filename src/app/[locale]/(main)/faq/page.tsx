@@ -22,8 +22,8 @@ const SECTIONS: { heading: string; items: FAQ[] }[] = [
         a: "No — you can browse the marketplace, directory, and community listings freely. You only need an account when you want to save a shop, place an order, create your own listing, or message another user.",
       },
       {
-        q: "How do shipping and returns work?",
-        a: "Shipping is set by each merchant and included in the prices you see at checkout — there's no separate shipping-method selection for most orders. Returns are handled on a per-merchant basis; you can find each shop's return policy on their storefront.",
+        q: "How do shipping, returns, and refunds work?",
+        a: "Shipping is set by each merchant and included in the prices you see at checkout — there's no separate shipping-method selection for most orders. Refunds are issued by Catholic Owned®, the merchant of record for every marketplace order, so you never have to chase a shop for your money back. If something is wrong with an order, email support@catholicowned.com with your order number and we'll sort it out; each shop's own return policy (on their storefront) tells you whether an item needs to go back.",
       },
       {
         q: "How are payments processed?",
