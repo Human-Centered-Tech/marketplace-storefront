@@ -13,10 +13,35 @@ import {
   type Audience,
 } from "@/lib/membership-tiers"
 
+const SELL_TITLE = "Catholic Business Owner? You belong here"
+const SELL_DESCRIPTION =
+  "Catholic Owned® is a community of business owners who live their faith every day — business professionals, local shops, marketplace merchants, and enterprise businesses. See which membership is right for you."
+// Social preview: the deck's hero photo (1376×768, ~16:9 — fine for the
+// 1.91:1 card, the bench and carpenter sit centre-right). Relative paths
+// resolve against the site-wide metadataBase in app/layout.tsx.
+const SELL_OG_IMAGE = {
+  url: "/images/sell/hero-workshop.jpg",
+  width: 1376,
+  height: 768,
+  alt: "A carpenter at work in his workshop — Catholic Business Owner? You belong here",
+}
+
 export const metadata: Metadata = {
-  title: "Catholic Business Owner? You belong here",
-  description:
-    "Catholic Owned® is a community of business owners who live their faith every day — business professionals, local shops, marketplace merchants, and enterprise businesses. See which membership is right for you.",
+  title: SELL_TITLE,
+  description: SELL_DESCRIPTION,
+  openGraph: {
+    type: "website",
+    title: `${SELL_TITLE} | Catholic Owned®`,
+    description: SELL_DESCRIPTION,
+    siteName: "Catholic Owned®",
+    images: [SELL_OG_IMAGE],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${SELL_TITLE} | Catholic Owned®`,
+    description: SELL_DESCRIPTION,
+    images: [SELL_OG_IMAGE.url],
+  },
 }
 
 /**
