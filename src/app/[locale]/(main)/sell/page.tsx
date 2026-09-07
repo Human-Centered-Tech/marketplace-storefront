@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react"
 import Image from "next/image"
 import type { Metadata } from "next"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
@@ -32,6 +33,19 @@ export const metadata: Metadata = {
 const QUIZ_HREF = "/sell/onboarding"
 
 const eyebrow = "text-[#BE9B32] text-[12px] font-semibold uppercase tracking-[0.2em]"
+
+/**
+ * Photo strips are cropped very differently at 375px than at 1440px, so each
+ * image carries a phone focal point and a desktop one. Inline styles can't
+ * carry a media query, so the two land in custom properties and the class
+ * picks one per breakpoint.
+ */
+const STRIP_POSITION = "[object-position:var(--pos-sm)] md:[object-position:var(--pos-md)]"
+
+function stripPosition(mobile?: string, desktop?: string): CSSProperties {
+  const md = desktop || "center"
+  return { "--pos-sm": mobile || md, "--pos-md": md } as CSSProperties
+}
 const serifH2 = "font-serif font-bold text-[#001435] uppercase tracking-wide"
 
 export default function SellPage() {
@@ -39,36 +53,36 @@ export default function SellPage() {
     <main className="text-[#001435]">
       {/* ── Hero [1] ─────────────────────────────────────────────── */}
       <section className="relative">
-        <div className="relative h-[46vw] min-h-[260px] max-h-[520px] overflow-hidden">
+        <div className="relative h-[56vw] min-h-[220px] max-h-[520px] overflow-hidden">
           <Image
             src="/images/sell/hero-workshop.jpg"
             fill
             alt="A carpenter at work in his workshop"
-            className="object-cover"
-            style={{ objectPosition: "center 40%" }}
+            className={`object-cover ${STRIP_POSITION}`}
+            style={stripPosition("62% 40%", "center 40%")}
             priority
             quality={85}
             sizes="100vw"
           />
         </div>
-        <div className="bg-[#EFEAE1] px-6 py-12 lg:py-16 text-center">
-          <h1 className={`${serifH2} text-3xl md:text-5xl lg:text-6xl mb-4`}>
+        <div className="bg-[#EFEAE1] px-5 py-10 md:py-12 lg:py-16 text-center">
+          <h1 className={`${serifH2} text-[26px] leading-tight sm:text-3xl md:text-5xl lg:text-6xl mb-3 md:mb-4`}>
             Catholic Business Owner?
           </h1>
-          <p className="text-[#BE9B32] text-2xl md:text-3xl lg:text-4xl font-medium">
+          <p className="text-[#BE9B32] text-xl sm:text-2xl md:text-3xl lg:text-4xl font-medium">
             You belong here!
           </p>
         </div>
       </section>
 
       {/* ── Founding pillars [2] ────────────────────────────────── */}
-      <section className="bg-white px-6 py-14 lg:py-20">
+      <section className="bg-white px-5 md:px-6 py-12 md:py-14 lg:py-20">
         <div className="max-w-5xl mx-auto text-center">
-          <h2 className={`${serifH2} text-2xl md:text-3xl lg:text-4xl mb-5`}>
+          <h2 className={`${serifH2} text-[22px] sm:text-2xl md:text-3xl lg:text-4xl mb-5`}>
             Our Founding Pillars
           </h2>
           <p className="font-serif text-[15px] md:text-[17px] text-[#1b1c1a] leading-relaxed max-w-2xl mx-auto mb-10">
-            Catholic Owned&reg; is a community of business owners who live their faith everyday.
+            Catholic Owned&reg; is a community of business owners who live their faith everyday.{" "}
             <br className="hidden md:block" />
             Every member affirms our Founding Pillars:
           </p>
@@ -76,7 +90,7 @@ export default function SellPage() {
             {FOUNDING_PILLARS.map((pillar) => (
               <li
                 key={pillar.text}
-                className="bg-[#0F2145] rounded-xl px-6 py-8 flex flex-col items-center gap-4 text-center shadow-sm"
+                className="bg-[#0F2145] rounded-xl px-5 py-7 md:px-6 md:py-8 flex flex-col items-center gap-4 text-center shadow-sm"
               >
                 <PillarIcon name={pillar.icon} />
                 <p className="text-[#F1D9A0] text-[13px] font-semibold leading-snug">{pillar.text}</p>
@@ -91,14 +105,14 @@ export default function SellPage() {
       </section>
 
       {/* ── Who we serve [3] ─────────────────────────────────────── */}
-      <section className="bg-[#0F2145] px-6 py-14 lg:py-20">
+      <section className="bg-[#0F2145] px-5 md:px-6 py-12 md:py-14 lg:py-20">
         <div className="max-w-6xl mx-auto">
-          <h2 className="font-serif font-bold text-white uppercase tracking-wide text-2xl md:text-3xl text-center mb-10">
+          <h2 className="font-serif font-bold text-white uppercase tracking-wide text-[22px] sm:text-2xl md:text-3xl text-center mb-8 md:mb-10">
             Who We Serve
           </h2>
           <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {AUDIENCES.map((a) => (
-              <li key={a.key} className="bg-white rounded-lg p-6 flex flex-col min-h-[260px]">
+              <li key={a.key} className="bg-white rounded-lg p-6 flex flex-col sm:min-h-[260px]">
                 <AudienceIcon name={a.key} />
                 <h3 className="font-semibold text-[#001435] text-[16px] mt-4 mb-4">{a.cardTitle}</h3>
                 <p className="font-serif text-[13px] text-[#44474e] leading-relaxed flex-1">{a.cardBlurb}</p>
@@ -120,21 +134,21 @@ export default function SellPage() {
       ))}
 
       {/* ── Why join us [8] ──────────────────────────────────────── */}
-      <section className="bg-[#F7F5F0] px-6 py-14 lg:py-20">
+      <section className="bg-[#F7F5F0] px-5 md:px-6 py-12 md:py-14 lg:py-20">
         <div className="max-w-6xl mx-auto">
-          <h2 className={`${serifH2} text-2xl md:text-3xl lg:text-4xl text-center mb-10`}>Why Join Us</h2>
+          <h2 className={`${serifH2} text-[22px] sm:text-2xl md:text-3xl lg:text-4xl text-center mb-8 md:mb-10`}>Why Join Us</h2>
           <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {WHY_JOIN.map((w) => (
               <li
                 key={w.text}
-                className="bg-[#D8CC96] rounded-lg px-6 py-10 flex flex-col items-center text-center gap-6 min-h-[220px]"
+                className="bg-[#D8CC96] rounded-lg px-6 py-8 md:py-10 flex flex-col items-center text-center gap-5 md:gap-6 sm:min-h-[220px]"
               >
                 <WhyIcon name={w.icon} />
                 <p className="font-serif text-[15px] md:text-[16px] text-[#001435] leading-snug">{w.text}</p>
               </li>
             ))}
           </ul>
-          <blockquote className="mt-10 max-w-3xl mx-auto bg-[#FBF9F4] rounded-lg px-8 py-7 text-[#1b1c1a] italic text-[15px] md:text-[16px] leading-relaxed">
+          <blockquote className="mt-8 md:mt-10 max-w-3xl mx-auto bg-[#FBF9F4] rounded-lg px-6 py-6 md:px-8 md:py-7 text-[#1b1c1a] italic text-[15px] md:text-[16px] leading-relaxed">
             &ldquo;{WHY_JOIN_TESTIMONIAL.quote}&rdquo;
             <footer className="not-italic mt-2 text-[14px]">~{WHY_JOIN_TESTIMONIAL.name}</footer>
           </blockquote>
@@ -142,9 +156,9 @@ export default function SellPage() {
       </section>
 
       {/* ── FAQ [9] ──────────────────────────────────────────────── */}
-      <section className="bg-white px-6 py-14 lg:py-20">
+      <section className="bg-white px-5 md:px-6 py-12 md:py-14 lg:py-20">
         <div className="max-w-4xl mx-auto">
-          <h2 className={`${serifH2} text-2xl md:text-3xl lg:text-4xl text-center mb-8`}>
+          <h2 className={`${serifH2} text-[22px] sm:text-2xl md:text-3xl lg:text-4xl text-center mb-8`}>
             Frequently Asked Questions
           </h2>
           <div className="divide-y divide-[#BE9B32]/40 border-y border-[#BE9B32]/40">
@@ -187,13 +201,13 @@ function AudienceSection({ audience: a }: { audience: Audience }) {
   return (
     <section id={a.key} className="scroll-mt-24">
       {a.image ? (
-        <div className="relative h-[36vw] min-h-[180px] max-h-[360px] overflow-hidden">
+        <div className="relative h-[44vw] min-h-[170px] max-h-[360px] overflow-hidden">
           <Image
             src={a.image.src}
             fill
             alt={a.image.alt}
-            className="object-cover"
-            style={{ objectPosition: a.image.position || "center" }}
+            className={`object-cover ${STRIP_POSITION}`}
+            style={stripPosition(a.image.positionMobile, a.image.position)}
             sizes="100vw"
           />
         </div>
@@ -202,12 +216,12 @@ function AudienceSection({ audience: a }: { audience: Audience }) {
         // rather than a stock photo that isn't ours.
         <div className="h-14 md:h-20 bg-gradient-to-r from-[#0F2145] via-[#17294A] to-[#0F2145]" />
       )}
-      <div className="bg-white px-6 py-12 lg:py-16">
+      <div className="bg-white px-5 md:px-6 py-10 md:py-12 lg:py-16">
         <div className="max-w-5xl mx-auto">
-          <h2 className="text-center font-serif text-[#BE9B32] uppercase tracking-[0.18em] text-2xl md:text-3xl lg:text-[34px] mb-3">
+          <h2 className="text-center font-serif text-[#BE9B32] uppercase tracking-[0.12em] md:tracking-[0.18em] text-[22px] sm:text-2xl md:text-3xl lg:text-[34px] mb-3">
             {a.heading}
           </h2>
-          <p className="text-center font-serif italic text-[15px] md:text-[17px] text-[#001435] mb-10">
+          <p className="text-center font-serif italic text-[15px] md:text-[17px] text-[#001435] mb-8 md:mb-10">
             {a.tagline}
           </p>
 
@@ -215,7 +229,7 @@ function AudienceSection({ audience: a }: { audience: Audience }) {
           <p className="font-serif text-[15px] md:text-[16px] text-[#1b1c1a] mb-8">{a.cardBlurb}</p>
 
           <h3 className={`${eyebrow} text-[13px] tracking-[0.2em] mb-3`}>What&rsquo;s included with your membership</h3>
-          <ul className="flex flex-wrap gap-x-8 gap-y-2 mb-10">
+          <ul className="flex flex-col md:flex-row md:flex-wrap gap-x-8 gap-y-2 mb-8 md:mb-10">
             {a.included.map((item) => (
               <li key={item} className="font-serif text-[14px] md:text-[15px] text-[#1b1c1a] flex items-start gap-2">
                 <span aria-hidden="true" className="text-[#BE9B32] mt-[2px]">
@@ -248,12 +262,14 @@ function AudienceSection({ audience: a }: { audience: Audience }) {
 
 function QuizBar() {
   return (
-    <div className="bg-[#17294A] px-6 py-6">
+    <div className="bg-[#17294A] px-5 md:px-6 py-6">
       <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8">
-        <p className="font-serif text-white text-[16px] md:text-[18px]">See what membership is right for you</p>
+        <p className="font-serif text-white text-[16px] md:text-[18px] text-center">
+          See what membership is right for you
+        </p>
         <LocalizedClientLink
           href={QUIZ_HREF}
-          className="inline-flex items-center px-7 py-3 text-[13px] md:text-[14px] font-serif font-bold uppercase tracking-[0.08em] bg-[#BE9B32] text-[#001435] hover:bg-[#d4af4c] rounded-sm transition-colors"
+          className="inline-flex items-center justify-center w-full sm:w-auto px-7 py-3 text-[13px] md:text-[14px] font-serif font-bold uppercase tracking-[0.08em] bg-[#BE9B32] text-[#001435] hover:bg-[#d4af4c] rounded-sm transition-colors"
         >
           Take the Quiz
         </LocalizedClientLink>
