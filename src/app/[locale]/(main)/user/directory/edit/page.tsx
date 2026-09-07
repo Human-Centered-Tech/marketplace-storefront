@@ -1,7 +1,9 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import { DirectoryListingForm } from "@/components/sections/DirectoryManagement/DirectoryListingForm"
+import { toast } from "@/lib/helpers/toast"
 import { DirectoryCategory, DirectoryListing } from "@/types/directory"
 import {
   getMyDirectoryListing,
@@ -13,6 +15,7 @@ import { socialLinksToArray } from "@/lib/social"
 import { US_STATE_CODES } from "@/lib/us-states"
 
 export default function EditDirectoryListingPage() {
+  const router = useRouter()
   const [categories, setCategories] = useState<DirectoryCategory[]>([])
   const [listing, setListing] = useState<DirectoryListing | null>(null)
   const [loading, setLoading] = useState(true)
@@ -102,14 +105,33 @@ export default function EditDirectoryListingPage() {
     const { isVendor } = await retrieveVendorStatus().catch(() => ({
       isVendor: false,
     }))
+
+    // Saving used to be silent: the page navigated away the instant the
+    // request returned, so owners never saw a confirmation and often saved
+    // twice. Confirm first, then leave.
+    toast.success({
+      title: "Listing saved",
+      description: "Your directory listing has been updated.",
+    })
+
     if (isVendor) {
+      // Cross-origin redirect to the vendor app unloads this page and its
+      // toast, so hold for a beat: the form shows "Saved" and the toast is
+      // visible before the dashboard takes over. Returning here (rather than
+      // awaiting the redirect) lets the form render that confirmation.
       const vendorUrl =
         process.env.NEXT_PUBLIC_VENDOR_URL || "http://localhost:5173"
-      window.location.assign(`${vendorUrl}/dashboard`)
+      window.setTimeout(
+        () => window.location.assign(`${vendorUrl}/dashboard`),
+        1200
+      )
     } else {
+      // Client-side navigation keeps the root <Toaster /> mounted, and the
+      // hub page renders its own "saved" banner from the query flag so the
+      // confirmation is still there once the toast has gone.
       const seg = window.location.pathname.split("/").filter(Boolean)
       const locale = seg[0] || "us"
-      window.location.assign(`/${locale}/user/directory`)
+      router.push(`/${locale}/user/directory?saved=1`)
     }
   }
 

@@ -8,10 +8,20 @@ export const metadata: Metadata = {
   title: "My Directory Listing",
 }
 
-export default async function UserDirectoryPage() {
+export default async function UserDirectoryPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ saved?: string }>
+}) {
   const user = await retrieveCustomer()
 
   if (!user) return <LoginForm />
+
+  // `?saved=1` is set by the listing editor after a successful save. The
+  // toast it fires can be missed (or already gone), so the confirmation is
+  // repeated here where the owner actually lands.
+  const { saved } = await searchParams
+  const justSaved = saved === "1"
 
   // Resolve the owner's listing by owner_id, NOT by search. This page used to
   // call listDirectoryListings({ q: user.id }), but `q` on the public browse
@@ -52,6 +62,14 @@ export default async function UserDirectoryPage() {
             </div>
           ) : listing ? (
             <div className="space-y-6">
+              {justSaved && (
+                <div
+                  role="status"
+                  className="border border-green-200 bg-green-50 text-green-800 rounded-sm p-4 text-sm"
+                >
+                  Your listing changes have been saved.
+                </div>
+              )}
               {/* Listing summary */}
               <div className="border rounded-sm p-6">
                 <div className="flex items-start justify-between">

@@ -15,6 +15,14 @@ import { SocialIcon } from "./SocialIcon"
 import { socialFromUrl } from "@/lib/social"
 import { normalizeExternalUrl } from "@/lib/helpers/external-url"
 
+// The only fields the form refuses to save without. Labels are the ones
+// shown next to the inputs, so the banner and the field messages agree.
+type RequiredField = "business_name" | "category_id"
+const REQUIRED_FIELD_LABELS: Record<RequiredField, string> = {
+  business_name: "Business Name",
+  category_id: "Primary category",
+}
+
 type DirectoryFormData = {
   business_name: string
   slug: string
@@ -191,6 +199,17 @@ export const DirectoryListingForm = ({
   })
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState("")
+  // Per-field "this is required" messages, set on a submit attempt and
+  // cleared as soon as the owner edits that field. The submit button used to
+  // simply grey itself out while Business Name was empty, with no explanation
+  // anywhere on the page — owners read that as "the site is broken".
+  const [fieldErrors, setFieldErrors] = useState<
+    Partial<Record<RequiredField, string>>
+  >({})
+  // True once onSubmit has resolved. Consumers usually navigate away right
+  // after, but the vendor-dashboard handoff is a cross-origin redirect that
+  // is deliberately delayed so this confirmation is actually seen.
+  const [saved, setSaved] = useState(false)
   const errorRef = useRef<HTMLDivElement | null>(null)
 
   // The form is long enough that submitting from the bottom and getting
@@ -231,6 +250,13 @@ export const DirectoryListingForm = ({
     const { name, value, type } = e.target
     const checked =
       type === "checkbox" ? (e.target as HTMLInputElement).checked : undefined
+    if (name in fieldErrors) {
+      setFieldErrors((prev) => {
+        const next = { ...prev }
+        delete next[name as RequiredField]
+        return next
+      })
+    }
     setForm((prev) => {
       const updated = {
         ...prev,
@@ -245,6 +271,29 @@ export const DirectoryListingForm = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setSaved(false)
+
+    // Required-field check with an explicit message, instead of a disabled
+    // button (business name) or the browser's native bubble (category), which
+    // only pointed at one field at a time and vanished on the next click.
+    const missing: Partial<Record<RequiredField, string>> = {}
+    if (!form.business_name.trim()) {
+      missing.business_name = "Enter your business name to save."
+    }
+    if (!form.category_id) {
+      missing.category_id = "Choose a primary category to save."
+    }
+    const missingKeys = Object.keys(missing) as RequiredField[]
+    if (missingKeys.length) {
+      setFieldErrors(missing)
+      setError(
+        `Please fill in the required field${missingKeys.length > 1 ? "s" : ""}: ${missingKeys
+          .map((k) => REQUIRED_FIELD_LABELS[k])
+          .join(", ")}.`
+      )
+      return
+    }
+
     setSubmitting(true)
     setError("")
 
@@ -343,6 +392,7 @@ export const DirectoryListingForm = ({
             ? form.hours_of_operation
             : undefined,
       })
+      setSaved(true)
     } catch (err: any) {
       setError(err.message || "Something went wrong")
     } finally {
@@ -351,7 +401,7 @@ export const DirectoryListingForm = ({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} noValidate className="space-y-6">
       {error && (
         <div
           ref={errorRef}
@@ -376,8 +426,23 @@ export const DirectoryListingForm = ({
               value={form.business_name}
               onChange={handleChange}
               required
-              className="w-full border rounded-sm px-3 py-2 text-sm"
+              aria-invalid={fieldErrors.business_name ? true : undefined}
+              aria-describedby={
+                fieldErrors.business_name ? "business_name-error" : undefined
+              }
+              className={`w-full border rounded-sm px-3 py-2 text-sm ${
+                fieldErrors.business_name ? "border-red-500" : ""
+              }`}
             />
+            {fieldErrors.business_name && (
+              <p
+                id="business_name-error"
+                role="alert"
+                className="text-xs text-red-700 mt-1"
+              >
+                {fieldErrors.business_name}
+              </p>
+            )}
           </div>
           <div>
             <label className="label-sm text-secondary block mb-1">Slug</label>
@@ -397,7 +462,13 @@ export const DirectoryListingForm = ({
               value={form.category_id}
               onChange={handleChange}
               required
-              className="w-full border rounded-sm px-3 py-2 text-sm"
+              aria-invalid={fieldErrors.category_id ? true : undefined}
+              aria-describedby={
+                fieldErrors.category_id ? "category_id-error" : undefined
+              }
+              className={`w-full border rounded-sm px-3 py-2 text-sm ${
+                fieldErrors.category_id ? "border-red-500" : ""
+              }`}
             >
               <option value="">Select a category</option>
               {categories.map((cat) => (
@@ -406,6 +477,15 @@ export const DirectoryListingForm = ({
                 </option>
               ))}
             </select>
+            {fieldErrors.category_id && (
+              <p
+                id="category_id-error"
+                role="alert"
+                className="text-xs text-red-700 mt-1"
+              >
+                {fieldErrors.category_id}
+              </p>
+            )}
           </div>
           <div>
             <label className="label-sm text-secondary block mb-1">
@@ -891,26 +971,36 @@ export const DirectoryListingForm = ({
         </div>
       </div>
 
-      <button
-        type="submit"
-        disabled={submitting || !form.business_name}
-        // Inline styles instead of Tailwind theme classes. The previous
-        // `bg-primary text-white` resolved to transparent-on-gray because
-        // the storefront's `--bg-primary` CSS variable isn't reliably
-        // scoped through Next.js's CSS chunking for this client component
-        // (and `text-white` falls back to the page's cascading `--outline`
-        // color of #75777f). Inline-style this so it works regardless of
-        // which CSS chunk landed in the bundle for this route.
-        style={{
-          backgroundColor: "#17294A",
-          color: "#ffffff",
-          opacity: submitting || !form.business_name ? 0.5 : 1,
-          cursor: submitting || !form.business_name ? "not-allowed" : "pointer",
-        }}
-        className="px-6 py-2 rounded-sm text-sm uppercase font-medium"
-      >
-        {submitting ? "Saving..." : submitLabel}
-      </button>
+      <div className="flex flex-wrap items-center gap-4">
+        <button
+          type="submit"
+          // Only disabled while a save is in flight. Missing required fields
+          // are reported on submit (see handleSubmit) instead of silently
+          // greying this button out.
+          disabled={submitting}
+          // Inline styles instead of Tailwind theme classes. The previous
+          // `bg-primary text-white` resolved to transparent-on-gray because
+          // the storefront's `--bg-primary` CSS variable isn't reliably
+          // scoped through Next.js's CSS chunking for this client component
+          // (and `text-white` falls back to the page's cascading `--outline`
+          // color of #75777f). Inline-style this so it works regardless of
+          // which CSS chunk landed in the bundle for this route.
+          style={{
+            backgroundColor: "#17294A",
+            color: "#ffffff",
+            opacity: submitting ? 0.5 : 1,
+            cursor: submitting ? "not-allowed" : "pointer",
+          }}
+          className="px-6 py-2 rounded-sm text-sm uppercase font-medium"
+        >
+          {submitting ? "Saving..." : saved ? "Saved" : submitLabel}
+        </button>
+        {saved && !error && (
+          <p role="status" className="text-sm text-green-700">
+            Your listing has been saved.
+          </p>
+        )}
+      </div>
     </form>
   )
 }
