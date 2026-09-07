@@ -37,6 +37,54 @@ const nextConfig: NextConfig = {
   },
   trailingSlash: false,
   reactStrictMode: true,
+  /**
+   * Security response headers (9/7 audit). Verified live that day: the
+   * storefront sent NO Content-Security-Policy, NO Strict-Transport-Security,
+   * NO X-Frame-Options and NO X-Content-Type-Options — so /cart, /user/login
+   * and the whole checkout were embeddable in a third-party iframe, i.e. a
+   * clickjackable real card form.
+   *
+   * These carry no compatibility risk for how this app actually works:
+   * nothing in src renders an <iframe> (every frame on the site is created by
+   * Stripe INSIDE our page, which X-Frame-Options does not touch — that
+   * header governs who may frame US), and the third-party handoffs (Stripe
+   * Checkout, Stripe Connect onboarding, Google/Apple OAuth, the vendor
+   * panel) are all top-level `window.location` navigations, which none of
+   * these headers restrict.
+   *
+   * HSTS: `includeSubDomains` reaches every *.catholicowned.com host — www,
+   * v3, members (vendor panel) and the Railway backend are HTTPS-only, so it
+   * is safe today. `preload` is deliberately NOT set: that is a one-way door
+   * (browser-baked, slow to undo) and belongs to a human decision, not a
+   * config change. If a plain-HTTP subdomain is ever needed, drop
+   * `includeSubDomains` BEFORE this ships.
+   */
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          {
+            key: "Strict-Transport-Security",
+            value: "max-age=31536000; includeSubDomains",
+          },
+          // SAMEORIGIN rather than DENY: nothing frames us today, but our own
+          // future embeds (a preview pane) shouldn't be pre-broken.
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          // Full URL same-origin, bare origin cross-site. Google Maps' browser
+          // key is referrer-restricted and only needs the origin, so this does
+          // not break the directory maps.
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          // Only capabilities nothing uses. Geolocation is deliberately NOT
+          // denied (src/hooks/useUserLocation.tsx uses it for directory
+          // "near me"), and `payment` is left alone so Stripe keeps its
+          // wallet flows.
+          { key: "Permissions-Policy", value: "camera=(), microphone=()" },
+        ],
+      },
+    ]
+  },
   // "Gift Guides" feature renamed to "Guides" (2026-06-24). Keep old /gifts
   // links alive (old app builds open the web guide, plus shared URLs / SEO)
   // by redirecting them to the new /guides path.
