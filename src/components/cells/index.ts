@@ -1,4 +1,3 @@
-import { Navbar } from "./Navbar/Navbar"
 import { CustomCarousel as Carousel } from "./Carousel/Carousel"
 import { AutoCarousel } from "./AutoCarousel/AutoCarousel"
 import { Pagination } from "./Pagination/Pagination"
@@ -31,7 +30,6 @@ import { WishlistItem } from "./WishlistItem/WishlistItem"
 import { ProductAdditionalAttributes } from "./ProductAdditionalAttributes/ProductAdditionalAttributes"
 
 export {
-  Navbar,
   Carousel,
   AutoCarousel,
   Pagination,

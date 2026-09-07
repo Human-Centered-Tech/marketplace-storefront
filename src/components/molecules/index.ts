@@ -3,7 +3,6 @@ import { PrimeCategoryNavbar } from "./PrimeCategoryNavbar/PrimeCategoryNavbar"
 import { SelectField } from "./SelectField/SelectField"
 import { Accordion } from "./Accordion/Accordion"
 import { FilterCheckboxOption } from "./FilterCheckboxOption/FilterCheckboxOption"
-import { NavbarSearch } from "./NavbarSearch/NavbarSearch"
 import { GalleryCarouselItem } from "./GalleryCarouselItem/GalleryCarouselItem"
 import { ProductPageAccordion } from "./ProductPageAccordion/ProductPageAccordion"
 import { SellerReview } from "./SellerReview/SellerReview"
@@ -42,7 +41,6 @@ export {
   SelectField,
   Accordion,
   FilterCheckboxOption,
-  NavbarSearch,
   GalleryCarouselItem,
   ProductPageAccordion,
   SellerReview,
