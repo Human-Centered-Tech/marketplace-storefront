@@ -34,7 +34,14 @@ export type Audience = {
    * `positionMobile` overrides it below the md breakpoint, where the strip is
    * a much narrower crop.
    */
-  image?: { src: string; alt: string; position?: string; positionMobile?: string }
+  image?: {
+    src: string
+    alt: string
+    position?: string
+    positionMobile?: string
+    /** Source is too small to cover a wide viewport; render with a blur-up backdrop. */
+    lowRes?: boolean
+  }
 }
 
 export const AUDIENCES: Audience[] = [
@@ -116,6 +123,8 @@ export const AUDIENCES: Audience[] = [
     image: {
       src: "/images/sell/merchants.jpg",
       alt: "A maker packaging handmade goods at a workbench",
+      // The deck's export is only 1205×200; ask Brooke for the original.
+      lowRes: true,
     },
     testimonials: [
       {

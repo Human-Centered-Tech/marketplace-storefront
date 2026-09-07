@@ -204,7 +204,32 @@ export default function SellPage() {
 function AudienceSection({ audience: a }: { audience: Audience }) {
   return (
     <section id={a.key} className="scroll-mt-24">
-      {a.image ? (
+      {a.image?.lowRes ? (
+        // The source is only ~1200px wide, so a cover crop at 1920 upscales
+        // it 1.6x and it turns to mush. Keep the band short (≤1.25x upscale),
+        // and past 1536px switch the photo to contain and let a blurred,
+        // navy-tinted copy of itself fill the sides — a blur-up, not a
+        // stock photo we don't own.
+        <div className="relative h-[44vw] min-h-[170px] max-h-[250px] overflow-hidden bg-[#0F2145]">
+          <Image
+            src={a.image.src}
+            fill
+            alt=""
+            aria-hidden="true"
+            className="object-cover scale-110 blur-2xl opacity-70"
+            sizes="100vw"
+          />
+          <div className="absolute inset-0 bg-[#0F2145]/40" aria-hidden="true" />
+          <Image
+            src={a.image.src}
+            fill
+            alt={a.image.alt}
+            className={`object-cover 2xl:object-contain ${STRIP_POSITION}`}
+            style={stripPosition(a.image.positionMobile, a.image.position)}
+            sizes="100vw"
+          />
+        </div>
+      ) : a.image ? (
         <div className="relative h-[44vw] min-h-[170px] max-h-[360px] overflow-hidden">
           <Image
             src={a.image.src}
