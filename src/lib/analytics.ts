@@ -225,12 +225,13 @@ export function trackSearch(rawQuery: string, source: string) {
 export function trackButtonClick(
   entity_type: string,
   entity_id: string,
-  button: string
+  button: string,
+  extra?: Record<string, unknown>
 ) {
   track({
     event_type: "button_click",
     entity_type,
     entity_id,
-    metadata: { button },
+    metadata: { ...extra, button },
   })
 }

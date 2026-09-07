@@ -29,8 +29,19 @@ export type Audience = {
   tagline: string
   included: string[]
   testimonials: Testimonial[]
-  /** Optional photo strip above the section. Add once the Canva exports land. */
-  image?: { src: string; alt: string; position?: string }
+  /**
+   * Photo strip above the section. `position` is the desktop object-position;
+   * `positionMobile` overrides it below the md breakpoint, where the strip is
+   * a much narrower crop.
+   */
+  image?: {
+    src: string
+    alt: string
+    position?: string
+    positionMobile?: string
+    /** Source is too small to cover a wide viewport; render with a blur-up backdrop. */
+    lowRes?: boolean
+  }
 }
 
 export const AUDIENCES: Audience[] = [
@@ -51,6 +62,7 @@ export const AUDIENCES: Audience[] = [
       src: "/images/sell/professionals.jpg",
       alt: "Business professionals shaking hands across a meeting table",
       position: "center 30%",
+      positionMobile: "48% 30%",
     },
     testimonials: [
       {
@@ -111,6 +123,8 @@ export const AUDIENCES: Audience[] = [
     image: {
       src: "/images/sell/merchants.jpg",
       alt: "A maker packaging handmade goods at a workbench",
+      // The deck's export is only 1205×200; ask Brooke for the original.
+      lowRes: true,
     },
     testimonials: [
       {
@@ -142,6 +156,7 @@ export const AUDIENCES: Audience[] = [
       src: "/images/sell/enterprise.jpg",
       alt: "A leadership team in conversation around a conference table",
       position: "center 35%",
+      positionMobile: "55% 35%",
     },
     testimonials: [
       {
