@@ -321,15 +321,17 @@ function AudienceSection({ audience: a }: { audience: Audience }) {
 
 function QuizBar({ placement }: { placement: string }) {
   return (
-    <div className="bg-[#17294A] px-5 md:px-6 py-6">
-      <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8">
-        <p className="font-serif text-white text-[16px] md:text-[18px] text-center">
+    <div className="bg-[#17294A] px-5 md:px-6 py-7 md:py-8">
+      <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-5 sm:gap-8">
+        {/* Brooke (7 Sep): make the ask carry — bigger and bold, with a
+            richer gold on a larger button. */}
+        <p className="font-serif font-bold text-white text-[19px] md:text-[24px] leading-snug text-center">
           See what membership is right for you
         </p>
         <QuizCta
           href={QUIZ_HREF}
           placement={placement}
-          className="inline-flex items-center justify-center w-full sm:w-auto px-7 py-3 text-[13px] md:text-[14px] font-serif font-bold uppercase tracking-[0.08em] bg-[#BE9B32] text-[#001435] hover:bg-[#d4af4c] rounded-sm transition-colors"
+          className="inline-flex items-center justify-center w-full sm:w-auto px-8 py-3.5 md:px-9 md:py-4 text-[15px] md:text-[17px] font-serif font-bold uppercase tracking-[0.08em] bg-[#D6A82B] text-[#001435] hover:bg-[#E8BE45] rounded-sm transition-colors"
         >
           Take the Quiz
         </QuizCta>
