@@ -66,7 +66,9 @@ export const Header = async () => {
         </div>
 
         {/* Right — Actions */}
-        <div className="flex items-center justify-end gap-3 lg:gap-4">
+        {/* ml-auto pushes the actions to the right edge on phones (the top row
+            is a plain flex row there; the lg grid handles it on desktop). */}
+        <div className="flex items-center justify-end gap-3 lg:gap-4 ml-auto lg:ml-0">
           <CartDropdown />
           {user && (
             <LocalizedClientLink
