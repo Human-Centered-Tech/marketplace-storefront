@@ -247,6 +247,7 @@ function AudienceSection({ audience: a }: { audience: Audience }) {
             alt=""
             aria-hidden="true"
             className="object-cover scale-110 blur-2xl opacity-70"
+            quality={25}
             sizes="100vw"
           />
           <div className="absolute inset-0 bg-[#0F2145]/40" aria-hidden="true" />
@@ -256,6 +257,7 @@ function AudienceSection({ audience: a }: { audience: Audience }) {
             alt={a.image.alt}
             className={`object-cover 2xl:object-contain ${STRIP_POSITION}`}
             style={stripPosition(a.image.positionMobile, a.image.position)}
+            quality={85}
             sizes="100vw"
           />
         </div>
@@ -267,6 +269,7 @@ function AudienceSection({ audience: a }: { audience: Audience }) {
             alt={a.image.alt}
             className={`object-cover ${STRIP_POSITION}`}
             style={stripPosition(a.image.positionMobile, a.image.position)}
+            quality={85}
             sizes="100vw"
           />
         </div>
