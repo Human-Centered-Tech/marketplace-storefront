@@ -2,6 +2,8 @@ import type { CSSProperties } from "react"
 import Image from "next/image"
 import type { Metadata } from "next"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
+import { TrackPageView } from "@/components/sections/Analytics/TrackPageView"
+import { QuizCta } from "./QuizCta"
 import {
   AUDIENCES,
   FOUNDING_PILLARS,
@@ -51,6 +53,9 @@ const serifH2 = "font-serif font-bold text-[#001435] uppercase tracking-wide"
 export default function SellPage() {
   return (
     <main className="text-[#001435]">
+      {/* First-party analytics (SOW §11.3): one page_view per visit to the
+          sales page; each Take-the-Quiz bar counts its own clicks. */}
+      <TrackPageView entity_type="sales_page" entity_id="sell" />
       {/* ── Hero [1] ─────────────────────────────────────────────── */}
       <section className="relative">
         <div className="relative h-[56vw] min-h-[220px] max-h-[520px] overflow-hidden">
@@ -194,7 +199,7 @@ export default function SellPage() {
       </section>
 
       {/* Closing quiz bar so the page never ends without the ask. */}
-      <QuizBar />
+      <QuizBar placement="closing" />
     </main>
   )
 }
@@ -284,24 +289,25 @@ function AudienceSection({ audience: a }: { audience: Audience }) {
           </div>
         </div>
       </div>
-      <QuizBar />
+      <QuizBar placement={a.key} />
     </section>
   )
 }
 
-function QuizBar() {
+function QuizBar({ placement }: { placement: string }) {
   return (
     <div className="bg-[#17294A] px-5 md:px-6 py-6">
       <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8">
         <p className="font-serif text-white text-[16px] md:text-[18px] text-center">
           See what membership is right for you
         </p>
-        <LocalizedClientLink
+        <QuizCta
           href={QUIZ_HREF}
+          placement={placement}
           className="inline-flex items-center justify-center w-full sm:w-auto px-7 py-3 text-[13px] md:text-[14px] font-serif font-bold uppercase tracking-[0.08em] bg-[#BE9B32] text-[#001435] hover:bg-[#d4af4c] rounded-sm transition-colors"
         >
           Take the Quiz
-        </LocalizedClientLink>
+        </QuizCta>
       </div>
     </div>
   )
