@@ -161,19 +161,23 @@ export default function SellPage() {
           <h2 className={`${serifH2} text-[22px] sm:text-2xl md:text-3xl lg:text-4xl text-center mb-8`}>
             Frequently Asked Questions
           </h2>
-          <div className="divide-y divide-[#BE9B32]/40 border-y border-[#BE9B32]/40">
-            {SALES_FAQ.map((item, i) => (
-              <details key={item.q} className="group py-4" open={i === 0}>
-                <summary className="flex items-center justify-between gap-4 cursor-pointer list-none [&::-webkit-details-marker]:hidden">
-                  <span className="font-semibold text-[#001435] text-[15px] md:text-[16px]">{item.q}</span>
-                  <span
-                    aria-hidden="true"
-                    className="text-[#001435] transition-transform group-open:rotate-90 shrink-0"
-                  >
-                    &rsaquo;
+          {/*
+            Brooke's FAQ treatment: a gold hairline between questions, the
+            question in navy, a chevron on the right that turns down when the
+            answer is open. Every item starts closed so the list reads as a
+            clean index; open question for Brooke: should the first one start
+            open as a hint that they expand?
+          */}
+          <div className="divide-y divide-[#BE9B32]/60 border-y border-[#BE9B32]/60">
+            {SALES_FAQ.map((item) => (
+              <details key={item.q} className="group">
+                <summary className="flex items-center justify-between gap-4 cursor-pointer list-none py-4 md:py-5 [&::-webkit-details-marker]:hidden">
+                  <span className="font-semibold text-[#001435] text-[15px] md:text-[17px] leading-snug">
+                    {item.q}
                   </span>
+                  <ChevronRight className="w-5 h-5 shrink-0 text-[#BE9B32] transition-transform duration-200 group-open:rotate-90" />
                 </summary>
-                <p className="font-serif text-[14px] md:text-[15px] text-[#1b1c1a] leading-relaxed mt-3 pr-8">
+                <p className="font-serif text-[14px] md:text-[15px] text-[#1b1c1a] leading-relaxed pb-5 pr-9">
                   {item.a}
                 </p>
               </details>
@@ -286,6 +290,14 @@ function QuizBar() {
  * navy outlines with a gold accent. Redrawn on a 24-unit grid rather than
  * embedding the deck's 600×392 bitmaps.
  */
+
+function ChevronRight({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M9 5l7 7-7 7" />
+    </svg>
+  )
+}
 
 const line = {
   fill: "none",
