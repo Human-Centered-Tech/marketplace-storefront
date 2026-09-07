@@ -41,6 +41,17 @@ const dayNames = [
   "sunday",
 ]
 
+// Merchant text counts as content only if it contains a letter or digit.
+// Required fields get bypassed with "." or a lone space (Saint Augustine
+// Prints, 9/7: every interview answer and the devotional prompt/reflection
+// were "."), which rendered a DEVOTIONAL heading over two bare dots and four
+// "." answers under MEET THE OWNER (board E10). Prod-wide, 11 rows carry a
+// lone "." and most interviews/devotionals are all-blank. Same intent as the
+// mobile app's listing screen (keep in sync); Unicode letter/number classes
+// so "–" and "…" count as placeholders too, not just ASCII punctuation.
+const hasText = (s?: string | null): boolean =>
+  Boolean(s && /[\p{L}\p{N}]/u.test(s))
+
 const ctaLabels: Record<string, string> = {
   visit_shop: "Visit Our Shop",
   book_now: "Book Now",
@@ -491,8 +502,8 @@ export const DirectoryDetail = ({
                 interview renders as just the photo. */}
             {listing.owner_interview &&
               (listing.owner_interview.photo_url ||
-                ([1, 2, 3, 4] as const).some(
-                  (n) => (listing.owner_interview as any)?.[`q${n}_answer`]
+                ([1, 2, 3, 4] as const).some((n) =>
+                  hasText((listing.owner_interview as any)?.[`q${n}_answer`])
                 )) && (
                 <div>
                   <h2 className="label-sm text-[10px] text-gold-dark font-bold tracking-[0.2em] mb-4">
@@ -540,7 +551,7 @@ export const DirectoryDetail = ({
                         const answer = (listing.owner_interview as any)?.[
                           `q${n}_answer`
                         ]
-                        if (!answer) return null
+                        if (!hasText(answer)) return null
                         return (
                           <div key={n}>
                             <p className="font-serif italic text-secondary mb-1">
@@ -559,7 +570,9 @@ export const DirectoryDetail = ({
 
             {/* Devotional */}
             {listing.devotional &&
-              (listing.devotional.question || listing.devotional.image_url) && (
+              (hasText(listing.devotional.question) ||
+                hasText(listing.devotional.answer) ||
+                listing.devotional.image_url) && (
                 <div>
                   <h2 className="label-sm text-[10px] text-gold-dark font-bold tracking-[0.2em] mb-4">
                     DEVOTIONAL
@@ -596,12 +609,12 @@ export const DirectoryDetail = ({
                       </button>
                     )}
                     <div className="flex-1 min-w-0">
-                      {listing.devotional.question && (
+                      {hasText(listing.devotional.question) && (
                         <p className="font-serif italic text-lg text-navy-dark mb-2">
                           {listing.devotional.question}
                         </p>
                       )}
-                      {listing.devotional.answer && (
+                      {hasText(listing.devotional.answer) && (
                         <p className="font-serif text-primary whitespace-pre-wrap">
                           {listing.devotional.answer}
                         </p>
