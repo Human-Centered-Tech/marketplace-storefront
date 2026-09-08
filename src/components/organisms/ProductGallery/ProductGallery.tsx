@@ -72,7 +72,7 @@ export const ProductGallery = ({
           </div>
         )}
 
-        {/* Vetted Vendor badge */}
+        {/* Catholic Merchant badge */}
         <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-1.5 flex items-center gap-1.5 shadow-sm">
           <svg
             width="14"
@@ -90,7 +90,7 @@ export const ProductGallery = ({
             />
           </svg>
           <span className="font-sans text-[10px] font-bold uppercase tracking-[0.15em] text-[#755b00]">
-            Vetted Merchant
+            Catholic Merchant
           </span>
         </div>
 
