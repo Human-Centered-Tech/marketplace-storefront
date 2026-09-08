@@ -8,13 +8,14 @@ import {
   ProductListingHeader,
   ProductsPagination,
 } from "@/components/organisms"
-// Imported from the file rather than the organisms barrel: the barrel pulls in
-// the whole component graph, and this module is on the critical render path.
+// Imported from the leaf helper rather than the organisms barrel or the
+// sidebar component: the barrel pulls in the whole component graph, and this
+// module is on the critical render path.
 import {
   CATEGORY_FACET,
   CATEGORY_PARAM,
   splitCategories,
-} from "@/components/organisms/ProductSidebar/AlgoliaProductSidebar"
+} from "@/lib/helpers/category-filter-param"
 import { client } from "@/lib/client"
 import { Configure, useHits, usePagination } from "react-instantsearch"
 import { InstantSearchNext } from "react-instantsearch-nextjs"

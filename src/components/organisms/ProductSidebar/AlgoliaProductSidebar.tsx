@@ -12,6 +12,12 @@ import {
   useRefinementList,
 } from "react-instantsearch"
 import { ProductListingActiveFilters } from "../ProductListingActiveFilters/ProductListingActiveFilters"
+import {
+  CATEGORY_FACET,
+  CATEGORY_PARAM,
+  joinCategories,
+  splitCategories,
+} from "@/lib/helpers/category-filter-param"
 
 const filters = [
   { label: "5", amount: 40 },
@@ -88,39 +94,6 @@ const useFilterParam = () => {
   )
 }
 
-// URL key for the category facet: `category`, a comma-separated list of
-// category NAMES.
-//
-// Deliberately not `category_id`, which already exists and means something
-// else: it is the SINGLE category id that the no-Algolia server route reads
-// (categories/page.tsx → <ProductListing category_id=...>, and the bot /
-// no-key fallback path). Three reasons not to overload it:
-//   * shape — this facet is multi-select, and comma-joining ids into
-//     category_id would feed that server route a value it cannot query with;
-//   * value — the only category attribute the index can label and count is
-//     `categories.name`; ids would render as ids;
-//   * `category` is already the app's chip vocabulary for this filter
-//     (ActiveFilterElement.filtersLabels), and useFilters("category") gives
-//     the chips a working remove handler for free.
-// getFacedFilters intentionally maps no clause for it — see the note below.
-export const CATEGORY_PARAM = "category"
-
-// The indexed attribute those names refine. Exported because
-// AlgoliaProductsListing seeds the same refinement in initialUiState.
-export const CATEGORY_FACET = "categories.name"
-
-export const splitCategories = (raw: string | null): string[] =>
-  raw
-    ? Array.from(
-        new Set(
-          raw
-            .split(",")
-            .map((value) => value.trim())
-            .filter(Boolean)
-        )
-      )
-    : []
-
 const sameCategories = (a: string[], b: string[]) =>
   a.length === b.length && a.every((value) => b.includes(value))
 
@@ -129,8 +102,11 @@ const sameCategories = (a: string[], b: string[]) =>
 // facets — products carry no variants, so those returned empty lists and the
 // filters did nothing).
 //
-// Selection lives in ?category=, not in InstantSearch's in-memory uiState. The
-// widget used to call refine() straight from the checkbox, which meant a sort
+// Selection lives in ?category=, not in InstantSearch's in-memory uiState —
+// see category-filter-param.ts for the encoding, which escapes the commas that
+// three of the live category names contain ("Arts, Crafts & Sewing" and
+// friends) so a name can't split in two on the round trip. The widget used to
+// call refine() straight from the checkbox, which meant a sort
 // change — which remounts the whole InstantSearch root (key={indexName} in
 // AlgoliaProductsListing, because a sort is a different replica index) — threw
 // the selection away silently: same root cause as the price slider.
@@ -182,9 +158,11 @@ function CategoryFilter({ defaultOpen = true }: { defaultOpen?: boolean }) {
     const next = selected.includes(label)
       ? selected.filter((value) => value !== label)
       : [...selected, label]
-    // Last box unticked = no category filter at all, so drop the param rather
-    // than write "" (which would leave a dangling chip and an empty refinement).
-    setFilterParam(CATEGORY_PARAM, next.length ? next.join(",") : null)
+    // joinCategories escapes each name before joining on "," and returns null
+    // for an empty selection — the last box unticked drops the param rather
+    // than writing "" (which would leave a dangling chip and an empty
+    // refinement).
+    setFilterParam(CATEGORY_PARAM, joinCategories(next))
   }
 
   // Nothing to filter on (index has no categories) — hide rather than render an
@@ -195,6 +173,17 @@ function CategoryFilter({ defaultOpen = true }: { defaultOpen?: boolean }) {
   // A selected category can legitimately count 0 once another filter is layered
   // on top (a price range that excludes all of it). Keep those boxes live, or
   // the user can't untick their own selection.
+  //
+  // A value in the URL that is NOT a real category — the "Arts" / "Crafts &
+  // Sewing" halves an old, comma-corrupted link splits into — is a row here
+  // too: algoliasearch-helper injects any refined value the index didn't
+  // return back into the facet data at count 0 (SearchResults, "add the
+  // disjunctive refinements if it is no more retrieved"). That is
+  // indistinguishable from a real category the other filters emptied out, so
+  // the two are treated the same: never disabled while checked, so one click
+  // removes it. Anything that somehow isn't in `items` at all (the first
+  // render before a search resolves, a facet outage) is still removable from
+  // the active-filter chips, which are driven straight off the URL.
   return (
     <Accordion heading="Category" defaultOpen={defaultOpen}>
       <ul className="px-4">
