@@ -1,6 +1,15 @@
 import { FacetFilters } from "algoliasearch/lite"
 import { ReadonlyURLSearchParams } from "next/navigation"
 
+// URL param → indexed attribute. A param with no entry here produces no filter
+// clause at all.
+//
+// `category` is deliberately absent. The category sidebar keeps its selection
+// in ?category=, but applies it as the AlgoliaProductSidebar widget's own facet
+// refinement rather than as a clause here: Algolia excludes a facet's own
+// refinement when computing that facet's counts and does NOT exclude a raw
+// filter clause, so a clause here would zero every unselected category's count
+// and break multi-select. Don't "fix" this by adding a case.
 const getOption = (label: string) => {
   switch (label) {
     case "size":

@@ -78,7 +78,7 @@ export default function PrivacyPage() {
             address, order contents).
           </p>
           <p>
-            <strong>With service providers:</strong> We use vetted third-party
+            <strong>With service providers:</strong> We use third-party
             services to run the platform, including Stripe (payments), Resend
             (transactional email), SendGrid (marketing email, if you&rsquo;ve
             opted in), and analytics providers. Each operates under a data
