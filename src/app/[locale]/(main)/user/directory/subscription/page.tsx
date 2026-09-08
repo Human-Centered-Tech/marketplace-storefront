@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { DirectorySubscriptionCard } from "@/components/sections/DirectoryManagement/DirectorySubscriptionCard"
+import { ManagePaymentMethod } from "@/components/sections/DirectoryManagement/ManagePaymentMethod"
 import { DirectoryListing } from "@/types/directory"
 
 const VALID_TIERS = new Set([
@@ -98,6 +99,20 @@ export default function DirectorySubscriptionPage() {
       <p className="text-secondary mb-6">
         Choose a plan for your listing: {listing.business_name}
       </p>
+
+      {/* Stripe sends the member back here with ?billing=updated after they
+          close the portal. Stripe is the source of truth for what actually
+          changed, so this only acknowledges the trip rather than claiming a
+          specific change was saved. */}
+      {searchParams.get("billing") === "updated" && (
+        <p className="text-sm text-green-700 mb-4" role="status">
+          You're back from Stripe. Any billing changes you made there are saved.
+        </p>
+      )}
+
+      {/* "Update payment info from their own dashboard" (Matteo 8/18).
+          Renders only when there's a membership to manage. */}
+      <ManagePaymentMethod listing={listing as any} />
 
       <DirectorySubscriptionCard
         currentTier={listing.subscription_tier}
