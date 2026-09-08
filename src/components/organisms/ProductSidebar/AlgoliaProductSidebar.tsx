@@ -4,9 +4,13 @@ import { Button, Chip, Input, StarRating } from "@/components/atoms"
 import { Accordion, FilterCheckboxOption, Modal } from "@/components/molecules"
 import useFilters from "@/hooks/useFilters"
 import { cn } from "@/lib/utils"
-import React, { useEffect, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
-import { useRange, useRefinementList } from "react-instantsearch"
+import {
+  useInstantSearch,
+  useRange,
+  useRefinementList,
+} from "react-instantsearch"
 import { ProductListingActiveFilters } from "../ProductListingActiveFilters/ProductListingActiveFilters"
 
 const filters = [
@@ -55,37 +59,159 @@ export const AlgoliaProductSidebar = () => {
   )
 }
 
+// Writes one filter param into the URL, which is where every filter in this
+// sidebar keeps its state (see the CategoryFilter / PriceFilter notes below).
+// Pass null to drop the param entirely rather than leave it set to "" — an
+// empty value would still render an active-filter chip and, for the category
+// facet, an empty refinement list.
+const useFilterParam = () => {
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+
+  return useCallback(
+    (key: string, value: string | null) => {
+      // Nothing actually changed (a track click that lands on the current
+      // value, a re-render) — don't push a duplicate history entry.
+      if ((searchParams.get(key) || null) === value) return
+
+      const params = new URLSearchParams(searchParams.toString())
+      if (value === null) params.delete(key)
+      else params.set(key, value)
+      // A changed filter restarts from the first page, as the sort control
+      // does; otherwise narrowing from page 7 strands you past the last page.
+      params.delete("page")
+      const qs = params.toString()
+      router.push(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
+    },
+    [router, pathname, searchParams]
+  )
+}
+
+// URL key for the category facet: `category`, a comma-separated list of
+// category NAMES.
+//
+// Deliberately not `category_id`, which already exists and means something
+// else: it is the SINGLE category id that the no-Algolia server route reads
+// (categories/page.tsx → <ProductListing category_id=...>, and the bot /
+// no-key fallback path). Three reasons not to overload it:
+//   * shape — this facet is multi-select, and comma-joining ids into
+//     category_id would feed that server route a value it cannot query with;
+//   * value — the only category attribute the index can label and count is
+//     `categories.name`; ids would render as ids;
+//   * `category` is already the app's chip vocabulary for this filter
+//     (ActiveFilterElement.filtersLabels), and useFilters("category") gives
+//     the chips a working remove handler for free.
+// getFacedFilters intentionally maps no clause for it — see the note below.
+export const CATEGORY_PARAM = "category"
+
+// The indexed attribute those names refine. Exported because
+// AlgoliaProductsListing seeds the same refinement in initialUiState.
+export const CATEGORY_FACET = "categories.name"
+
+export const splitCategories = (raw: string | null): string[] =>
+  raw
+    ? Array.from(
+        new Set(
+          raw
+            .split(",")
+            .map((value) => value.trim())
+            .filter(Boolean)
+        )
+      )
+    : []
+
+const sameCategories = (a: string[], b: string[]) =>
+  a.length === b.length && a.every((value) => b.includes(value))
+
 // Product category refinement. Reads the "categories.name" Algolia facet,
 // which is actually populated (unlike the old variants.size/color/condition
 // facets — products carry no variants, so those returned empty lists and the
-// filters did nothing). useRefinementList applies the refinement directly to
-// the same InstantSearch query the listing renders from, so no extra wiring is
-// needed. Hidden entirely when the index has no categories so an empty box
-// never reads as broken.
+// filters did nothing).
+//
+// Selection lives in ?category=, not in InstantSearch's in-memory uiState. The
+// widget used to call refine() straight from the checkbox, which meant a sort
+// change — which remounts the whole InstantSearch root (key={indexName} in
+// AlgoliaProductsListing, because a sort is a different replica index) — threw
+// the selection away silently: same root cause as the price slider.
+//
+// The URL is the source of truth, but unlike the price filter it is NOT turned
+// into a <Configure filters> clause by getFacedFilters. It is applied by
+// mirroring it into this widget's own refinement, because Algolia computes a
+// disjunctive facet's counts EXCLUDING that facet's own refinement — a raw
+// filter clause is not excluded, so ticking "Books" would zero every other
+// category's count and multi-select could never add a second box. Mirroring
+// keeps exactly one filter in force (no double filtering) while the counts
+// stay usable. The first render is seeded by initialUiState in
+// AlgoliaProductsListing so the server-rendered grid already matches the URL;
+// the effect here covers every later URL change that does not remount the root
+// (a chip removal, back/forward).
 function CategoryFilter({ defaultOpen = true }: { defaultOpen?: boolean }) {
-  const { items, refine } = useRefinementList({
-    attribute: "categories.name",
+  const searchParams = useSearchParams()
+  const setFilterParam = useFilterParam()
+  const { setIndexUiState } = useInstantSearch()
+
+  const selected = useMemo(
+    () => splitCategories(searchParams.get(CATEGORY_PARAM)),
+    [searchParams]
+  )
+
+  const { items } = useRefinementList({
+    attribute: CATEGORY_FACET,
     limit: 100,
     operator: "or",
     sortBy: ["name:asc"],
   })
 
-  if (!items.length) return null
+  useEffect(() => {
+    setIndexUiState((previous) => {
+      const current = previous.refinementList?.[CATEGORY_FACET] ?? []
+      // Returning the previous state unchanged is a no-op for InstantSearch,
+      // which is what keeps this from looping against its own update.
+      if (sameCategories(current, selected)) return previous
 
+      const refinementList = { ...previous.refinementList }
+      if (selected.length) refinementList[CATEGORY_FACET] = selected
+      else delete refinementList[CATEGORY_FACET]
+
+      return { ...previous, refinementList }
+    })
+  }, [selected, setIndexUiState])
+
+  const toggle = (label: string) => {
+    const next = selected.includes(label)
+      ? selected.filter((value) => value !== label)
+      : [...selected, label]
+    // Last box unticked = no category filter at all, so drop the param rather
+    // than write "" (which would leave a dangling chip and an empty refinement).
+    setFilterParam(CATEGORY_PARAM, next.length ? next.join(",") : null)
+  }
+
+  // Nothing to filter on (index has no categories) — hide rather than render an
+  // empty box that reads as broken. Never hide while a selection is applied, or
+  // the user loses the only control that can undo it.
+  if (!items.length && !selected.length) return null
+
+  // A selected category can legitimately count 0 once another filter is layered
+  // on top (a price range that excludes all of it). Keep those boxes live, or
+  // the user can't untick their own selection.
   return (
     <Accordion heading="Category" defaultOpen={defaultOpen}>
       <ul className="px-4">
-        {items.map(({ label, count, isRefined }) => (
-          <li key={label} className="mb-4">
-            <FilterCheckboxOption
-              checked={isRefined}
-              disabled={Boolean(!count)}
-              onCheck={refine}
-              label={label}
-              amount={count}
-            />
-          </li>
-        ))}
+        {items.map(({ label, count }) => {
+          const checked = selected.includes(label)
+          return (
+            <li key={label} className="mb-4">
+              <FilterCheckboxOption
+                checked={checked}
+                disabled={!count && !checked}
+                onCheck={toggle}
+                label={label}
+                amount={count}
+              />
+            </li>
+          )
+        })}
       </ul>
     </Accordion>
   )
@@ -127,9 +253,8 @@ const parsePriceParam = (raw: string | null): number | undefined => {
 }
 
 function PriceFilter({ defaultOpen = true }: { defaultOpen?: boolean }) {
-  const router = useRouter()
-  const pathname = usePathname()
   const searchParams = useSearchParams()
+  const setFilterParam = useFilterParam()
 
   const { range, canRefine } = useRange({
     attribute: "max_price",
@@ -204,16 +329,7 @@ function PriceFilter({ defaultOpen = true }: { defaultOpen?: boolean }) {
 
   const commit = () => {
     // At the ceiling = no constraint; clear so the count reflects everything.
-    const nextMax = atCeiling ? null : String(value)
-    if ((searchParams.get("max_price") || null) === nextMax) return
-
-    const params = new URLSearchParams(searchParams.toString())
-    if (nextMax === null) params.delete("max_price")
-    else params.set("max_price", nextMax)
-    // A changed filter restarts from the first page, as the sort control does.
-    params.delete("page")
-    const qs = params.toString()
-    router.push(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
+    setFilterParam("max_price", atCeiling ? null : String(value))
   }
 
   // Coarser step on wide ranges so the handle stays usable.

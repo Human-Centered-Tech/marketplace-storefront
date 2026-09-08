@@ -8,6 +8,13 @@ import {
   ProductListingHeader,
   ProductsPagination,
 } from "@/components/organisms"
+// Imported from the file rather than the organisms barrel: the barrel pulls in
+// the whole component graph, and this module is on the critical render path.
+import {
+  CATEGORY_FACET,
+  CATEGORY_PARAM,
+  splitCategories,
+} from "@/components/organisms/ProductSidebar/AlgoliaProductSidebar"
 import { client } from "@/lib/client"
 import { Configure, useHits, usePagination } from "react-instantsearch"
 import { InstantSearchNext } from "react-instantsearch-nextjs"
@@ -137,6 +144,14 @@ export const AlgoliaProductsListing = ({
   const sortParam = searchParamas.get("sortBy") || ""
   const indexName = PRODUCT_SORT_INDEX[sortParam] ?? "products"
 
+  // The category sidebar keeps its selection in ?category= rather than in
+  // InstantSearch's uiState, precisely so it survives the remount below. It is
+  // applied as a facet refinement (not a filter clause, so the facet's own
+  // counts stay usable for multi-select — see AlgoliaProductSidebar), which
+  // means it has to be seeded here: initialUiState is what the server render
+  // and every post-remount first render start from.
+  const urlCategories = splitCategories(searchParamas.get(CATEGORY_PARAM))
+
   return (
     <InstantSearchNext
       // Remount on sort change: InstantSearchNext does not re-root cleanly on
@@ -148,7 +163,14 @@ export const AlgoliaProductsListing = ({
       // Seed the Algolia page from the URL so a direct load of ?page=2 is
       // server-rendered on the correct slice. uiState `page` is 1-indexed
       // (unlike Configure's 0-indexed `page`), so pass urlPage as-is.
-      initialUiState={{ [indexName]: { page: urlPage } }}
+      initialUiState={{
+        [indexName]: {
+          page: urlPage,
+          ...(urlCategories.length
+            ? { refinementList: { [CATEGORY_FACET]: urlCategories } }
+            : {}),
+        },
+      }}
     >
       {/*
         Server-side Algolia pagination: hitsPerPage scopes useHits() to
