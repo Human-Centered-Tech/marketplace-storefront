@@ -6,6 +6,8 @@ import { BarterListing } from "@/types/barter"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 import { startConversation } from "@/lib/data/messaging"
 import { SingleLocationMap } from "@/components/sections/DirectoryListing/SingleLocationMap"
+import { Modal } from "@/components/molecules/Modal/Modal"
+import { ReportListingForm } from "@/components/molecules/ReportListingForm/ReportListingForm"
 
 const conditionLabels: Record<string, string> = {
   new: "Mint/New",
@@ -60,6 +62,7 @@ export const BarterDetail = ({
   const [selectedImage, setSelectedImage] = useState(0)
   const [messaging, setMessaging] = useState(false)
   const [messageError, setMessageError] = useState<string | null>(null)
+  const [reportOpen, setReportOpen] = useState(false)
   const isOwnListing = currentUserId !== null && currentUserId === listing.owner_id
   const images =
     listing.images?.sort((a, b) => a.sort_order - b.sort_order) ?? []
@@ -309,12 +312,37 @@ export const BarterDetail = ({
                   language is Merchants-only (Brooke 7/14). */}
             </div>
 
-            <div className="pt-2 text-center">
-              <button className="label-sm text-[10px] text-secondary hover:text-red-600 transition-colors inline-flex items-center gap-1">
-                <span className="material-symbols-outlined text-xs">flag</span>
-                Report Listing
-              </button>
-            </div>
+            {/* "Report Listing" had NO onClick at all — a button that did
+                nothing (9/7 audit). It now opens the real report form, which
+                emails the support inbox. Hidden on your own listing. */}
+            {!isOwnListing && (
+              <div className="pt-2 text-center">
+                <button
+                  type="button"
+                  onClick={() => setReportOpen(true)}
+                  className="label-sm text-[10px] text-secondary hover:text-red-600 transition-colors inline-flex items-center gap-1"
+                >
+                  <span className="material-symbols-outlined text-xs">flag</span>
+                  Report Listing
+                </button>
+              </div>
+            )}
+            {reportOpen && (
+              <Modal
+                heading="Report listing"
+                onClose={() => setReportOpen(false)}
+              >
+                <ReportListingForm
+                  target={{
+                    type: "trade",
+                    id: listing.id,
+                    title: listing.title,
+                    path: `/trade/${listing.id}`,
+                  }}
+                  onClose={() => setReportOpen(false)}
+                />
+              </Modal>
+            )}
           </div>
 
         </aside>

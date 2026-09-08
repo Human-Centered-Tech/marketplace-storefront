@@ -10,6 +10,7 @@ import { ProductDetailsTabs } from "./ProductDetailsTabs"
 import { ProductTagsRow } from "./ProductTagsRow"
 import { RelatedProducts } from "./RelatedProducts"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
+import { ProductReportButton } from "@/components/molecules"
 
 export const ProductDetailsPage = async ({
   handle,
@@ -176,6 +177,20 @@ export const ProductDetailsPage = async ({
       />
 
       {vendorTags.length > 0 && <ProductTagsRow tags={vendorTags} />}
+
+      {/* Contracted MVP D11.2 ("Report item/account functionality"). The report
+          form existed but was never mounted on the PDP, and its submit handler
+          was a console.log — a shopper had no working way to flag a listing.
+          Hidden while previewing your own draft: reporting yourself is noise. */}
+      {!isOwnerPreview && (
+        <div className="mt-10 flex justify-end">
+          <ProductReportButton
+            productId={prod.id}
+            productTitle={prod.title}
+            productHandle={prod.handle || handle}
+          />
+        </div>
+      )}
 
       {/* Related Products */}
       {prod.seller?.products && prod.seller.products.length > 0 && (
