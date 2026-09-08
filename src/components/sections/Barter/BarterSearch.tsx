@@ -29,12 +29,25 @@ export const BarterSearch = ({
   const [condition, setCondition] = useState("")
   const [loading, setLoading] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   // Debounce the free-text input before it hits the backend.
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search), 300)
     return () => clearTimeout(timer)
   }, [search])
+
+  // Explicit submit — the navy "Search" button, or pressing Enter in the field.
+  // The debounce above stays as a live-filter convenience; an explicit submit
+  // just FLUSHES it so the query runs now instead of after the 300ms idle
+  // window. The two never fight — the pending timer resolves to the same value,
+  // and setting identical state is a no-op. No search BEHAVIOUR changes here.
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setDebouncedSearch(search)
+    // Dismiss the on-screen keyboard so the results are visible on mobile.
+    inputRef.current?.blur()
+  }
 
   // Build the server-side query for a given page. `q`/filters are sent to the
   // backend so search covers the FULL dataset, not just the first page.
@@ -103,103 +116,131 @@ export const BarterSearch = ({
 
   return (
     <>
-      {/* Search & Filter Bar — unified with the directory bar: a single white
-          rounded card with sans fields separated by dividers, a leading search
-          icon, a clear (×) button, and branded dropdowns (FilterSelect) so the
-          open menus are styled to the brand instead of the raw native list. */}
+      {/* Search & Filter Bar — the standard search bar (SearchBar variant="hero"
+          on /categories is canonical): a white floating card, a gray
+          magnifying-glass icon inside the field on the left, and a navy
+          "Search" button on the right, at the hero's type metrics
+          (text-[15px] / py-3) and button shape (px-8 rounded-lg).
+
+          It is a real <form>, so Enter in the field submits. Clear and Filters
+          share the right-hand slot with Search: on desktop the three sit side
+          by side; on mobile the card stacks and the action row splits its width
+          between Clear/Filters and Search so all of them stay tappable. */}
       <section className="px-4 lg:px-8 pt-8 lg:pt-10 relative z-20">
         <div className="max-w-7xl mx-auto">
-          <div className="bg-white rounded-xl shadow-lg p-2 flex flex-col md:flex-row items-stretch gap-2 border border-gray-100">
-            {/* Search input */}
-            <div className="flex-[2] flex items-center px-4 md:border-r border-gray-100">
-              <span className="material-symbols-outlined text-secondary mr-3 text-xl">
-                search
-              </span>
-              <input
-                type="text"
-                placeholder="Search sacred goods..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="flex-1 min-w-0 bg-transparent border-none focus:ring-0 font-sans text-sm py-4 outline-none"
-              />
-              {search && (
+          <form onSubmit={handleSubmit} role="search">
+            <div className="bg-white rounded-xl shadow-lg p-2 flex flex-col md:flex-row items-stretch gap-2 border border-gray-100">
+              {/* Search input */}
+              <div className="flex-[2] flex items-center px-4 md:border-r border-gray-100">
+                <span className="material-symbols-outlined text-secondary mr-3">
+                  search
+                </span>
+                <input
+                  ref={inputRef}
+                  type="text"
+                  placeholder="Search sacred goods..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="flex-1 min-w-0 bg-transparent border-none focus:ring-0 font-sans text-[15px] py-3 outline-none placeholder:text-[#75777f]"
+                />
+                {search && (
+                  <button
+                    type="button"
+                    aria-label="Clear search"
+                    onClick={() => setSearch("")}
+                    className="material-symbols-outlined text-secondary/70 hover:text-navy-dark text-[20px] ml-1 shrink-0"
+                  >
+                    close
+                  </button>
+                )}
+              </div>
+
+              {/* Category */}
+              <div className="flex-1 flex items-center px-4 md:border-r border-gray-100">
+                <FilterSelect
+                  icon="category"
+                  placeholder="Category"
+                  value={categoryId}
+                  onChange={setCategoryId}
+                  className="py-3"
+                  options={[
+                    { value: "", label: "All Categories" },
+                    ...categories.map((cat) => ({
+                      value: cat.id,
+                      label: cat.name,
+                    })),
+                  ]}
+                />
+              </div>
+
+              {/* Listing Type */}
+              <div className="flex-1 flex items-center px-4 md:border-r border-gray-100">
+                <FilterSelect
+                  icon="sell"
+                  placeholder="Listing Type"
+                  value={listingType}
+                  onChange={setListingType}
+                  className="py-3"
+                  options={[
+                    { value: "", label: "All Types" },
+                    { value: "sell", label: "Sell" },
+                    { value: "trade", label: "Trade" },
+                    { value: "free", label: "Free" },
+                  ]}
+                />
+              </div>
+
+              {/* Condition */}
+              <div className="flex-1 flex items-center px-4 md:border-r border-gray-100">
+                <FilterSelect
+                  icon="grade"
+                  placeholder="Condition"
+                  value={condition}
+                  onChange={setCondition}
+                  className="py-3"
+                  options={[
+                    { value: "", label: "Any Condition" },
+                    { value: "new", label: "New" },
+                    { value: "like_new", label: "Like New" },
+                    { value: "good", label: "Good" },
+                    { value: "fair", label: "Fair" },
+                    { value: "poor", label: "Poor" },
+                  ]}
+                />
+              </div>
+
+              {/* Actions — Clear/Filters, then the navy Search button. Both
+                  children are flex-1 while the card is stacked (mobile) and
+                  size to content once it becomes a row (md+). */}
+              <div className="flex items-stretch gap-2 px-2 shrink-0">
+                {hasActiveFilters ? (
+                  <button
+                    type="button"
+                    onClick={clearFilters}
+                    className="flex-1 md:flex-none flex items-center justify-center gap-2 border border-gray-200 text-secondary hover:text-navy-dark hover:border-navy-dark/30 px-5 py-3 rounded-lg label-sm text-[10px] font-bold tracking-widest transition-all active:scale-95"
+                  >
+                    <span className="material-symbols-outlined text-sm">
+                      close
+                    </span>
+                    Clear
+                  </button>
+                ) : (
+                  <div className="flex-1 md:flex-none flex items-center justify-center gap-2 text-secondary px-5 py-3 label-sm text-[10px] font-bold tracking-widest opacity-60">
+                    <span className="material-symbols-outlined text-sm">
+                      tune
+                    </span>
+                    Filters
+                  </div>
+                )}
                 <button
-                  type="button"
-                  aria-label="Clear search"
-                  onClick={() => setSearch("")}
-                  className="material-symbols-outlined text-secondary/70 hover:text-navy-dark text-[20px] ml-1 shrink-0"
+                  type="submit"
+                  className="flex-1 md:flex-none flex items-center justify-center bg-navy-dark text-white px-8 py-3 rounded-lg label-sm text-[10px] font-bold tracking-widest hover:bg-navy active:scale-95 transition-all shrink-0"
                 >
-                  close
+                  Search
                 </button>
-              )}
+              </div>
             </div>
-
-            {/* Category */}
-            <div className="flex-1 flex items-center px-4 md:border-r border-gray-100">
-              <FilterSelect
-                icon="category"
-                placeholder="Category"
-                value={categoryId}
-                onChange={setCategoryId}
-                options={[
-                  { value: "", label: "All Categories" },
-                  ...categories.map((cat) => ({ value: cat.id, label: cat.name })),
-                ]}
-              />
-            </div>
-
-            {/* Listing Type */}
-            <div className="flex-1 flex items-center px-4 md:border-r border-gray-100">
-              <FilterSelect
-                icon="sell"
-                placeholder="Listing Type"
-                value={listingType}
-                onChange={setListingType}
-                options={[
-                  { value: "", label: "All Types" },
-                  { value: "sell", label: "Sell" },
-                  { value: "trade", label: "Trade" },
-                  { value: "free", label: "Free" },
-                ]}
-              />
-            </div>
-
-            {/* Condition */}
-            <div className="flex-1 flex items-center px-4 md:border-r border-gray-100">
-              <FilterSelect
-                icon="grade"
-                placeholder="Condition"
-                value={condition}
-                onChange={setCondition}
-                options={[
-                  { value: "", label: "Any Condition" },
-                  { value: "new", label: "New" },
-                  { value: "like_new", label: "Like New" },
-                  { value: "good", label: "Good" },
-                  { value: "fair", label: "Fair" },
-                  { value: "poor", label: "Poor" },
-                ]}
-              />
-            </div>
-
-            {/* Clear filters */}
-            <div className="flex items-center px-2 shrink-0">
-              {hasActiveFilters ? (
-                <button
-                  onClick={clearFilters}
-                  className="w-full md:w-auto flex items-center justify-center gap-2 bg-navy-dark text-white px-6 py-4 rounded-xl label-sm text-[10px] font-bold tracking-widest hover:bg-navy transition-all active:scale-95"
-                >
-                  <span className="material-symbols-outlined text-sm">close</span>
-                  Clear
-                </button>
-              ) : (
-                <div className="w-full md:w-auto flex items-center justify-center gap-2 text-secondary px-6 py-4 label-sm text-[10px] font-bold tracking-widest opacity-60">
-                  <span className="material-symbols-outlined text-sm">tune</span>
-                  Filters
-                </div>
-              )}
-            </div>
-          </div>
+          </form>
         </div>
       </section>
 
