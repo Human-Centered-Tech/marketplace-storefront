@@ -62,10 +62,11 @@ const QUIZ_HREF = "/sell/onboarding"
 const eyebrow = "text-[#BE9B32] text-[12px] font-semibold uppercase tracking-[0.2em]"
 
 /**
- * Photo strips are cropped very differently at 375px than at 1440px, so each
- * image carries a phone focal point and a desktop one. Inline styles can't
- * carry a media query, so the two land in custom properties and the class
- * picks one per breakpoint.
+ * The strip photos are pre-cropped bands (about 6:1), so a desktop strip
+ * shows nearly the whole width while a phone strip shows only the middle
+ * third. Each image therefore carries a phone focal point as well as a
+ * desktop one. Inline styles can't carry a media query, so the two land in
+ * custom properties and the class picks one per breakpoint.
  */
 const STRIP_POSITION = "[object-position:var(--pos-sm)] md:[object-position:var(--pos-md)]"
 
@@ -234,34 +235,7 @@ export default function SellPage() {
 function AudienceSection({ audience: a }: { audience: Audience }) {
   return (
     <section id={a.key} className="scroll-mt-24">
-      {a.image?.lowRes ? (
-        // The source is only ~1200px wide, so a cover crop at 1920 upscales
-        // it 1.6x and it turns to mush. Keep the band short (≤1.25x upscale),
-        // and past 1536px switch the photo to contain and let a blurred,
-        // navy-tinted copy of itself fill the sides — a blur-up, not a
-        // stock photo we don't own.
-        <div className="relative h-[44vw] min-h-[170px] max-h-[250px] overflow-hidden bg-[#0F2145]">
-          <Image
-            src={a.image.src}
-            fill
-            alt=""
-            aria-hidden="true"
-            className="object-cover scale-110 blur-2xl opacity-70"
-            quality={25}
-            sizes="100vw"
-          />
-          <div className="absolute inset-0 bg-[#0F2145]/40" aria-hidden="true" />
-          <Image
-            src={a.image.src}
-            fill
-            alt={a.image.alt}
-            className={`object-cover 2xl:object-contain ${STRIP_POSITION}`}
-            style={stripPosition(a.image.positionMobile, a.image.position)}
-            quality={85}
-            sizes="100vw"
-          />
-        </div>
-      ) : a.image ? (
+      {a.image ? (
         <div className="relative h-[44vw] min-h-[170px] max-h-[360px] overflow-hidden">
           <Image
             src={a.image.src}

@@ -30,18 +30,11 @@ export type Audience = {
   included: string[]
   testimonials: Testimonial[]
   /**
-   * Photo strip above the section. `position` is the desktop object-position;
-   * `positionMobile` overrides it below the md breakpoint, where the strip is
-   * a much narrower crop.
+   * Photo strip above the section. Sources are pre-cropped ~6:1 bands, so
+   * `position` (desktop) rarely needs setting; `positionMobile` picks the
+   * horizontal focal point below md, where only the middle third is visible.
    */
-  image?: {
-    src: string
-    alt: string
-    position?: string
-    positionMobile?: string
-    /** Source is too small to cover a wide viewport; render with a blur-up backdrop. */
-    lowRes?: boolean
-  }
+  image?: { src: string; alt: string; position?: string; positionMobile?: string }
 }
 
 export const AUDIENCES: Audience[] = [
@@ -61,8 +54,6 @@ export const AUDIENCES: Audience[] = [
     image: {
       src: "/images/sell/professionals.jpg",
       alt: "Business professionals shaking hands across a meeting table",
-      position: "center 30%",
-      positionMobile: "48% 30%",
     },
     testimonials: [
       {
@@ -93,6 +84,8 @@ export const AUDIENCES: Audience[] = [
     image: {
       src: "/images/sell/local-shops.jpg",
       alt: "A café owner greeting customers at the door of her shop",
+      // Phone crop: keep the shopkeeper and both customers in frame.
+      positionMobile: "45%",
     },
     testimonials: [
       {
@@ -123,8 +116,8 @@ export const AUDIENCES: Audience[] = [
     image: {
       src: "/images/sell/merchants.jpg",
       alt: "A maker packaging handmade goods at a workbench",
-      // The deck's export is only 1205×200; ask Brooke for the original.
-      lowRes: true,
+      // Phone crop: the maker's hands sit left of centre.
+      positionMobile: "34%",
     },
     testimonials: [
       {
@@ -155,8 +148,6 @@ export const AUDIENCES: Audience[] = [
     image: {
       src: "/images/sell/enterprise.jpg",
       alt: "A leadership team in conversation around a conference table",
-      position: "center 35%",
-      positionMobile: "55% 35%",
     },
     testimonials: [
       {
