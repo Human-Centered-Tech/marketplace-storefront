@@ -16,13 +16,13 @@ import {
 const SELL_TITLE = "Catholic Business Owner? You belong here"
 const SELL_DESCRIPTION =
   "Catholic Owned® is a community of business owners who live their faith every day — business professionals, local shops, marketplace merchants, and enterprise businesses. See which membership is right for you."
-// Social preview: the deck's hero photo (1376×768, ~16:9 — fine for the
-// 1.91:1 card, the bench and carpenter sit centre-right). Relative paths
-// resolve against the site-wide metadataBase in app/layout.tsx.
+// Social preview: Brooke's 3x hero band (3840×1285, ~3:1; the 1.91:1 card
+// crops the sides and keeps the bench and carpenter). Relative paths resolve
+// against the site-wide metadataBase in app/layout.tsx.
 const SELL_OG_IMAGE = {
   url: "/images/sell/hero-workshop.jpg",
-  width: 1376,
-  height: 768,
+  width: 3840,
+  height: 1285,
   alt: "A carpenter at work in his workshop — Catholic Business Owner? You belong here",
 }
 
@@ -90,7 +90,7 @@ export default function SellPage() {
             fill
             alt="A carpenter at work in his workshop"
             className={`object-cover ${STRIP_POSITION}`}
-            style={stripPosition("62% 40%", "center 40%")}
+            style={stripPosition("62% 40%", "center 12%")}
             priority
             quality={85}
             sizes="100vw"
