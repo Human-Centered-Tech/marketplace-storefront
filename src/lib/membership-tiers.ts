@@ -43,7 +43,7 @@ export const AUDIENCES: Audience[] = [
     cardTitle: "Business professionals",
     cardBlurb:
       "Service-based businesses and professionals growing through relationships, and a broader geographic reach.",
-    heading: "For Business Professionals",
+    heading: "Business Professionals",
     tagline:
       "Catholic Owned helps you meet people who already share your values, before they even walk through the door.",
     included: [
