@@ -16,6 +16,15 @@ import {
 } from "@/hooks/useUserLocation"
 import { LocationPrompt } from "@/components/molecules/LocationPrompt/LocationPrompt"
 import { US_STATES } from "@/lib/us-states"
+import {
+  applyPage,
+  emptyStream,
+  mergeHasMore,
+  mergeTotal,
+  streamsNeedingFetch,
+  takeMerged,
+  type MergeState,
+} from "@/lib/helpers/directory-merge"
 
 type ViewMode = "list" | "map"
 
@@ -111,10 +120,35 @@ type DirectoryHit = {
   logo_url: string | null
   cover_image_url: string | null
   website_url: string | null
+  rank_weight?: number | null
   _geoloc?: { lat: number; lng: number }
   // Returned when getRankingInfo is enabled — geoDistance is in meters
   // from the aroundLatLng point.
   _rankingInfo?: { geoDistance?: number }
+}
+
+/**
+ * The companion query for a geo search: the same query and filters, no geo,
+ * restricted to listings without coordinates (the ones geo drops).
+ */
+function noGeoSearchParams<P extends Record<string, any>>(
+  params: P,
+  state: string
+): P {
+  const {
+    aroundLatLng: _lat,
+    aroundRadius: _radius,
+    getRankingInfo: _info,
+    ...rest
+  } = params
+  return {
+    ...rest,
+    facetFilters: [
+      ...(rest.facetFilters ?? []),
+      ["has_geoloc:false"],
+      ...(state ? [[`serviced_states:${state}`]] : []),
+    ],
+  } as unknown as P
 }
 
 /** Map an Algolia hit to the DirectoryListing shape that DirectoryListingCard expects. */
@@ -532,21 +566,82 @@ export const DirectorySearch = ({
     [search, location, categoryId, effectiveStateServed, proximityActive, effectiveProximity, radiusMi, applyRadius, bbox, minRating]
   )
 
+  // Paging state for geo searches, which merge two Algolia streams (see
+  // runSearch). searchGenRef drops a response that a newer page-0 search
+  // has superseded, so a slow page can't splice the old query into the new.
+  const mergeRef = useRef<MergeState<DirectoryHit> | null>(null)
+  const searchGenRef = useRef(0)
+  // Scope the no-address listings to businesses serving the viewer's state
+  // when we know it (Near-me). Otherwise every online-only listing is
+  // eligible and simply ranks by tier.
+  const fallbackState =
+    effectiveProximity.source === "user" ? userLocation?.state ?? "" : ""
+
   const runSearch = useCallback(
     async (page: number, append: boolean) => {
       if (!algoliaClient) return
       if (append) setLoadingMore(true)
       else setLoading(true)
       try {
-        const { results } = await algoliaClient.search<DirectoryHit>({
-          requests: [buildSearchParams(page)],
-        })
-        const result = results[0] as {
-          hits: DirectoryHit[]
-          nbHits: number
-          nbPages?: number
+        const gen = append ? searchGenRef.current : ++searchGenRef.current
+        const params = buildSearchParams(page)
+        let hits: DirectoryHit[]
+        let total: number
+        let more: boolean
+        if (!("aroundLatLng" in params)) {
+          mergeRef.current = null
+          const { results } = await algoliaClient.search<DirectoryHit>({
+            requests: [params],
+          })
+          const result = results[0] as {
+            hits: DirectoryHit[]
+            nbHits: number
+            nbPages?: number
+          }
+          hits = result.hits || []
+          total = result.nbHits ?? 0
+          // Algolia caps pagination (paginationLimitedTo, 1000 hits by
+          // default), so nbPages — NOT nbHits — is the real end of the road.
+          // Trusting nbHits here would let infinite scroll spin forever on
+          // empty pages once the cap is hit. A short page is a second,
+          // belt-and-braces terminator.
+          more = page + 1 < (result.nbPages ?? 0) && hits.length > 0
+        } else {
+          // aroundLatLng silently drops every listing without coordinates
+          // (online-only businesses — Quaestor, 9/22), so pair it with a
+          // no-geo query and merge the two by tier. See directory-merge.ts.
+          let state: MergeState<DirectoryHit> =
+            page === 0 || !mergeRef.current
+              ? { geo: emptyStream(), noGeo: emptyStream() }
+              : mergeRef.current
+          const need = streamsNeedingFetch(state, PAGE_SIZE)
+          if (need.length) {
+            const noGeoParams = noGeoSearchParams(params, fallbackState)
+            const { results } = await algoliaClient.search<DirectoryHit>({
+              requests: need.map((k) => ({
+                ...(k === "geo" ? params : noGeoParams),
+                page: state[k].nextPage,
+              })),
+            })
+            need.forEach((k, i) => {
+              state = {
+                ...state,
+                [k]: applyPage(
+                  state[k],
+                  results[i] as { hits: DirectoryHit[]; nbHits: number; nbPages?: number }
+                ),
+              }
+            })
+          }
+          const taken = takeMerged(state, PAGE_SIZE)
+          if (gen !== searchGenRef.current) return
+          mergeRef.current = taken.state
+          hits = taken.page
+          total = mergeTotal(taken.state)
+          more = mergeHasMore(taken.state)
         }
-        const listings = (result.hits || []).map(hitToListing)
+        if (gen !== searchGenRef.current) return
+        const listings = hits.map(hitToListing)
         if (append) {
           // Dedup by id. Algolia can repeat a record across page boundaries
           // when ranking scores tie, and a duplicate key would break both
@@ -565,14 +660,9 @@ export const DirectorySearch = ({
           // only moves when the result set genuinely shrinks the page.
           setAllListings(listings)
         }
-        setCount(result.nbHits ?? 0)
+        setCount(total)
         pageRef.current = page
-        // Algolia caps pagination (paginationLimitedTo, 1000 hits by default),
-        // so nbPages — NOT nbHits — is the real end of the road. Trusting nbHits
-        // here would let infinite scroll spin forever on empty pages once the
-        // cap is hit. A short page is a second, belt-and-braces terminator.
-        const nbPages = result.nbPages ?? 0
-        setHasMore(page + 1 < nbPages && listings.length > 0)
+        setHasMore(more)
         setLoadMoreFailed(false)
       } catch {
         // Keep current state on error — better than wiping the UI. For an
@@ -583,7 +673,7 @@ export const DirectorySearch = ({
         setLoadingMore(false)
       }
     },
-    [algoliaClient, buildSearchParams]
+    [algoliaClient, buildSearchParams, fallbackState]
   )
 
   // Refetch from page 0 on filter change. Debounce keystrokes so we
