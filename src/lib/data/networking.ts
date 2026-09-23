@@ -15,6 +15,8 @@ export const listNetworkingEvents = async (params?: {
   q?: string
   limit?: number
   offset?: number
+  // Drop events that have already ended (server-side; see the backend route).
+  upcoming?: boolean
 }) => {
   const authHeaders = await getAuthHeaders()
   return sdk.client

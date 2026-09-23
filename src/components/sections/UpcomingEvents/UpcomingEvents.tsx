@@ -125,8 +125,11 @@ function EventCard({
 }
 
 export async function UpcomingEvents() {
+  // The backend orders by event_date ASC, so without `upcoming` the rail
+  // showed the four OLDEST published events (July's, in late September).
   const { events } = await listNetworkingEvents({
     status: "published",
+    upcoming: true,
     limit: 4,
   })
 
