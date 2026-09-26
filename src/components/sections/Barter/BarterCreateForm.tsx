@@ -37,12 +37,22 @@ export const BarterCreateForm = ({
   const [images, setImages] = useState<ImageSlot[]>([])
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // Inline message under the Category select. Same convention as
+  // DirectoryListingForm: a per-field message plus a red border, cleared as
+  // soon as the seller picks something.
+  const [categoryError, setCategoryError] = useState<string | null>(null)
+
+  // Category is only required when we actually have categories to offer — if
+  // the list failed to load the field is not rendered at all, and requiring an
+  // invisible field would make the form impossible to submit.
+  const categoryRequired = categories.length > 0
 
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
     >
   ) => {
+    if (e.target.name === "category_id") setCategoryError(null)
     setForm({ ...form, [e.target.name]: e.target.value })
   }
 
@@ -85,6 +95,16 @@ export const BarterCreateForm = ({
     e.preventDefault()
     setSubmitting(true)
     setError(null)
+    setCategoryError(null)
+
+    // A listing with no category shows up uncategorised everywhere it is
+    // listed, so refuse the submit and say which field is missing.
+    if (categoryRequired && !form.category_id) {
+      setSubmitting(false)
+      setCategoryError("Choose a category for your listing.")
+      setError("Please choose a category before posting your listing.")
+      return
+    }
 
     // Trade/Free listings have no sale price — an estimated value is required
     // (used to total estimated transaction value across the market).
@@ -227,24 +247,38 @@ export const BarterCreateForm = ({
           </div>
         </div>
 
-        {categories.length > 0 && (
+        {categoryRequired && (
           <div>
             <label className="text-xs font-medium text-secondary block mb-1">
-              Category
+              Category *
             </label>
             <select
               name="category_id"
               value={form.category_id}
               onChange={handleChange}
-              className="w-full border border-[#d6d0c4]/60 rounded-lg px-3 py-2 text-sm"
+              aria-required
+              aria-invalid={categoryError ? true : undefined}
+              aria-describedby={categoryError ? "category_id-error" : undefined}
+              className={`w-full border rounded-lg px-3 py-2 text-sm ${
+                categoryError ? "border-red-500" : "border-[#d6d0c4]/60"
+              }`}
             >
-              <option value="">(uncategorized)</option>
+              <option value="">Select a category</option>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}
                 </option>
               ))}
             </select>
+            {categoryError && (
+              <p
+                id="category_id-error"
+                role="alert"
+                className="text-xs text-red-700 mt-1"
+              >
+                {categoryError}
+              </p>
+            )}
           </div>
         )}
 

@@ -17,10 +17,23 @@ import { normalizeExternalUrl } from "@/lib/helpers/external-url"
 
 // The only fields the form refuses to save without. Labels are the ones
 // shown next to the inputs, so the banner and the field messages agree.
-type RequiredField = "business_name" | "category_id"
+// The address parts became required 25 Sep 2026 (Brooke): a listing with a
+// partial address is the reason listings drop out of location searches and
+// show up unplaceable on the directory map.
+type RequiredField =
+  | "business_name"
+  | "category_id"
+  | "street"
+  | "city"
+  | "state"
+  | "zip"
 const REQUIRED_FIELD_LABELS: Record<RequiredField, string> = {
   business_name: "Business Name",
   category_id: "Primary category",
+  street: "Street",
+  city: "City",
+  state: "State",
+  zip: "ZIP",
 }
 
 type DirectoryFormData = {
@@ -282,6 +295,18 @@ export const DirectoryListingForm = ({
     }
     if (!form.category_id) {
       missing.category_id = "Choose a primary category to save."
+    }
+    if (!form.street.trim()) {
+      missing.street = "Enter the street address to save."
+    }
+    if (!form.city.trim()) {
+      missing.city = "Enter the city to save."
+    }
+    if (!form.state.trim()) {
+      missing.state = "Enter the state to save."
+    }
+    if (!form.zip.trim()) {
+      missing.zip = "Enter the ZIP code to save."
     }
     const missingKeys = Object.keys(missing) as RequiredField[]
     if (missingKeys.length) {
@@ -610,40 +635,100 @@ export const DirectoryListingForm = ({
         <h3 className="heading-sm text-primary mb-3">Address</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="md:col-span-2">
-            <label className="label-sm text-secondary block mb-1">Street</label>
+            <label className="label-sm text-secondary block mb-1">
+              Street *
+            </label>
             <input
               name="street"
               value={form.street}
               onChange={handleChange}
-              className="w-full border rounded-sm px-3 py-2 text-sm"
+              required
+              aria-invalid={fieldErrors.street ? true : undefined}
+              aria-describedby={fieldErrors.street ? "street-error" : undefined}
+              className={`w-full border rounded-sm px-3 py-2 text-sm ${
+                fieldErrors.street ? "border-red-500" : ""
+              }`}
             />
+            {fieldErrors.street && (
+              <p
+                id="street-error"
+                role="alert"
+                className="text-xs text-red-700 mt-1"
+              >
+                {fieldErrors.street}
+              </p>
+            )}
           </div>
           <div>
-            <label className="label-sm text-secondary block mb-1">City</label>
+            <label className="label-sm text-secondary block mb-1">City *</label>
             <input
               name="city"
               value={form.city}
               onChange={handleChange}
-              className="w-full border rounded-sm px-3 py-2 text-sm"
+              required
+              aria-invalid={fieldErrors.city ? true : undefined}
+              aria-describedby={fieldErrors.city ? "city-error" : undefined}
+              className={`w-full border rounded-sm px-3 py-2 text-sm ${
+                fieldErrors.city ? "border-red-500" : ""
+              }`}
             />
+            {fieldErrors.city && (
+              <p
+                id="city-error"
+                role="alert"
+                className="text-xs text-red-700 mt-1"
+              >
+                {fieldErrors.city}
+              </p>
+            )}
           </div>
           <div>
-            <label className="label-sm text-secondary block mb-1">State</label>
+            <label className="label-sm text-secondary block mb-1">
+              State *
+            </label>
             <input
               name="state"
               value={form.state}
               onChange={handleChange}
-              className="w-full border rounded-sm px-3 py-2 text-sm"
+              required
+              aria-invalid={fieldErrors.state ? true : undefined}
+              aria-describedby={fieldErrors.state ? "state-error" : undefined}
+              className={`w-full border rounded-sm px-3 py-2 text-sm ${
+                fieldErrors.state ? "border-red-500" : ""
+              }`}
             />
+            {fieldErrors.state && (
+              <p
+                id="state-error"
+                role="alert"
+                className="text-xs text-red-700 mt-1"
+              >
+                {fieldErrors.state}
+              </p>
+            )}
           </div>
           <div>
-            <label className="label-sm text-secondary block mb-1">ZIP</label>
+            <label className="label-sm text-secondary block mb-1">ZIP *</label>
             <input
               name="zip"
               value={form.zip}
               onChange={handleChange}
-              className="w-full border rounded-sm px-3 py-2 text-sm"
+              required
+              aria-invalid={fieldErrors.zip ? true : undefined}
+              aria-describedby={fieldErrors.zip ? "zip-error" : undefined}
+              className={`w-full border rounded-sm px-3 py-2 text-sm ${
+                fieldErrors.zip ? "border-red-500" : ""
+              }`}
             />
+            {fieldErrors.zip && (
+              <p
+                id="zip-error"
+                role="alert"
+                className="text-xs text-red-700 mt-1"
+              >
+                {fieldErrors.zip}
+              </p>
+            )}
           </div>
           <div className="md:col-span-2">
             <label className="inline-flex items-center gap-2 text-sm text-secondary">

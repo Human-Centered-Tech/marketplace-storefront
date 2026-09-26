@@ -57,42 +57,42 @@ export const BarterListingCard = ({
       href={`/trade/${listing.id}`}
       className="group bg-white rounded-2xl overflow-hidden border border-gray-100/50 shadow-sm hover:shadow-md transition-all duration-500 flex flex-col"
     >
-      {/* Image — omitted entirely when the listing has no image, so we never
-          render an empty/placeholder box. The type badge moves inline below. */}
-      {imageUrl && (
-        <div className="aspect-[4/5] overflow-hidden relative">
+      {/* Image. A listing with no photo keeps the same 4:5 box and shows the
+          neutral initial-letter tile used by the other listing cards
+          (DirectoryListingCard, the Sacred Exchange rails), so image-less
+          cards line up with their neighbours in the grid instead of being
+          short — and never render an empty or broken <img>. */}
+      <div className="aspect-[4/5] overflow-hidden relative">
+        {imageUrl ? (
           <img
             src={imageUrl}
             alt={listing.title}
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
           />
-          {/* Type badge */}
-          <div className="absolute top-4 left-4">
-            <span
-              className={`backdrop-blur-md px-3 py-1 rounded-full label-sm text-[10px] ${
-                typeBadgeStyles[listing.listing_type] || typeBadgeStyles.sell
-              }`}
-            >
-              {typeLabels[listing.listing_type] || listing.listing_type}
-            </span>
-          </div>
-        </div>
-      )}
-
-      {/* Content */}
-      <div className="p-6 flex flex-col flex-grow">
-        {/* Inline type badge for image-less listings */}
-        {!imageUrl && (
-          <div className="mb-4">
-            <span
-              className={`inline-block px-3 py-1 rounded-full label-sm text-[10px] ${
-                typeBadgeStyles[listing.listing_type] || typeBadgeStyles.sell
-              }`}
-            >
-              {typeLabels[listing.listing_type] || listing.listing_type}
+        ) : (
+          <div
+            aria-hidden="true"
+            className="w-full h-full bg-[#faf9f5] flex items-center justify-center"
+          >
+            <span className="text-[#BE9B32]/30 font-serif text-6xl">
+              {listing.title.charAt(0)}
             </span>
           </div>
         )}
+        {/* Type badge */}
+        <div className="absolute top-4 left-4">
+          <span
+            className={`backdrop-blur-md px-3 py-1 rounded-full label-sm text-[10px] ${
+              typeBadgeStyles[listing.listing_type] || typeBadgeStyles.sell
+            }`}
+          >
+            {typeLabels[listing.listing_type] || listing.listing_type}
+          </span>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="p-6 flex flex-col flex-grow">
         <div className="flex justify-between items-start gap-2 mb-2">
           <h3 className="font-serif text-lg md:text-xl font-semibold text-navy-dark leading-tight line-clamp-1">
             {listing.title}
