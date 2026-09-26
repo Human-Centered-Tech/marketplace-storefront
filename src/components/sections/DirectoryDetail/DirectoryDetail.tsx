@@ -173,8 +173,15 @@ export const DirectoryDetail = ({
 
   return (
     <div>
-      {/* Hero Banner */}
-      <section className="relative h-[400px] lg:h-[460px] w-full overflow-hidden">
+      {/* Hero Banner. Sized by aspect ratio with a max-height cap rather than a
+          flat pixel height (Brooke, 25 Sep 2026): a 400px band on a phone
+          pushed the business-name card and everything useful below the fold.
+          The banner keeps object-cover so uploads of any shape crop to this box
+          instead of stretching it — owners upload anything from ~2:1 to 11:1.
+          Desktop is unchanged at 460px; only the narrow widths get shorter.
+          NB the logo below is object-contain on purpose — do not give it
+          object-cover, wide logo banners get beheaded by it. */}
+      <section className="relative w-full overflow-hidden aspect-[16/9] min-h-[180px] max-h-[300px] sm:max-h-[380px] lg:max-h-[460px]">
         {listing.cover_image_url ? (
           <img
             src={listing.cover_image_url}
@@ -183,7 +190,7 @@ export const DirectoryDetail = ({
           />
         ) : (
           <div className="w-full h-full bg-navy-dark flex items-center justify-center">
-            <span className="text-white/10 font-serif text-[12rem]">
+            <span className="text-white/10 font-serif text-[6rem] md:text-[10rem] lg:text-[12rem] leading-none">
               {listing.business_name.charAt(0)}
             </span>
           </div>

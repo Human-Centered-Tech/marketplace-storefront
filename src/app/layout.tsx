@@ -6,6 +6,7 @@ import { retrieveCart } from "@/lib/data/cart"
 import GoogleAnalytics from "@/components/analytics/GoogleAnalytics"
 import { ConsentProvider } from "@/components/consent/ConsentProvider"
 import { CookieBanner } from "@/components/consent/CookieBanner"
+import { ScrollToTop } from "@/components/molecules/ScrollToTop/ScrollToTop"
 import { Providers } from "./providers"
 
 // Brand title/serif font (Brooke 3/2026 direction): EB Garamond replaces
@@ -186,6 +187,9 @@ export default async function RootLayout({
             preferences" control can re-open the banner. Server-rendered
             children pass straight through it. */}
         <ConsentProvider>
+          {/* Resets scroll on route changes only — never on a ?category=/
+              ?sortBy= filter change. See the component for the exemptions. */}
+          <ScrollToTop />
           <Providers cart={cart}>{children}</Providers>
           <Toaster position="top-right" />
           {/* GA4 — renders nothing unless NEXT_PUBLIC_GA_ID is set AND

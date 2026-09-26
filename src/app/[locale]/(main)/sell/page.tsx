@@ -4,6 +4,7 @@ import type { Metadata } from "next"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 import { TrackPageView } from "@/components/sections/Analytics/TrackPageView"
 import { QuizCta } from "./QuizCta"
+import { QUIZ_CTA_LABEL, QUIZ_CTA_LOOK } from "@/lib/quiz-cta"
 import {
   AUDIENCES,
   FOUNDING_PILLARS,
@@ -308,9 +309,9 @@ function QuizBar({ placement }: { placement: string }) {
         <QuizCta
           href={QUIZ_HREF}
           placement={placement}
-          className="inline-flex items-center justify-center w-full sm:w-auto px-8 py-3.5 md:px-9 md:py-4 text-[15px] md:text-[17px] font-serif font-bold uppercase tracking-[0.08em] bg-[#D6A82B] text-[#001435] hover:bg-[#E8BE45] rounded-sm transition-colors"
+          className={`inline-flex items-center justify-center w-full sm:w-auto px-8 py-3.5 md:px-9 md:py-4 text-[15px] md:text-[17px] tracking-[0.08em] ${QUIZ_CTA_LOOK}`}
         >
-          Take the Quiz
+          {QUIZ_CTA_LABEL}
         </QuizCta>
       </div>
     </div>

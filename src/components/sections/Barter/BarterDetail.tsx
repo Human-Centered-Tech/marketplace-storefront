@@ -119,9 +119,22 @@ export const BarterDetail = ({
       </div>
 
       {/* Image Gallery — only the images that actually exist are rendered. A
-          single image fills the width; with no images the gallery is omitted
-          entirely (no empty placeholder tiles). */}
-      {images.length === 1 ? (
+          single image fills the width; with no images at all we show one
+          neutral initial-letter tile (same treatment as the listing cards)
+          rather than jumping from the breadcrumb straight to the title. */}
+      {images.length === 0 ? (
+        <section className="mb-12">
+          <div className="overflow-hidden rounded-xl bg-[#faf9f5] h-[300px] md:h-[500px] flex items-center justify-center">
+            <span
+              aria-hidden="true"
+              className="text-[#BE9B32]/30 font-serif text-[8rem] md:text-[12rem] leading-none"
+            >
+              {listing.title.charAt(0)}
+            </span>
+            <span className="sr-only">No photos for this listing yet</span>
+          </div>
+        </section>
+      ) : images.length === 1 ? (
         <section className="mb-12">
           <div className="overflow-hidden rounded-xl bg-gray-100 h-[300px] md:h-[500px] group">
             <img

@@ -1,5 +1,4 @@
 import { Footer, Header } from "@/components/organisms"
-import { LaunchBanner } from "@/components/molecules/LaunchBanner/LaunchBanner"
 import { retrieveCustomer } from "@/lib/data/customer"
 import { getWishlistProductIds } from "@/lib/data/wishlist"
 import { WishlistProvider } from "@/lib/context/WishlistContext"
@@ -28,7 +27,6 @@ export default async function RootLayout({
 
   return (
     <WishlistProvider initialProductIds={wishlistIds} isLoggedIn={!!user}>
-      <LaunchBanner />
       <Header />
       {children}
       <Footer />

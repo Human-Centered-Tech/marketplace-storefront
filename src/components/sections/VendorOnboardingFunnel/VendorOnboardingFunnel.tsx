@@ -8,7 +8,6 @@ import {
   EmployeeRange,
   FunnelState,
   InvoiceRange,
-  RecommendedTierKey,
   RevenueRange,
   ScreeningMethod,
   SizingAnswers,
@@ -23,25 +22,15 @@ import {
 import { includedForTier } from "@/lib/membership-tiers"
 import { ContactSupportButton } from "@/components/molecules/ContactSupportForm/ContactSupportForm"
 
-// Tier-aware "Book a call" Calendly links. Enterprise (Tier 3 / $2,999) books
-// the enterprise call; every other tier books the general membership call;
-// the financial dead-end books the Arimathea partner intro call.
+// The financial dead-end books the Arimathea partner intro call.
 // Routed to Brooke's calendar 7/6 (sales hire not confirmed yet) — swap the
 // account back when a dedicated salesperson takes these calls.
-const CALENDLY_MEMBERSHIP_URL =
-  "https://calendly.com/brooke_catholicowned/catholic-owned-membership"
-const CALENDLY_ENTERPRISE_URL =
-  "https://calendly.com/brooke_catholicowned/catholic-owned-enterprise"
+//
+// The tier-aware "Book a call" Calendly links were removed 25 Sep 2026 at
+// Brooke's request: the recommended-tier result now offers only Get Started
+// and Contact Support.
 const ARIMATHEA_CALENDLY_URL =
   "https://calendly.com/daren-arimatheainvesting/catholic-owned-discussion"
-const CALENDLY_BY_TIER: Partial<Record<RecommendedTierKey, string>> = {
-  tier3: CALENDLY_ENTERPRISE_URL,
-  // Tier 4 ($10k, top tier) books the enterprise call too — not the general
-  // membership fallback.
-  tier4: CALENDLY_ENTERPRISE_URL,
-}
-const calendlyForTier = (key: RecommendedTierKey): string =>
-  CALENDLY_BY_TIER[key] ?? CALENDLY_MEMBERSHIP_URL
 
 // Every funnel path starts at the Founding Pillars gate (initialState.step),
 // and its "Agree and continue" button is disabled until all four pillars are
@@ -1034,9 +1023,8 @@ const RecommendedTierStep: React.FC<{
         </ul>
       </div>
       {/* Buttons per Brooke's 3 Sep notes: [Get Started] [Contact Support].
-          The Calendly link stays as a quiet third option for tiers that
-          used to offer it — nobody asked to remove the call, only to lead
-          with support. */}
+          The "Book a call" third option was removed 25 Sep 2026 at Brooke's
+          request. */}
       <div className="flex flex-col sm:flex-row gap-4">
         <LocalizedClientLink
           href={signupHref}
@@ -1053,20 +1041,6 @@ const RecommendedTierStep: React.FC<{
           Contact Support
         </ContactSupportButton>
       </div>
-      {tier.bookCallOption && (
-        <p className="text-center text-[13px] text-[#44474e] mt-4">
-          Prefer to talk it through?{" "}
-          <a
-            href={calendlyForTier(tierKey)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline underline-offset-4 text-[#001435]"
-          >
-            Book a call
-          </a>
-          .
-        </p>
-      )}
     </Card>
   )
 }
